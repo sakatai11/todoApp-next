@@ -6,7 +6,7 @@ export default async function TodoPage() {
 
   return (
     <>
-      <Todo.TodoWrapper todos={todos} lists={lists} />
+      <Todo.TodoWrapper initialTodos={todos} initialLists={lists} />
     </>
   );
 }

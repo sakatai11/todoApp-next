@@ -1,35 +1,26 @@
 'use client';
-
+import { useState } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
+import TodoContainer from '@/features/todo/conponents/TodoContainer/TodoContainer';
 
 type DataProps = {
-  todos: TodoListProps[];
-  lists: StatusListProps[];
+  initialTodos: TodoListProps[];
+  initialLists: StatusListProps[];
 };
 
-const TodoWrapper = ({ todos, lists }: DataProps): React.ReactElement => {
+const TodoWrapper = ({
+  initialTodos,
+  initialLists,
+}: DataProps): React.ReactElement => {
+  const [todos, setTodos] = useState<TodoListProps[]>(initialTodos);
+  const [lists, setLists] = useState<StatusListProps[]>(initialLists);
+
   return (
     <Box>
-      <Box>
-        {todos.map((todo) => (
-          <div key={todo.id}>
-            <p>ID: {todo.id}</p>
-            <p>Text: {todo.text}</p>
-            <p>Status: {todo.status}</p>
-            <p>Time: {todo.time}</p>
-          </div>
-        ))}
-      </Box>
-      <Box>
-        {lists.map((list) => (
-          <div key={list.id}>
-            <p>ID: {list.id}</p>
-            <p>Status: {list.category}</p>
-          </div>
-        ))}
-      </Box>
+      {/* Push */}
+      <TodoContainer todos={todos} lists={lists} />
     </Box>
   );
 };
