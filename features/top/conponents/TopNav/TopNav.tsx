@@ -5,10 +5,7 @@ const TopNav = () => {
   return (
     <div>
       {pageLinks.map(({ name, href }) => (
-        <Link
-          href={href}
-          key={name}
-        >
+        <Link href={href} key={name}>
           {name}
         </Link>
       ))}

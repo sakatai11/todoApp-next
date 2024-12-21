@@ -13,5 +13,5 @@ export const pageLinks: PageLink[] = [
   {
     name: 'Todo',
     href: '/todo',
-  }
+  },
 ];

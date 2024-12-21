@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+public/
+package-lock.json
+next.config.mjs
+tsconfig.json
+next-env.d.ts
+*.cjs
+*.mjs
