@@ -12,16 +12,24 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    extends: [
-      'eslint:recommended',
-      'plugin:@typescript-eslint/recommended',
-      'prettier',
-    ],
+    files: ['*.ts', '*.tsx'],
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint', 'prettier'],
     parserOptions: {
       project: './tsconfig.json',
     },
+    ignores: [
+      'node_modules/',
+      '.next/',
+      'out/',
+      'public/',
+      'package-lock.json',
+      'next.config.mjs',
+      'tsconfig.json',
+      'next-env.d.ts',
+      '*.cjs',
+      '*.mjs',
+    ],
   },
 ];
 

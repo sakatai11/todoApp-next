@@ -1,7 +1,12 @@
-export default function TodoPage() {
+import { fetchApis } from '@/app/libs/fetchApis';
+import * as Todo from '@/features/todo/conponents/Index';
+
+export default async function TodoPage() {
+  const { todos, lists } = await fetchApis();
+
   return (
     <>
-      <p>todo</p>
+      <Todo.TodoWrapper todos={todos} lists={lists} />
     </>
   );
 }
