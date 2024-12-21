@@ -32,3 +32,7 @@ export const fetchApis = async () => {
     lists: listsData,
   };
 };
+
+// データのアップデート
+// データの追加
+// データの削除
