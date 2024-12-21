@@ -1,4 +1,4 @@
-import { fetchApis } from '@/app/libs/apis';
+import { fetchApis } from '@/app/libs/apis/fetch';
 import * as Todo from '@/features/todo/conponents/Index';
 
 export default async function TodoPage() {
