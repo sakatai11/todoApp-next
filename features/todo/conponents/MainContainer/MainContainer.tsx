@@ -2,6 +2,8 @@ import { Box } from '@mui/material';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import TodoList from '@/features/todo/conponents/TodoList/TodoList';
+import StatusTitle from '@/features/todo/conponents/elements/Status/StatusTitle';
+import ListAdd from '@/features/todo/conponents/elements/List/ListAdd';
 
 type DataProps = {
   todos: TodoListProps[];
@@ -34,6 +36,7 @@ type DataProps = {
 const MainContainer = ({
   todos,
   lists,
+  deleteList,
   todoListOption,
   listAddOption,
 }: DataProps): React.ReactElement => {
@@ -98,7 +101,11 @@ const MainContainer = ({
                   },
                 }}
               >
-                {/* Title */}
+                <StatusTitle
+                  title={statusPull.category}
+                  id={statusPull.id}
+                  deleteList={deleteList}
+                />
                 <Box
                   sx={{
                     display: 'flex',
@@ -194,10 +201,29 @@ const MainContainer = ({
               </Box>
             );
           })}
+          <Box
+            sx={{
+              minWidth: '320px',
+              paddingX: '16px',
+              boxSizing: 'border-box',
+              '@media (max-width: 767px)': {
+                width: '100%',
+                minWidth: 'auto',
+              },
+            }}
+          >
+            <ListAdd
+              status={status}
+              error={listError}
+              addList={addList}
+              setInput={(listStatus) => setListInput({ status: listStatus })}
+              setError={(listTextError) =>
+                setListError({ addListArea: listTextError })
+              }
+            />
+          </Box>
         </Box>
       </Box>
-
-      {/* addList */}
     </>
   );
 };

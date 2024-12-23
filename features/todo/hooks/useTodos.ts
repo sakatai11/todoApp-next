@@ -9,6 +9,7 @@ import {
   collection,
   deleteDoc,
   updateDoc,
+  setLogLevel,
 } from 'firebase/firestore';
 import { jstTime } from '@/app/utils/dateUtils';
 
@@ -21,6 +22,8 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     listModalArea: false,
   });
 
+  setLogLevel('debug');
+
   // todo追加
   const addTodo = async () => {
     if (input.text && input.status) {
@@ -30,7 +33,9 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         bool: false,
         status: input.status,
       };
+      console.log(newTodo);
       const docRef = await addDoc(collection(db, 'todos'), newTodo);
+      console.log(docRef);
       setTodos((prevTodos) => {
         const updatedTodos = [...prevTodos, { id: docRef.id, ...newTodo }];
         return updatedTodos.sort((a, b) => {

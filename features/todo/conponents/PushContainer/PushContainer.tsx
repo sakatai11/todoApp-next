@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import { Button, Box } from '@mui/material';
 import { Status } from '@/types/todos';
-import EditModal from '@/features/todo/conponents/Modal/EditModal';
+import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
 
 type InputProps = {
   addTodo: () => void;

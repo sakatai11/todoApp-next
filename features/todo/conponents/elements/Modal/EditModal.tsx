@@ -4,7 +4,7 @@ import { jstFormattedDate } from '@/app/utils/dateUtils';
 import { Status } from '@/types/todos';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
-import StatusPullList from '@/features/todo/conponents/Status/StatusPullList';
+import StatusPullList from '@/features/todo/conponents/elements/Status/StatusPullList';
 
 type ModalProp = {
   todo?: TodoListProps;

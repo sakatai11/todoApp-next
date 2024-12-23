@@ -1,3 +1,5 @@
+'use client';
+
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';

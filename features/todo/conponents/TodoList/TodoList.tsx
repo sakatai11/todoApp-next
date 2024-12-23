@@ -1,7 +1,9 @@
+'use client';
+
 import React from 'react';
 import { TodoListProps } from '@/types/todos';
 import { useState } from 'react';
-import DeleteModal from '@/features/todo/conponents/Modal/DeleteModal';
+import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { Box, Button } from '@mui/material';
 import { formatter } from '@/app/utils/textUtils';
 import { Status } from '@/types/todos';
@@ -9,7 +11,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditModal from '@/features/todo/conponents/Modal/EditModal';
+import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
 
 type TodoProps = {
   todo: TodoListProps;
