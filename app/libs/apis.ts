@@ -1,8 +1,8 @@
-import { db } from '@/app/utils/firebase';
+import { db } from '@/app/libs/firebase';
 import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 
 // データの取得
-export const fetchApis = async () => {
+export const getApi = async () => {
   const qTodos = query(collection(db, 'todos'), orderBy('time', 'desc')); // 降順
   const qLists = query(collection(db, 'lists'), orderBy('number', 'asc')); // 昇順
   const todoSnapshot = await getDocs(qTodos);
@@ -27,12 +27,37 @@ export const fetchApis = async () => {
     number: document.data().number,
   }));
 
+  console.log(sortedTodos);
+  console.log(listsData);
+
   return {
     todos: sortedTodos,
     lists: listsData,
   };
 };
 
-// データのアップデート
-// データの追加
-// データの削除
+export const apiRequest = async <T>(
+  url: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  body: T,
+): Promise<T> => {
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'API request failed');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('API request error:', error);
+    throw error; // 呼び出し元でエラーハンドリング
+  }
+};

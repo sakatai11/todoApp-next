@@ -43,3 +43,8 @@ next-env.d.ts
 # 以下は追跡しない
 .vscode/
 .eslintcache
+.firebaserc
+firebase.json
+firestore.indexes.json
+firestore.rules
+

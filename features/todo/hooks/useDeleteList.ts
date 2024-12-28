@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
-import { db } from '@/app/utils/firebase';
+import { db } from '@/app/libs/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 
 type DeleteListProps = {

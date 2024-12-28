@@ -1,8 +1,8 @@
-import { fetchApis } from '@/app/libs/apis/fetch';
+import { getApi } from '@/app/libs/apis';
 import * as Todo from '@/features/todo/conponents/Index';
 
 export default async function TodoPage() {
-  const { todos, lists } = await fetchApis();
+  const { todos, lists } = await getApi();
 
   return (
     <>

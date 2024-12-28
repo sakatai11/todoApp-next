@@ -1,16 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { TodoListProps } from '@/types/todos';
-import { db } from '@/app/utils/firebase';
-import {
-  doc,
-  addDoc,
-  collection,
-  deleteDoc,
-  updateDoc,
-  setLogLevel,
-} from 'firebase/firestore';
+import { TodoListProps, TodoPayload } from '@/types/todos';
+import { db } from '@/app/libs/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { apiRequest } from '@/app/libs/apis';
 import { jstTime } from '@/app/utils/dateUtils';
 
 export const useTodos = (initialTodos: TodoListProps[]) => {
@@ -22,8 +16,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     listModalArea: false,
   });
 
-  setLogLevel('debug');
-
   // todo追加
   const addTodo = async () => {
     if (input.text && input.status) {
@@ -34,20 +26,31 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         status: input.status,
       };
       console.log(newTodo);
-      const docRef = await addDoc(collection(db, 'todos'), newTodo);
-      console.log(docRef);
-      setTodos((prevTodos) => {
-        const updatedTodos = [...prevTodos, { id: docRef.id, ...newTodo }];
-        return updatedTodos.sort((a, b) => {
-          const boolComparison = Number(b.bool) - Number(a.bool);
-          const timeComparison = b.time - a.time;
-          return boolComparison || timeComparison; // 両方の条件を実行
+
+      try {
+        const result = await apiRequest<TodoPayload<'POST'>>(
+          '/api/todos',
+          'POST',
+          newTodo,
+        );
+        console.log(result);
+
+        setTodos((prevTodos) => {
+          const updatedTodos = [...prevTodos, result as TodoListProps];
+          return updatedTodos.sort((a, b) => {
+            const boolComparison = Number(b.bool) - Number(a.bool);
+            const timeComparison = b.time - a.time;
+            return boolComparison || timeComparison; // 両方の条件を実行
+          });
         });
-      });
-      setInput({ text: '', status: '' });
-      setError({ ...error, listPushArea: false }); // エラーをリセット
+        setInput({ text: '', status: '' });
+        setError((prevError) => ({ ...prevError, listPushArea: false })); // エラーをリセット
+      } catch (error) {
+        console.error('Error adding todo:', error);
+        setError((prevError) => ({ ...prevError, listPushArea: true })); // エラー表示
+      }
     } else {
-      setError({ ...error, listPushArea: true }); // エラー表示
+      setError((prevError) => ({ ...prevError, listPushArea: true })); // エラー表示
       return;
     }
   };
@@ -55,7 +58,15 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // todo削除
   const deleteTodo = async (id: string) => {
     console.log(`Deleting todo with id: ${id}`);
-    await deleteDoc(doc(db, 'todos', id.toString())); // idをstring型に変換
+    // try{
+    //   const result = await apiRequest<TodoListProps>(
+    //     '/api/todos',
+    //     'DELETE',
+    //     id,
+    //   );
+    // }catch (error){
+
+    // }
     setTodos(todos.filter((todo) => todo.id !== id)); // todo.id が id と一致しない todo だけを残す新しい配列を作成
   };
 
@@ -80,6 +91,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         );
         return updatedTodos.sort((a, b) => Number(b.bool) - Number(a.bool));
       });
+      console.log('test');
       await updateDoc(doc(db, 'todos', id), { bool: !todoToUpdate.bool });
     }
   };

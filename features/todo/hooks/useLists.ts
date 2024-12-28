@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { StatusListProps } from '@/types/lists';
-import { db } from '@/app/utils/firebase';
+import { db } from '@/app/libs/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 export const useLists = (initialLists: StatusListProps[]) => {
