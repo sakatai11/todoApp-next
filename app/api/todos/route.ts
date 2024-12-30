@@ -12,7 +12,7 @@ import { TodoPayload } from '@/types/todos';
 
 export async function POST(req: NextRequest) {
   const body = await req.json(); // JSONデータを取得
-  const { text, status } = body;
+  const { text, status }: TodoPayload<'POST'> = body;
 
   if (text && status) {
     const newTodo = {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       text,
       bool: false,
       status,
-    } as TodoPayload<'POST'>;
+    };
 
     try {
       const docRef = await addDoc(collection(db, 'todos'), newTodo);
@@ -66,11 +66,11 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const body = await req.json();
-  const { todoDeleteId } = body;
+  const { id }: TodoPayload<'DELETE'> = body;
 
-  if (todoDeleteId) {
+  if (id) {
     try {
-      await deleteDoc(doc(db, 'todos', todoDeleteId.toString()));
+      await deleteDoc(doc(db, 'todos', id.toString()));
       return NextResponse.json({ message: 'Todo deleted' }, { status: 200 });
     } catch (error) {
       console.error('Error delete todo:', error);
@@ -80,6 +80,9 @@ export async function DELETE(req: NextRequest) {
       );
     }
   } else {
-    return NextResponse.json({ error: 'TodoId is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'TodoDelete is required' },
+      { status: 400 },
+    );
   }
 }

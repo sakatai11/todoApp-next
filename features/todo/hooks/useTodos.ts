@@ -58,16 +58,17 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // todo削除
   const deleteTodo = async (id: string) => {
     console.log(`Deleting todo with id: ${id}`);
-    // try{
-    //   const result = await apiRequest<TodoListProps>(
-    //     '/api/todos',
-    //     'DELETE',
-    //     id,
-    //   );
-    // }catch (error){
-
-    // }
-    setTodos(todos.filter((todo) => todo.id !== id)); // todo.id が id と一致しない todo だけを残す新しい配列を作成
+    try {
+      const result = await apiRequest<TodoPayload<'DELETE'>>(
+        '/api/todos',
+        'DELETE',
+        { id },
+      );
+      console.log(result);
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id)); // todo.id が id と一致しない todo だけを残す新しい配列を作成
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+    }
   };
 
   // 編集（モーダル内）
