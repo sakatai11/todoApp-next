@@ -71,7 +71,7 @@ const EditModal = ({
             position: 'relative',
           }}
         >
-          {todo?.time && (
+          {todo?.updateTime && (
             <Typography
               component="span"
               color="#9e9e9e"
@@ -79,7 +79,7 @@ const EditModal = ({
               paddingBottom="8px"
               display="block"
             >
-              編集日時：{jstFormattedDate(todo.time)}
+              編集日時：{jstFormattedDate(todo.updateTime)}
             </Typography>
           )}
           <TextField

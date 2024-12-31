@@ -6,17 +6,17 @@ import {
   deleteDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { jstTime } from '@/app/utils/dateUtils';
 import { NextRequest, NextResponse } from 'next/server';
 import { TodoPayload } from '@/types/todos';
 
 export async function POST(req: NextRequest) {
   const body = await req.json(); // JSONデータを取得
-  const { text, status }: TodoPayload<'POST'> = body;
+  const { text, status, updateTime, createdTime }: TodoPayload<'POST'> = body;
 
   if (text && status) {
     const newTodo = {
-      time: Date.now(),
+      updateTime,
+      createdTime,
       text,
       bool: false,
       status,
@@ -39,28 +39,48 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   const body = await req.json();
-  const { todoEditId, updatedText, updatedStatus } = body;
+  const payload: TodoPayload<'PUT'> = body;
 
-  if (todoEditId && updatedText && updatedStatus) {
-    try {
-      await updateDoc(doc(db, 'todos', todoEditId), {
-        text: updatedText,
-        status: updatedStatus,
-        time: jstTime().getTime(),
+  try {
+    //  toggleSelected
+    if ('id' in payload && 'bool' in payload) {
+      const { id, bool } = payload;
+      await updateDoc(doc(db, 'todos', id), {
+        bool: bool,
       });
-      return NextResponse.json({ message: 'Todo updated' }, { status: 200 });
-    } catch (error) {
-      console.error('Error update todo:', error);
       return NextResponse.json(
-        { error: 'Error updating todo' },
-        { status: 500 },
+        { message: 'Todo updated toggle' },
+        { status: 200 },
       );
     }
-  } else {
+
+    // saveTodo
+    if (
+      'id' in payload &&
+      'text' in payload &&
+      'status' in payload &&
+      'updateTime' in payload
+    ) {
+      const { id, updateTime, text, status } = payload;
+      console.log(text);
+      await updateDoc(doc(db, 'todos', id), {
+        updateTime: updateTime,
+        text: text,
+        status: status,
+      });
+      return NextResponse.json(
+        { message: 'Todo updated save' },
+        { status: 200 },
+      );
+    }
+
     return NextResponse.json(
-      { error: 'EditId, updatedText, and updatedStatus are required' },
+      { error: 'Invalid payload: Missing required fields.' },
       { status: 400 },
     );
+  } catch (error) {
+    console.error('Error update todo:', error);
+    return NextResponse.json({ error: 'Error updating todo' }, { status: 500 });
   }
 }
 

@@ -6,7 +6,8 @@ export type Status = {
 // todoデータの型
 export type TodoListProps = {
   id: string;
-  time: number;
+  updateTime: number;
+  createdTime: number;
   text: string;
   status: string;
   bool: boolean;
@@ -18,5 +19,7 @@ export type TodoPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
   : T extends 'DELETE'
     ? Pick<TodoListProps, 'id'> // DELETEではidのみ必須
     : T extends 'PUT'
-      ? Pick<TodoListProps, 'id'> & Partial<Pick<TodoListProps, 'bool'>> // PUTではidは必須、boolはオプション
+      ?
+          | Pick<TodoListProps, 'id' | 'bool'>
+          | Pick<TodoListProps, 'id' | 'updateTime' | 'text' | 'status'>
       : never;
