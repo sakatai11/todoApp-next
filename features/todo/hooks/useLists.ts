@@ -36,6 +36,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
         );
         console.log(result);
 
+        // client
         // 再計算されたリストと新しいリストを追加してセットする
         setLists([...updatedLists, { ...(result as StatusListProps) }]);
         setInput({ status: '' }); //ステータスリセット

@@ -1,9 +1,9 @@
 import { db } from '@/app/libs/firebase';
 import {
-  // doc,
+  doc,
   addDoc,
   collection,
-  // deleteDoc,
+  deleteDoc,
   // updateDoc,
 } from 'firebase/firestore';
 import { NextRequest, NextResponse } from 'next/server';
@@ -79,25 +79,24 @@ export async function PUT() {
   // }
 }
 
-export async function DELETE() {
-  // req: NextRequest
-  // const body = await req.json();
-  // const { id }: TodoPayload<'DELETE'> = body;
-  // if (id) {
-  //   try {
-  //     await deleteDoc(doc(db, 'todos', id.toString()));
-  //     return NextResponse.json({ message: 'Todo deleted' }, { status: 200 });
-  //   } catch (error) {
-  //     console.error('Error delete todo:', error);
-  //     return NextResponse.json(
-  //       { error: 'Error deleting todo' },
-  //       { status: 500 },
-  //     );
-  //   }
-  // } else {
-  //   return NextResponse.json(
-  //     { error: 'TodoDelete is required' },
-  //     { status: 400 },
-  //   );
-  // }
+export async function DELETE(req: NextRequest) {
+  const body = await req.json();
+  const { id }: ListPayload<'DELETE'> = body;
+  if (id) {
+    try {
+      await deleteDoc(doc(db, 'lists', id.toString()));
+      return NextResponse.json({ message: 'List deleted' }, { status: 200 });
+    } catch (error) {
+      console.error('Error delete list:', error);
+      return NextResponse.json(
+        { error: 'Error deleting list' },
+        { status: 500 },
+      );
+    }
+  } else {
+    return NextResponse.json(
+      { error: 'ListDelete is required' },
+      { status: 400 },
+    );
+  }
 }
