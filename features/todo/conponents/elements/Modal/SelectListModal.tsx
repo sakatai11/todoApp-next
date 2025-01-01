@@ -22,7 +22,7 @@ const SelectListModal = ({
         },
         position: 'absolute',
         right: -140,
-        bottom: -30,
+        bottom: -72,
         zIndex: 99,
       }}
     >
@@ -60,6 +60,18 @@ const SelectListModal = ({
           }}
         >
           リストを削除する
+        </Button>
+        <Button
+          onClick={() => {
+            console.log('rename');
+            setSelectModalIsOpen({
+              ...selectModalIsOpen,
+              order: false,
+              list: false,
+            });
+          }}
+        >
+          リスト名を変える
         </Button>
       </ButtonGroup>
     </Box>
