@@ -4,7 +4,11 @@ import Box from '@mui/material/Box';
 
 type HandleClickProps = {
   selectModalIsOpen: { order: boolean; list: boolean };
-  setSelectModalIsOpen: (modal: { order: boolean; list: boolean }) => void;
+  setSelectModalIsOpen: (modal: {
+    order: boolean;
+    list: boolean;
+    rename: boolean;
+  }) => void;
   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
 };
 
@@ -44,6 +48,7 @@ const SelectListModal = ({
               ...selectModalIsOpen,
               order: false,
               list: false,
+              rename: false,
             })
           }
         >
@@ -56,6 +61,7 @@ const SelectListModal = ({
               ...selectModalIsOpen,
               order: false,
               list: true,
+              rename: false,
             });
           }}
         >
@@ -68,6 +74,7 @@ const SelectListModal = ({
               ...selectModalIsOpen,
               order: false,
               list: false,
+              rename: false,
             });
           }}
         >

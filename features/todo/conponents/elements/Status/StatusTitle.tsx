@@ -16,6 +16,7 @@ const StatusTitle = ({ title, id, deleteList }: Prop) => {
   const [selectModalIsOpen, setSelectModalIsOpen] = useState({
     order: false,
     list: false,
+    rename: false,
   });
   const [deleteIsModalOpen, setDeleteIsModalOpen] = useState(false);
 
@@ -60,6 +61,7 @@ const StatusTitle = ({ title, id, deleteList }: Prop) => {
             ...selectModalIsOpen,
             order: true,
             list: true,
+            rename: true,
           })
         }
         sx={{
