@@ -49,6 +49,7 @@ const StatusTitle = ({ title, id, deleteList }: Prop) => {
   return (
     <Box
       component="div"
+      id={id}
       sx={{
         textAlign: 'center',
         position: 'relative',
