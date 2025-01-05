@@ -3,19 +3,25 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Box from '@mui/material/Box';
 
 type HandleClickProps = {
-  selectModalIsOpen: { order: boolean; list: boolean };
+  id: string;
+  selectModalIsOpen: { order: boolean; list: boolean; rename: boolean };
+  setListEdit: (id: string) => void;
   setSelectModalIsOpen: (modal: {
     order: boolean;
     list: boolean;
     rename: boolean;
   }) => void;
   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
+  setTextRename: (textRename: boolean) => void;
 };
 
 const SelectListModal = ({
+  id,
   selectModalIsOpen,
+  setListEdit,
   setSelectModalIsOpen,
   setDeleteIsModalOpen,
+  setTextRename,
 }: HandleClickProps) => {
   return (
     <Box
@@ -76,6 +82,8 @@ const SelectListModal = ({
               list: false,
               rename: false,
             });
+            setTextRename(true);
+            setListEdit(id);
           }}
         >
           リスト名を変える

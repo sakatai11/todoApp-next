@@ -7,6 +7,7 @@ import PushContainer from '@/features/todo/conponents/PushContainer/PushContaine
 import MainContainer from '@/features/todo/conponents/MainContainer/MainContainer';
 import { useTodos } from '@/features/todo/hooks/useTodos';
 import { useLists } from '@/features/todo/hooks/useLists';
+import { useUpdateStatus } from '@/features/todo/hooks/useUpdateStatus';
 import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
 
 type DataProps = {
@@ -21,7 +22,7 @@ const TodoWrapper = ({
   const {
     todos,
     input: todoInput,
-    editId,
+    editId: todoEdit,
     error: todoError,
     setTodos,
     setEditId,
@@ -44,7 +45,21 @@ const TodoWrapper = ({
     setError: setListError,
   } = useLists(initialLists);
 
-  // useCallback使用、react.memo使用する可能性あり
+  // useCallback使用
+  const {
+    input: updateListInput,
+    editId: listEdit,
+    editList,
+    setEditId: updateSetListEdit,
+    setInput: updateSetInput,
+  } = useUpdateStatus({
+    todos,
+    lists,
+    setTodos,
+    setLists,
+  });
+
+  // useCallback使用
   const { deleteList } = useDeleteList({ todos, lists, setTodos, setLists });
 
   return (
@@ -55,7 +70,7 @@ const TodoWrapper = ({
         setEditId={setEditId}
         todoInput={todoInput}
         statusPull={lists}
-        isEditing={editId !== null} // idがない場合はfalse
+        isEditing={todoEdit !== null} // idがない場合はfalse
         error={todoError.listPushArea}
         setError={(pushError) =>
           setTodoError({ ...todoError, listPushArea: pushError })
@@ -65,9 +80,16 @@ const TodoWrapper = ({
         todos={todos}
         lists={lists}
         deleteList={deleteList}
+        statusTitleOption={{
+          statusUpdate: updateListInput.status,
+          listEdit: listEdit,
+          editList: editList,
+          setListEdit: updateSetListEdit,
+          setUpdateListInput: updateSetInput,
+        }}
         todoListOption={{
           todoInput: todoInput,
-          editId: editId,
+          editId: todoEdit,
           todoError: todoError,
           deleteTodo: deleteTodo,
           editTodo: editTodo,
@@ -78,7 +100,7 @@ const TodoWrapper = ({
           toggleSelected: toggleSelected,
         }}
         listAddOption={{
-          status: listInput.status,
+          statusList: listInput.status,
           listError: listError.addListArea,
           addList: addList,
           setListInput: setListInput,
