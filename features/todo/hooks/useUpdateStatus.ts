@@ -19,7 +19,7 @@ export const useUpdateStatus = ({
   setTodos,
   setLists,
 }: UpdateDataProp) => {
-  const [input, setInput] = useState({ status: '' });
+  const [input, setInput] = useState({ status: '' }); // 初期値
   const [editId, setEditId] = useState<string | null>(null);
 
   console.log(todos);
@@ -34,7 +34,7 @@ export const useUpdateStatus = ({
       );
 
       if (isDuplicate) {
-        console.log('カテゴリ名が重複しています');
+        alert('カテゴリ名が重複しています');
         return; // 処理を中断
       }
 

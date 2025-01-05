@@ -34,11 +34,17 @@ const StatusTitle = ({
   });
   const [deleteIsModalOpen, setDeleteIsModalOpen] = useState(false);
   const [textRename, setTextRename] = useState(false);
+  const [inputValue, setInputValue] = useState(status || title); // 初期値を管理
 
   const modalRef = useRef<HTMLDivElement>(null);
   const deleteModalRef = useRef<HTMLDivElement>(null);
   const textFieldRef = useRef<HTMLDivElement>(null);
   // const inputRef = useRef<HTMLInputElement>(null);
+
+  // 外部からの status 変更を監視して同期
+  useEffect(() => {
+    setInputValue(status || title);
+  }, [status, title]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,7 +73,6 @@ const StatusTitle = ({
 
       if (textFieldRef.current?.contains(target) === true) {
         setTextRename(true);
-        setInput({ status: title });
         console.log('setTextRename called with true');
       } else if (textFieldRef.current?.contains(target) === false) {
         setTextRename(false);
@@ -100,9 +105,10 @@ const StatusTitle = ({
         <div ref={textFieldRef}>
           <input
             id={`${id}_input`}
-            value={status}
+            value={inputValue}
             // ref={inputRef}
             onChange={(e) => {
+              setInputValue(e.target.value); // ローカル状態を更新
               editList(id, e.target.value, title);
             }}
             style={{ textAlign: 'center' }}
