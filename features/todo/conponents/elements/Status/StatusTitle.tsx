@@ -79,6 +79,7 @@ const StatusTitle = memo(
           console.log('setTextRename called with true');
         } else {
           setTextRename(false);
+          // statusを空にして変更を初期化
           setInput({ status: '' });
           console.log('setTextRename called with false');
         }
