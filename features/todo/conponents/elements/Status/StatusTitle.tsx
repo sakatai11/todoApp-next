@@ -11,7 +11,12 @@ type Prop = {
   status: string;
   id: string;
   isEditing: boolean;
-  editList: (id: string, value: string, title: string) => void;
+  editList: (
+    id: string,
+    value: string,
+    title: string,
+    initialTitle: string,
+  ) => void;
   deleteList: (id: string, title: string) => void;
   setListEdit: (id: string) => void;
   setInput: (input: { status: string }) => void;
@@ -35,7 +40,8 @@ const StatusTitle = memo(
     });
     const [deleteIsModalOpen, setDeleteIsModalOpen] = useState(false);
     const [textRename, setTextRename] = useState(false);
-    const [inputValue, setInputValue] = useState(status || title); // 初期値を管理
+    const [initialTitle, setInitialTitle] = useState(title); // レンダリング実行時のtitleを保存
+    const [inputValue, setInputValue] = useState(status || initialTitle); // 初期値を管理
 
     const modalRef = useRef<HTMLDivElement>(null);
     const deleteModalRef = useRef<HTMLDivElement>(null);
@@ -47,12 +53,7 @@ const StatusTitle = memo(
       if (isEditing && inputElement) {
         inputElement.focus();
       }
-    }, [isEditing]); // `isEditing`がtrueの時に実行
-
-    // 外部からの status 変更を監視して同期
-    useEffect(() => {
-      setInputValue(status || title);
-    }, [status, title]);
+    }, [isEditing, textRename]); // `isEditing``textRename`がtrueの時に実行
 
     // SelectListModalの挙動制御
     // useCallbackを使用
@@ -72,16 +73,6 @@ const StatusTitle = memo(
             list: false,
             rename: false,
           });
-        }
-
-        if (textFieldRef.current?.contains(target)) {
-          setTextRename(true);
-          console.log('setTextRename called with true');
-        } else {
-          setTextRename(false);
-          // statusを空にして変更を初期化
-          setInput({ status: '' });
-          console.log('setTextRename called with false');
         }
       },
       [setInput],
@@ -107,14 +98,26 @@ const StatusTitle = memo(
           position: 'relative',
         }}
       >
-        {textRename && isEditing ? (
+        {isEditing && textRename ? (
           <div ref={textFieldRef}>
             <input
               id={`${id}_input`}
               value={inputValue}
               onChange={(e) => {
-                setInputValue(e.target.value); // ローカル状態を更新
-                editList(id, e.target.value, title);
+                const newValue = e.target.value.trim(); // 不要な空白を除去
+                setInputValue(newValue); // ローカル状態を更新
+              }}
+              onBlur={async () => {
+                // フォーカスが外れた際に newValue が空なら initialTitle を適用
+                const finalValue = inputValue.trim() || initialTitle;
+                setInitialTitle(finalValue); // 前に入力した値を更新
+                setInputValue(finalValue); // ローカル状態を更新
+                editList(id, finalValue, title, initialTitle); // リストを更新
+                await new Promise((resolve) => {
+                  setInput({ status: '' });
+                  resolve(true);
+                });
+                setTextRename(false);
               }}
               style={{ textAlign: 'center' }}
             />
