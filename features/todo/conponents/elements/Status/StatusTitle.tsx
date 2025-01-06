@@ -57,26 +57,23 @@ const StatusTitle = memo(
 
     // SelectListModalの挙動制御
     // useCallbackを使用
-    const handleClickOutside = useCallback(
-      (event: MouseEvent) => {
-        const target = event.target as Node;
+    const handleClickOutside = useCallback((event: MouseEvent) => {
+      const target = event.target as Node;
 
-        // クリックイベントがセレクトモーダル外で発生した場合
-        if (
-          modalRef.current &&
-          !modalRef.current.contains(target) &&
-          !deleteModalRef.current
-        ) {
-          console.log('Click detected outside, updating state...');
-          setSelectModalIsOpen({
-            order: false,
-            list: false,
-            rename: false,
-          });
-        }
-      },
-      [setInput],
-    );
+      // クリックイベントがセレクトモーダル外で発生した場合
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(target) &&
+        !deleteModalRef.current
+      ) {
+        console.log('Click detected outside, updating state...');
+        setSelectModalIsOpen({
+          order: false,
+          list: false,
+          rename: false,
+        });
+      }
+    }, []);
 
     useEffect(() => {
       // 画面をクリックした際に handleClickOutside 関数を実行
@@ -110,7 +107,7 @@ const StatusTitle = memo(
               onBlur={async () => {
                 // フォーカスが外れた際に newValue が空なら initialTitle を適用
                 const finalValue = inputValue.trim() || initialTitle;
-                setInitialTitle(finalValue); // 前に入力した値を更新
+                setInitialTitle(finalValue); // 既存の値を更新
                 setInputValue(finalValue); // ローカル状態を更新
                 editList(id, finalValue, title, initialTitle); // リストを更新
                 await new Promise((resolve) => {
