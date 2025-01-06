@@ -3,8 +3,6 @@
 import { useState, useCallback } from 'react';
 import { StatusListProps } from '@/types/lists';
 import { TodoListProps } from '@/types/todos';
-// import { ListPayload } from '@/types/lists';
-// import { apiRequest } from '@/app/libs/apis';
 
 type UpdateDataProp = {
   todos: TodoListProps[];
@@ -14,7 +12,7 @@ type UpdateDataProp = {
 };
 
 export const useUpdateStatus = ({
-  todos,
+  // todos,
   lists,
   setTodos,
   setLists,
@@ -22,38 +20,53 @@ export const useUpdateStatus = ({
   const [input, setInput] = useState({ status: '' }); // 初期値
   const [editId, setEditId] = useState<string | null>(null);
 
-  console.log(todos);
-  console.log(lists);
+  // 重複カテゴリ名のチェック
+  const isDuplicateCategory = (category: string, id: string) => {
+    return lists.some((list) => list.category === category && list.id !== id);
+  };
 
-  // 編集（リスト名）
-  const editList = useCallback(
-    (id: string, newCategory: string, oldCategory: string) => {
-      // 同じカテゴリ名がすでに存在するかチェック
-      const isDuplicate = lists.some(
-        (list) => list.category === newCategory && list.id !== id,
-      );
-
-      if (isDuplicate) {
-        alert('カテゴリ名が重複しています');
-        return; // 処理を中断
-      }
-
-      setLists((prevLists) =>
-        prevLists.map((list) =>
-          list.id === id ? { ...list, category: newCategory } : list,
-        ),
+  // リストとタスクの更新（最新化）
+  const updateListsAndTodos = (
+    id: string,
+    finalCategory: string,
+    oldCategory: string,
+  ) => {
+    setLists((prevLists) => {
+      const updatedLists = prevLists.map((list) =>
+        list.id === id ? { ...list, category: finalCategory } : list,
       );
 
       setTodos((prevTodos) =>
         prevTodos.map((todo) =>
-          todo.status === oldCategory ? { ...todo, status: newCategory } : todo,
+          todo.status === oldCategory
+            ? { ...todo, status: finalCategory }
+            : todo,
         ),
       );
 
-      // 状態更新後に入力欄をリセットまたは更新したい場合
-      setInput({ status: newCategory });
+      return updatedLists;
+    });
+  };
+
+  // 編集（リスト名）
+  const editList = useCallback(
+    (
+      id: string,
+      newCategory: string,
+      oldCategory: string,
+      initialTitle: string,
+    ) => {
+      const finalCategory = newCategory || initialTitle;
+
+      if (isDuplicateCategory(finalCategory, id)) {
+        alert('カテゴリ名が重複しています');
+        return;
+      }
+
+      updateListsAndTodos(id, finalCategory, oldCategory);
+      setInput({ status: finalCategory });
     },
-    [setLists, setTodos], // 依存関係を指定
+    [lists, setLists, setTodos],
   );
 
   return {

@@ -12,7 +12,12 @@ type DataProps = {
   statusTitleOption: {
     statusUpdate: string;
     listEdit: string | null;
-    editList: (id: string, value: string, title: string) => void;
+    editList: (
+      id: string,
+      value: string,
+      title: string,
+      initialTitle: string,
+    ) => void;
     setListEdit: (id: string) => void;
     setUpdateListInput: (input: { status: string }) => void;
   };
