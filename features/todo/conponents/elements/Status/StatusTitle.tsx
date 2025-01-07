@@ -77,6 +77,13 @@ const StatusTitle = memo(
     // リスト名の更新およびバリデーション処理
     const handleBlur = async () => {
       const finalValue = inputValue.trim() || initialTitle;
+
+      // finalValue と initialTitle が同じ場合は関数を終了
+      if (finalValue === initialTitle) {
+        setTextRename(false);
+        return;
+      }
+
       const updateStatus = await editList(id, finalValue, title, initialTitle);
       if (updateStatus) {
         setInitialTitle(finalValue);
