@@ -78,9 +78,13 @@ const StatusTitle = memo(
     const handleBlur = async () => {
       const finalValue = inputValue.trim() || initialTitle;
 
+      console.log(finalValue);
+      console.log(initialTitle);
+
       // finalValue と initialTitle が同じ場合は関数を終了
       if (finalValue === initialTitle) {
         setTextRename(false);
+        setInputValue(title);
         return;
       }
 
@@ -113,7 +117,13 @@ const StatusTitle = memo(
                 setInputValue(e.target.value.trim()); // ローカル状態を更新
               }}
               onBlur={handleBlur}
-              style={{ textAlign: 'center' }}
+              style={{
+                textAlign: 'center',
+                outline: 'none',
+                border: 'none',
+                fontSize: '16px',
+              }}
+              onFocus={(e) => (e.currentTarget.style.outline = 'none')}
             />
           </div>
         ) : isStatus ? (

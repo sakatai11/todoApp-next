@@ -6,10 +6,10 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 
 type ListAddProps = {
   status: string;
-  error: boolean;
-  addList: () => void;
+  error: { addListNull: boolean; addListSame: boolean };
+  addList: () => Promise<boolean>;
   setInput: (status: string) => void;
-  setError: (error: boolean) => void;
+  setError: (error: { addListNull: boolean; addListSame: boolean }) => void;
 };
 
 const ListAdd = ({
@@ -20,6 +20,15 @@ const ListAdd = ({
   setError,
 }: ListAddProps) => {
   const [addBtn, setAddBtn] = useState(false);
+
+  const handleAddList = async () => {
+    const errorFlag = await addList();
+    if (errorFlag) {
+      setAddBtn(false);
+    } else {
+      setAddBtn(true);
+    }
+  };
 
   return (
     <Box>
@@ -35,8 +44,14 @@ const ListAdd = ({
               width: '100%',
             }}
             value={status}
-            error={!status ? error : undefined}
-            helperText={!status && error ? 'リストを入力してください' : null}
+            error={error.addListNull || error.addListSame}
+            helperText={
+              error.addListNull
+                ? 'リスト名を入力してください'
+                : error.addListSame
+                  ? '同じリスト名が存在します'
+                  : null
+            }
             onChange={(e) => setInput(e.target.value)}
           />
           <Box
@@ -46,16 +61,7 @@ const ListAdd = ({
               gap: '12px',
             }}
           >
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => {
-                addList();
-                if (status) {
-                  setAddBtn(false);
-                }
-              }}
-            >
+            <Button variant="outlined" fullWidth onClick={handleAddList}>
               追加する
             </Button>
             <Button
@@ -65,7 +71,10 @@ const ListAdd = ({
                 borderColor: '#8a8a8a',
                 color: '#8a8a8a',
               }}
-              onClick={() => setAddBtn(false)}
+              onClick={() => {
+                setAddBtn(false);
+                setInput('');
+              }}
             >
               戻る
             </Button>
@@ -78,7 +87,7 @@ const ListAdd = ({
           endIcon={<AddBoxIcon color="primary" />}
           onClick={() => {
             setAddBtn(true);
-            setError(false);
+            setError({ addListNull: false, addListSame: false });
           }}
         >
           リストを追加する

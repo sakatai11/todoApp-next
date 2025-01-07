@@ -36,10 +36,13 @@ type DataProps = {
   };
   listAddOption: {
     statusList: string;
-    listError: boolean;
-    addList: () => void;
+    listError: { addListNull: boolean; addListSame: boolean };
+    addList: () => Promise<boolean>;
     setListInput: (input: { status: string }) => void;
-    setListError: (error: { addListArea: boolean }) => void;
+    setListError: (error: {
+      addListNull: boolean;
+      addListSame: boolean;
+    }) => void;
   };
 };
 
@@ -234,9 +237,7 @@ const MainContainer = ({
               error={listError}
               addList={addList}
               setInput={(listStatus) => setListInput({ status: listStatus })}
-              setError={(listTextError) =>
-                setListError({ addListArea: listTextError })
-              }
+              setError={setListError}
             />
           </Box>
         </Box>

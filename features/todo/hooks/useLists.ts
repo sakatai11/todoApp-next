@@ -9,12 +9,24 @@ export const useLists = (initialLists: StatusListProps[]) => {
   const [lists, setLists] = useState<StatusListProps[]>(initialLists);
   const [input, setInput] = useState({ status: '' });
   const [error, setError] = useState({
-    addListArea: false,
+    addListNull: false,
+    addListSame: false,
   });
+
+  // 重複するカテゴリが存在するかチェックする関数
+  const checkDuplicateCategory = (category: string) => {
+    return lists.some((list) => list.category === category);
+  };
 
   // list追加
   const addList = async () => {
     if (input.status) {
+      // 重複チェック
+      if (checkDuplicateCategory(input.status)) {
+        setError({ ...error, addListNull: false, addListSame: true }); // エラー表示
+        return false;
+      }
+
       // リストの数を再計算して連続番号を振り直す
       const updatedLists = lists.map((list, index) => ({
         ...list,
@@ -40,14 +52,28 @@ export const useLists = (initialLists: StatusListProps[]) => {
         // 再計算されたリストと新しいリストを追加してセットする
         setLists([...updatedLists, { ...(result as StatusListProps) }]);
         setInput({ status: '' }); //ステータスリセット
-        setError({ addListArea: false }); // エラーをリセット
+        setError((prevError) => ({
+          ...prevError,
+          addListNull: false,
+          addListSame: false,
+        })); // エラーをリセット
+        return true;
       } catch (error) {
         console.error('Error adding todo:', error);
-        setError({ addListArea: true }); // エラー表示
+        setError((prevError) => ({
+          ...prevError,
+          addListNull: true,
+          addListSame: true,
+        })); // エラー表示
+        return false;
       }
     } else {
-      setError({ addListArea: true }); // エラー表示
-      return;
+      setError((prevError) => ({
+        ...prevError,
+        addListNull: true,
+        addListSame: false,
+      })); // エラー表示
+      return false;
     }
   };
 

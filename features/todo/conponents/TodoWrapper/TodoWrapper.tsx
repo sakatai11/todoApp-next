@@ -97,7 +97,7 @@ const TodoWrapper = ({
         }}
         listAddOption={{
           statusList: listInput.status,
-          listError: listError.addListArea,
+          listError: listError,
           addList: addList,
           setListInput: setListInput,
           setListError: setListError,
