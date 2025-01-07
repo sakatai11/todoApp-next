@@ -8,7 +8,6 @@ import { useState, useEffect, useRef, useCallback, memo } from 'react';
 
 type Prop = {
   title: string;
-  status: string;
   id: string;
   isEditing: boolean;
   editList: (
@@ -16,23 +15,13 @@ type Prop = {
     value: string,
     title: string,
     initialTitle: string,
-  ) => void;
+  ) => Promise<boolean>;
   deleteList: (id: string, title: string) => void;
   setListEdit: (id: string) => void;
-  setInput: (input: { status: string }) => void;
 };
 
 const StatusTitle = memo(
-  ({
-    title,
-    status,
-    id,
-    isEditing,
-    editList,
-    deleteList,
-    setListEdit,
-    setInput,
-  }: Prop) => {
+  ({ title, id, isEditing, editList, deleteList, setListEdit }: Prop) => {
     const [selectModalIsOpen, setSelectModalIsOpen] = useState({
       order: false,
       list: false,
@@ -40,8 +29,9 @@ const StatusTitle = memo(
     });
     const [deleteIsModalOpen, setDeleteIsModalOpen] = useState(false);
     const [textRename, setTextRename] = useState(false);
-    const [initialTitle, setInitialTitle] = useState(title); // レンダリング実行時のtitleを保存
-    const [inputValue, setInputValue] = useState(status || initialTitle); // 初期値を管理
+    const [initialTitle, setInitialTitle] = useState(title); // 初期レンダリング実行時のtitleを保存
+    const [inputValue, setInputValue] = useState(title); // 入力フィールド内のリアルタイム値
+    const [isStatus, setIsStatus] = useState(true); // editListの返却値フラグ
 
     const modalRef = useRef<HTMLDivElement>(null);
     const deleteModalRef = useRef<HTMLDivElement>(null);
@@ -84,7 +74,19 @@ const StatusTitle = memo(
       };
     }, [handleClickOutside]);
 
-    console.log(isEditing);
+    // リスト名の更新およびバリデーション処理
+    const handleBlur = async () => {
+      const finalValue = inputValue.trim() || initialTitle;
+      const updateStatus = await editList(id, finalValue, title, initialTitle);
+      if (updateStatus) {
+        setInitialTitle(finalValue);
+        setInputValue(finalValue);
+      } else {
+        setInputValue(initialTitle);
+      }
+      setIsStatus(updateStatus);
+      setTextRename(false);
+    };
 
     return (
       <Box
@@ -101,24 +103,14 @@ const StatusTitle = memo(
               id={`${id}_input`}
               value={inputValue}
               onChange={(e) => {
-                const newValue = e.target.value.trim(); // 不要な空白を除去
-                setInputValue(newValue); // ローカル状態を更新
+                setInputValue(e.target.value.trim()); // ローカル状態を更新
               }}
-              onBlur={async () => {
-                // フォーカスが外れた際に newValue が空なら initialTitle を適用
-                const finalValue = inputValue.trim() || initialTitle;
-                setInitialTitle(finalValue); // 既存の値を更新
-                setInputValue(finalValue); // ローカル状態を更新
-                editList(id, finalValue, title, initialTitle); // リストを更新
-                await new Promise((resolve) => {
-                  setInput({ status: '' });
-                  resolve(true);
-                });
-                setTextRename(false);
-              }}
+              onBlur={handleBlur}
               style={{ textAlign: 'center' }}
             />
           </div>
+        ) : isStatus ? (
+          inputValue
         ) : (
           title
         )}

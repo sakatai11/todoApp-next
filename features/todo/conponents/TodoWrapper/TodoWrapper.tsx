@@ -47,11 +47,9 @@ const TodoWrapper = ({
 
   // useCallback使用
   const {
-    input: updateListInput,
     editId: listEdit,
     editList,
     setEditId: updateSetListEdit,
-    setInput: updateSetInput,
   } = useUpdateStatus({
     todos,
     lists,
@@ -81,11 +79,9 @@ const TodoWrapper = ({
         lists={lists}
         deleteList={deleteList}
         statusTitleOption={{
-          statusUpdate: updateListInput.status,
           listEdit: listEdit,
           editList: editList,
           setListEdit: updateSetListEdit,
-          setUpdateListInput: updateSetInput,
         }}
         todoListOption={{
           todoInput: todoInput,

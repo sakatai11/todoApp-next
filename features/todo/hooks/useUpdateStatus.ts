@@ -17,7 +17,6 @@ export const useUpdateStatus = ({
   setTodos,
   setLists,
 }: UpdateDataProp) => {
-  const [input, setInput] = useState({ status: '' }); // 初期値
   const [editId, setEditId] = useState<string | null>(null);
 
   // 重複カテゴリ名のチェック
@@ -50,30 +49,32 @@ export const useUpdateStatus = ({
 
   // 編集（リスト名）
   const editList = useCallback(
-    (
+    async (
       id: string,
       newCategory: string,
       oldCategory: string,
       initialTitle: string,
     ) => {
       const finalCategory = newCategory || initialTitle;
+      console.log(finalCategory);
+      console.log(initialTitle);
+      console.log(oldCategory);
 
       if (isDuplicateCategory(finalCategory, id)) {
-        alert('カテゴリ名が重複しています');
-        return;
+        alert('リスト名が重複しています');
+        return false;
       }
 
       updateListsAndTodos(id, finalCategory, oldCategory);
-      setInput({ status: finalCategory });
+
+      return true;
     },
     [lists, setLists, setTodos],
   );
 
   return {
-    input,
     editId,
     editList,
     setEditId,
-    setInput,
   };
 };

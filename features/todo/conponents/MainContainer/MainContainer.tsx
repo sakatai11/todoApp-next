@@ -10,16 +10,14 @@ type DataProps = {
   lists: StatusListProps[];
   deleteList: (id: string, title: string) => void;
   statusTitleOption: {
-    statusUpdate: string;
     listEdit: string | null;
     editList: (
       id: string,
       value: string,
       title: string,
       initialTitle: string,
-    ) => void;
+    ) => Promise<boolean>;
     setListEdit: (id: string) => void;
-    setUpdateListInput: (input: { status: string }) => void;
   };
   todoListOption: {
     todoInput: { text: string; status: string };
@@ -53,8 +51,7 @@ const MainContainer = ({
   todoListOption,
   listAddOption,
 }: DataProps): React.ReactElement => {
-  const { statusUpdate, listEdit, editList, setListEdit, setUpdateListInput } =
-    statusTitleOption;
+  const { listEdit, editList, setListEdit } = statusTitleOption;
 
   const {
     todoInput,
@@ -120,13 +117,11 @@ const MainContainer = ({
               >
                 <StatusTitle
                   title={statusPull.category}
-                  status={statusUpdate}
                   id={statusPull.id}
                   isEditing={statusPull.id === listEdit} // true
                   editList={editList}
                   deleteList={deleteList}
                   setListEdit={setListEdit}
-                  setInput={setUpdateListInput}
                 />
                 <Box
                   sx={{
