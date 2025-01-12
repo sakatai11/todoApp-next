@@ -1,10 +1,11 @@
 import { db } from '@/app/libs/firebase';
 import {
   doc,
+  // getDocs,
   addDoc,
   collection,
   deleteDoc,
-  // updateDoc,
+  updateDoc,
 } from 'firebase/firestore';
 import { NextRequest, NextResponse } from 'next/server';
 import { ListPayload } from '@/types/lists';
@@ -34,49 +35,32 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PUT() {
-  // req: NextRequest
-  // const body = await req.json();
-  // const payload: TodoPayload<'PUT'> = body;
-  // try {
-  //   //  toggleSelected
-  //   if ('id' in payload && 'bool' in payload) {
-  //     const { id, bool } = payload;
-  //     await updateDoc(doc(db, 'todos', id), {
-  //       bool: bool,
-  //     });
-  //     return NextResponse.json(
-  //       { message: 'Todo updated toggle' },
-  //       { status: 200 },
-  //     );
-  //   }
-  //   // saveTodo
-  //   if (
-  //     'id' in payload &&
-  //     'text' in payload &&
-  //     'status' in payload &&
-  //     'updateTime' in payload
-  //   ) {
-  //     const { id, updateTime, text, status } = payload;
-  //     console.log(text);
-  //     await updateDoc(doc(db, 'todos', id), {
-  //       updateTime: updateTime,
-  //       text: text,
-  //       status: status,
-  //     });
-  //     return NextResponse.json(
-  //       { message: 'Todo updated save' },
-  //       { status: 200 },
-  //     );
-  //   }
-  //   return NextResponse.json(
-  //     { error: 'Invalid payload: Missing required fields.' },
-  //     { status: 400 },
-  //   );
-  // } catch (error) {
-  //   console.error('Error update todo:', error);
-  //   return NextResponse.json({ error: 'Error updating todo' }, { status: 500 });
-  // }
+export async function PUT(req: NextRequest) {
+  const body = await req.json();
+  const payload: ListPayload<'PUT'> = body;
+  const { id, category } = payload;
+
+  try {
+    if (id && category) {
+      await updateDoc(doc(db, 'lists', id), {
+        category: category,
+      });
+      return NextResponse.json(
+        { message: 'List updated category' },
+        { status: 200 },
+      );
+    }
+    return NextResponse.json(
+      { error: 'Invalid payload: Missing required fields.' },
+      { status: 400 },
+    );
+  } catch (error) {
+    console.error('Error update list category:', error);
+    return NextResponse.json(
+      { error: 'Error updating list category' },
+      { status: 500 },
+    );
+  }
 }
 
 export async function DELETE(req: NextRequest) {
