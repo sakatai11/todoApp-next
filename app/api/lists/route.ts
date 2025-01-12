@@ -40,8 +40,8 @@ export async function PUT(req: NextRequest) {
   const payload: ListPayload<'PUT'> = body;
   const { id, category } = payload;
 
-  try {
-    if (id && category) {
+  if (id && category) {
+    try {
       await updateDoc(doc(db, 'lists', id), {
         category: category,
       });
@@ -49,16 +49,17 @@ export async function PUT(req: NextRequest) {
         { message: 'List updated category' },
         { status: 200 },
       );
+    } catch (error) {
+      console.error('Error update list category:', error);
+      return NextResponse.json(
+        { error: 'Error updating list category' },
+        { status: 500 },
+      );
     }
+  } else {
     return NextResponse.json(
       { error: 'Invalid payload: Missing required fields.' },
       { status: 400 },
-    );
-  } catch (error) {
-    console.error('Error update list category:', error);
-    return NextResponse.json(
-      { error: 'Error updating list category' },
-      { status: 500 },
     );
   }
 }
