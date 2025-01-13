@@ -58,7 +58,7 @@ const TodoWrapper = ({
   });
 
   // useCallback使用
-  const { deleteList } = useDeleteList({ todos, lists, setTodos, setLists });
+  const { deleteList } = useDeleteList({ todos, setTodos, setLists });
 
   return (
     <Box>
