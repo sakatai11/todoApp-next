@@ -37,15 +37,15 @@ export const useUpdateStatus = ({
       console.log(initialTitle);
       console.log(oldCategory);
 
-      // client
-      if (isDuplicateCategory(lists, finalCategory, id)) {
-        alert('リスト名が重複しています');
-        return false;
-      }
-      updateListsAndTodos(setLists, setTodos, id, finalCategory, oldCategory);
-
-      // server side
       try {
+        // client
+        if (isDuplicateCategory(lists, finalCategory, id)) {
+          alert('リスト名が重複しています');
+          return false;
+        }
+        updateListsAndTodos(setLists, setTodos, id, finalCategory, oldCategory);
+
+        // server side
         // categoryの更新
         const resultList = await apiRequest<ListPayload<'PUT'>>(
           '/api/lists',
