@@ -91,7 +91,7 @@ export async function PUT(req: NextRequest) {
 
       await batch.commit();
       return NextResponse.json(
-        { message: 'Todos updated successfully' },
+        { message: 'Todo updated successfully' },
         { status: 200 },
       );
     }
