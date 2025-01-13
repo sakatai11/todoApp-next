@@ -16,7 +16,7 @@ type UpdateDataProp = {
   setLists: React.Dispatch<React.SetStateAction<StatusListProps[]>>;
 };
 
-export const useUpdateStatus = ({
+export const useUpdateStatusAndCategory = ({
   lists,
   setTodos,
   setLists,
@@ -36,14 +36,12 @@ export const useUpdateStatus = ({
       console.log(initialTitle);
       console.log(oldCategory);
 
-      try {
-        // client
-        if (isDuplicateCategory(lists, finalCategory, id)) {
-          alert('リスト名が重複しています');
-          return false;
-        }
-        updateListsAndTodos(setLists, setTodos, id, finalCategory, oldCategory);
+      if (isDuplicateCategory(lists, finalCategory, id)) {
+        alert('リスト名が重複しています');
+        return false;
+      }
 
+      try {
         // server side
         // categoryの更新
         const resultList = await apiRequest<ListPayload<'PUT'>>(
@@ -60,6 +58,9 @@ export const useUpdateStatus = ({
           { oldStatus: oldCategory, status: finalCategory },
         );
         console.log(resultTodo);
+
+        // client
+        updateListsAndTodos(setLists, setTodos, id, finalCategory, oldCategory);
       } catch (error) {
         console.error('Error puting list or todo:', error);
       }

@@ -7,7 +7,7 @@ import PushContainer from '@/features/todo/conponents/PushContainer/PushContaine
 import MainContainer from '@/features/todo/conponents/MainContainer/MainContainer';
 import { useTodos } from '@/features/todo/hooks/useTodos';
 import { useLists } from '@/features/todo/hooks/useLists';
-import { useUpdateStatus } from '@/features/todo/hooks/useUpdateStatus';
+import { useUpdateStatusAndCategory } from '@/features/todo/hooks/useUpdateStatusAndCategory';
 import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
 
 type DataProps = {
@@ -50,7 +50,7 @@ const TodoWrapper = ({
     editId: listEdit,
     editList,
     setEditId: updateSetListEdit,
-  } = useUpdateStatus({
+  } = useUpdateStatusAndCategory({
     todos,
     lists,
     setTodos,
