@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { ListPayload, StatusListProps } from '@/types/lists';
-import { TodoListProps } from '@/types/todos';
+import { TodoListProps, TodoPayload } from '@/types/todos';
 import {
   isDuplicateCategory,
   updateListsAndTodos,
@@ -46,14 +46,23 @@ export const useUpdateStatus = ({
 
       // server side
       try {
-        const result = await apiRequest<ListPayload<'PUT'>>(
+        // categoryの更新
+        const resultList = await apiRequest<ListPayload<'PUT'>>(
           '/api/lists',
           'PUT',
           { id, category: finalCategory },
         );
-        console.log(result);
+        console.log(resultList);
+
+        // statusの更新
+        const resultTodo = await apiRequest<TodoPayload<'PUT'>>(
+          '/api/todos',
+          'PUT',
+          { oldStatus: oldCategory, status: finalCategory },
+        );
+        console.log(resultTodo);
       } catch (error) {
-        console.error('Error puting list:', error);
+        console.error('Error puting list or todo:', error);
       }
       return true;
     },

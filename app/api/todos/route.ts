@@ -1,10 +1,12 @@
 import { db } from '@/app/libs/firebase';
 import {
   doc,
+  getDocs,
   addDoc,
   collection,
   deleteDoc,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { NextRequest, NextResponse } from 'next/server';
 import { TodoPayload } from '@/types/todos';
@@ -70,6 +72,26 @@ export async function PUT(req: NextRequest) {
       });
       return NextResponse.json(
         { message: 'Todo updated save' },
+        { status: 200 },
+      );
+    }
+
+    // editList（バッチ処理）
+    if ('oldStatus' in payload && 'status' in payload) {
+      const { oldStatus, status } = payload;
+
+      const todosQuerySnapshot = await getDocs(collection(db, 'todos'));
+      const batch = writeBatch(db);
+      todosQuerySnapshot.forEach((doc) => {
+        const todo = doc.data();
+        if (todo.status === oldStatus) {
+          batch.update(doc.ref, { status: status });
+        }
+      });
+
+      await batch.commit();
+      return NextResponse.json(
+        { message: 'Todos updated successfully' },
         { status: 200 },
       );
     }
