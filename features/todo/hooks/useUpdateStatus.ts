@@ -17,7 +17,6 @@ type UpdateDataProp = {
 };
 
 export const useUpdateStatus = ({
-  // todos,
   lists,
   setTodos,
   setLists,
