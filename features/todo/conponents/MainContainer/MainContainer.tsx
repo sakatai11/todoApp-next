@@ -112,6 +112,7 @@ const MainContainer = ({
                 key={statusPull.id}
                 sx={{
                   minWidth: '320px',
+                  width: 320,
                   '@media (max-width: 767px)': {
                     width: '50%',
                     minWidth: 'auto',
