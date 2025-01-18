@@ -1,11 +1,11 @@
 import { db } from '@/app/libs/firebase';
 import {
   doc,
-  // getDocs,
+  getDocs,
   addDoc,
   collection,
-  deleteDoc,
   updateDoc,
+  runTransaction,
 } from 'firebase/firestore';
 import { NextRequest, NextResponse } from 'next/server';
 import { ListPayload } from '@/types/lists';
@@ -69,10 +69,35 @@ export async function DELETE(req: NextRequest) {
   const { id }: ListPayload<'DELETE'> = body;
   if (id) {
     try {
-      await deleteDoc(doc(db, 'lists', id.toString()));
+      await runTransaction(db, async (transaction) => {
+        const listsCollection = collection(db, 'lists');
+
+        // すべてのリストを取得
+        const snapshot = await getDocs(listsCollection);
+        const lists = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // 削除対象のリストドキュメント
+        const listDocRef = doc(db, 'lists', id);
+        // リストを削除
+        transaction.delete(listDocRef);
+
+        // リストをフィルタリングして番号を再割り振り
+        const updatedLists = lists
+          .filter((list) => list.id !== id)
+          .map((list, index) => ({ ...list, number: index + 1 }));
+
+        // トランザクション内でリスト番号を更新
+        updatedLists.forEach((list) => {
+          const docRef = doc(db, 'lists', list.id);
+          transaction.update(docRef, { number: list.number });
+        });
+      });
       return NextResponse.json({ message: 'List deleted' }, { status: 200 });
     } catch (error) {
-      console.error('Error delete list:', error);
+      console.error('Error deleting list:', error);
       return NextResponse.json(
         { error: 'Error deleting list' },
         { status: 500 },

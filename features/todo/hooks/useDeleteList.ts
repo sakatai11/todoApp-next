@@ -30,7 +30,16 @@ export const useDeleteList = ({
         );
         console.log(result);
         // client
-        setLists((prevLists) => prevLists.filter((list) => list.id !== id)); // todo.id が id と一致しない list だけを残す新しい配列を作成
+        setLists((prevLists) => {
+          // todo.id が id と一致しない list だけを残す新しい配列を作成
+          const updatedLists = prevLists.filter((list) => list.id !== id);
+
+          // `number` を 1, 2, 3, ... と再設定
+          return updatedLists.map((list, index) => ({
+            ...list,
+            number: index + 1, // 新しいインデックスに基づいて番号を設定
+          }));
+        });
 
         // server side
         // 該当するtodosを削除
