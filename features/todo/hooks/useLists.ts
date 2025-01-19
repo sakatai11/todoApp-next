@@ -88,7 +88,15 @@ export const useLists = (initialLists: StatusListProps[]) => {
       const newIndex = lists.findIndex((list) => list.id === over.id);
       console.log(oldIndex + ':oldIndex');
       console.log(newIndex + ':newIndex');
-      setLists((lists) => arrayMove(lists, oldIndex, newIndex));
+
+      // client
+      setLists((prevLists) => {
+        const updatedLists = arrayMove(prevLists, oldIndex, newIndex); // 配列を新しい順序に並べ替える
+        return updatedLists.map((list, index) => ({
+          ...list,
+          number: index + 1, // 新しいインデックスに基づいて番号を再設定
+        }));
+      });
     }
   };
 
