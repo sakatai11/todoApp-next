@@ -43,6 +43,7 @@ const TodoWrapper = ({
     setLists,
     setInput: setListInput,
     setError: setListError,
+    handleDragEnd,
   } = useLists(initialLists);
 
   // useCallback使用
@@ -101,6 +102,7 @@ const TodoWrapper = ({
           addList: addList,
           setListInput: setListInput,
           setListError: setListError,
+          handleDragEnd,
         }}
       />
     </Box>

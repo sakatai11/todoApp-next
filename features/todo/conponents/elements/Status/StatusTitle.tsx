@@ -1,7 +1,9 @@
 'use client';
 
 import { Box, IconButton } from '@mui/material';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useSortable } from '@dnd-kit/sortable';
 import SelectListModal from '@/features/todo/conponents/elements/Modal/SelectListModal';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
@@ -27,6 +29,9 @@ const StatusTitle = memo(
       list: false,
       rename: false,
     });
+
+    const { attributes, listeners } = useSortable({ id });
+
     const [deleteIsModalOpen, setDeleteIsModalOpen] = useState(false);
     const [textRename, setTextRename] = useState(false);
     const [initialTitle, setInitialTitle] = useState(title); // 初期レンダリング実行時のtitleを保存
@@ -102,7 +107,6 @@ const StatusTitle = memo(
     return (
       <Box
         component="div"
-        id={id}
         sx={{
           textAlign: 'center',
           position: 'relative',
@@ -131,6 +135,21 @@ const StatusTitle = memo(
         ) : (
           title
         )}
+
+        <IconButton
+          {...listeners}
+          {...attributes}
+          sx={{
+            p: 0,
+            position: 'absolute',
+            top: 0,
+            left: 10,
+            cursor: 'grab',
+            '&:active': { cursor: 'grabbing' },
+          }}
+        >
+          <DragIndicatorIcon />
+        </IconButton>
         <IconButton
           onClick={() =>
             setSelectModalIsOpen({
@@ -141,10 +160,10 @@ const StatusTitle = memo(
             })
           }
           sx={{
+            p: 0,
             position: 'absolute',
             top: 0,
             right: 10,
-            p: 0,
           }}
         >
           <MoreVertIcon />

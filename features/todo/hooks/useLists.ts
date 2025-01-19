@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { StatusListProps } from '@/types/lists';
 import { ListPayload } from '@/types/lists';
 import { apiRequest } from '@/app/libs/apis';
+import { DragEndEvent } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
 
 export const useLists = (initialLists: StatusListProps[]) => {
   const [lists, setLists] = useState<StatusListProps[]>(initialLists);
@@ -77,6 +79,19 @@ export const useLists = (initialLists: StatusListProps[]) => {
     }
   };
 
+  // 新しいリストとしてlistsを更新
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = lists.findIndex((list) => list.id === active.id);
+      const newIndex = lists.findIndex((list) => list.id === over.id);
+      console.log(oldIndex + ':oldIndex');
+      console.log(newIndex + ':newIndex');
+      setLists((lists) => arrayMove(lists, oldIndex, newIndex));
+    }
+  };
+
   return {
     lists,
     input,
@@ -85,5 +100,6 @@ export const useLists = (initialLists: StatusListProps[]) => {
     addList,
     setInput,
     setError,
+    handleDragEnd,
   };
 };
