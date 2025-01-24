@@ -1,7 +1,7 @@
 import { db } from '@/app/libs/firebase';
 import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 
-// データの取得
+// 初回レンダリング時にデータを取得する関数
 export const getApi = async () => {
   const qTodos = query(collection(db, 'todos'), orderBy('updateTime', 'desc')); // 降順
   const qLists = query(collection(db, 'lists'), orderBy('number', 'asc')); // 昇順
@@ -38,7 +38,7 @@ export const getApi = async () => {
 };
 
 export const apiRequest = async <T>(
-  url: string,
+  url: string, // エンドポイントURL
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   body: T,
 ): Promise<T> => {
