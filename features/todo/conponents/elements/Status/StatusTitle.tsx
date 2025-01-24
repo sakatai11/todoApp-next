@@ -10,6 +10,8 @@ import { useState, useEffect, useRef, useCallback, memo } from 'react';
 
 type Prop = {
   title: string;
+  listNumber: number;
+  listLength: number;
   id: string;
   isEditing: boolean;
   editList: (
@@ -20,15 +22,22 @@ type Prop = {
   ) => Promise<boolean>;
   deleteList: (id: string, title: string) => void;
   setListEdit: (id: string) => void;
+  handleButtonMove: (id: string, direction: 'right' | 'left') => void;
 };
 
 const StatusTitle = memo(
-  ({ title, id, isEditing, editList, deleteList, setListEdit }: Prop) => {
-    const [selectModalIsOpen, setSelectModalIsOpen] = useState({
-      order: false,
-      list: false,
-      rename: false,
-    });
+  ({
+    title,
+    listNumber,
+    listLength,
+    id,
+    isEditing,
+    editList,
+    deleteList,
+    setListEdit,
+    handleButtonMove,
+  }: Prop) => {
+    const [selectModalIsOpen, setSelectModalIsOpen] = useState(false);
 
     const { attributes, listeners } = useSortable({ id });
 
@@ -62,11 +71,7 @@ const StatusTitle = memo(
         !deleteModalRef.current
       ) {
         console.log('Click detected outside, updating state...');
-        setSelectModalIsOpen({
-          order: false,
-          list: false,
-          rename: false,
-        });
+        setSelectModalIsOpen(false);
       }
     }, []);
 
@@ -151,14 +156,7 @@ const StatusTitle = memo(
           <DragIndicatorIcon />
         </IconButton>
         <IconButton
-          onClick={() =>
-            setSelectModalIsOpen({
-              ...selectModalIsOpen,
-              order: true,
-              list: true,
-              rename: true,
-            })
-          }
+          onClick={() => setSelectModalIsOpen(true)}
           sx={{
             p: 0,
             position: 'absolute',
@@ -168,17 +166,17 @@ const StatusTitle = memo(
         >
           <MoreVertIcon />
         </IconButton>
-        {(selectModalIsOpen.order ||
-          selectModalIsOpen.list ||
-          selectModalIsOpen.rename) && (
+        {selectModalIsOpen && (
           <div ref={modalRef}>
             <SelectListModal
               id={id}
-              selectModalIsOpen={selectModalIsOpen}
+              listNumber={listNumber}
+              listLength={listLength}
               setListEdit={setListEdit}
               setSelectModalIsOpen={setSelectModalIsOpen}
               setDeleteIsModalOpen={setDeleteIsModalOpen}
               setTextRename={setTextRename}
+              handleButtonMove={handleButtonMove}
             />
           </div>
         )}
@@ -191,14 +189,12 @@ const StatusTitle = memo(
                 console.log('onDelete triggered'); // コンソールログを追加
                 if (id) {
                   deleteList(id, title);
-                  setSelectModalIsOpen({ ...selectModalIsOpen, list: false });
+                  setSelectModalIsOpen(false);
                 }
               }}
               modalIsOpen={deleteIsModalOpen}
               setModalIsOpen={setDeleteIsModalOpen}
-              setSelectModalIsOpen={(listModal) =>
-                setSelectModalIsOpen({ ...selectModalIsOpen, list: listModal })
-              }
+              setSelectModalIsOpen={setSelectModalIsOpen}
             />
           </div>
         )}

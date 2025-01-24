@@ -79,7 +79,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
     }
   };
 
-  // 新しいリストとしてlistsを更新
+  // ドラック&ドロップでのリストとしてlistsを更新
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -100,6 +100,36 @@ export const useLists = (initialLists: StatusListProps[]) => {
     }
   };
 
+  // クリックでの移動のリストとしてlistsを更新
+  const handleButtonMove = (id: string, direction: 'right' | 'left') => {
+    if (id) {
+      const currentIndex = lists.findIndex((list) => list.id === id);
+      console.log(lists);
+
+      // client
+      setLists((prevLists) => {
+        // 移動先のインデックスを計算
+        console.log(`test`);
+        const newIndex =
+          direction === 'right'
+            ? Math.min(prevLists.length - 1, currentIndex + 1)
+            : Math.max(0, currentIndex - 1);
+
+        // インデックスが変わらない場合、元のリストを返す
+        if (currentIndex === newIndex) return prevLists;
+
+        // 配列を新しい順序に並べ替える
+        const updatedLists = arrayMove(prevLists, currentIndex, newIndex);
+
+        // インデックスに基づいて番号を再設定してリストを更新
+        return updatedLists.map((list, index) => ({
+          ...list,
+          number: index + 1,
+        }));
+      });
+    }
+  };
+
   return {
     lists,
     input,
@@ -109,5 +139,6 @@ export const useLists = (initialLists: StatusListProps[]) => {
     setInput,
     setError,
     handleDragEnd,
+    handleButtonMove,
   };
 };

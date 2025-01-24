@@ -1,27 +1,29 @@
+import React from 'react';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Box from '@mui/material/Box';
+// import { useLists } from '@/features/todo/hooks/useLists';
 
 type HandleClickProps = {
   id: string;
-  selectModalIsOpen: { order: boolean; list: boolean; rename: boolean };
+  listNumber: number;
+  listLength: number;
   setListEdit: (id: string) => void;
-  setSelectModalIsOpen: (modal: {
-    order: boolean;
-    list: boolean;
-    rename: boolean;
-  }) => void;
+  setSelectModalIsOpen: (selectModal: boolean) => void;
   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
   setTextRename: (textRename: boolean) => void;
+  handleButtonMove: (id: string, direction: 'right' | 'left') => void;
 };
 
 const SelectListModal = ({
   id,
-  selectModalIsOpen,
+  listNumber,
+  listLength,
   setListEdit,
   setSelectModalIsOpen,
   setDeleteIsModalOpen,
   setTextRename,
+  handleButtonMove,
 }: HandleClickProps) => {
   return (
     <Box
@@ -32,7 +34,7 @@ const SelectListModal = ({
         },
         position: 'absolute',
         right: -140,
-        bottom: -72,
+        bottom: -120,
         zIndex: 99,
       }}
     >
@@ -48,27 +50,50 @@ const SelectListModal = ({
           color: 'rgba(0, 0, 0, 0.54)',
         }}
       >
-        <Button
-          onClick={() =>
-            setSelectModalIsOpen({
-              ...selectModalIsOpen,
-              order: false,
-              list: false,
-              rename: false,
-            })
-          }
-        >
-          順番を変える
-        </Button>
+        {listNumber === 1 && (
+          <Button
+            onClick={() => {
+              handleButtonMove(id, 'right');
+              setSelectModalIsOpen(false);
+            }}
+          >
+            1つ右へ移動する
+          </Button>
+        )}
+        {listNumber === listLength && (
+          <Button
+            onClick={() => {
+              handleButtonMove(id, 'left');
+              setSelectModalIsOpen(false);
+            }}
+          >
+            1つ左へ移動する
+          </Button>
+        )}
+        {listNumber > 1 && listNumber < listLength && (
+          <>
+            <Button
+              onClick={() => {
+                handleButtonMove(id, 'left');
+                setSelectModalIsOpen(false);
+              }}
+            >
+              1つ左へ移動する
+            </Button>
+            <Button
+              onClick={() => {
+                handleButtonMove(id, 'right');
+                setSelectModalIsOpen(false);
+              }}
+            >
+              1つ右へ移動する
+            </Button>
+          </>
+        )}
         <Button
           onClick={() => {
             setDeleteIsModalOpen(true);
-            setSelectModalIsOpen({
-              ...selectModalIsOpen,
-              order: false,
-              list: true,
-              rename: false,
-            });
+            setSelectModalIsOpen(true);
           }}
         >
           リストを削除する
@@ -76,12 +101,7 @@ const SelectListModal = ({
         <Button
           onClick={() => {
             console.log('rename');
-            setSelectModalIsOpen({
-              ...selectModalIsOpen,
-              order: false,
-              list: false,
-              rename: false,
-            });
+            setSelectModalIsOpen(false);
             setTextRename(true);
             setListEdit(id);
           }}

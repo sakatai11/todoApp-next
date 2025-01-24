@@ -52,6 +52,7 @@ type DataProps = {
       addListSame: boolean;
     }) => void;
     handleDragEnd: (event: DragEndEvent) => void;
+    handleButtonMove: (id: string, direction: 'right' | 'left') => void;
   };
 };
 
@@ -85,6 +86,7 @@ const MainContainer = ({
     setListInput,
     setListError,
     handleDragEnd,
+    handleButtonMove,
   } = listAddOption;
 
   return (
@@ -100,6 +102,7 @@ const MainContainer = ({
         <Box
           sx={{
             maxWidth: '1660px',
+            paddingTop: '80px',
             width: '100%',
             margin: '0 auto',
             overflowX: 'auto',
@@ -145,11 +148,14 @@ const MainContainer = ({
                   >
                     <StatusTitle
                       title={statusPull.category}
+                      listNumber={statusPull.number}
+                      listLength={lists.length}
                       id={statusPull.id}
                       isEditing={statusPull.id === listEdit} // true
                       editList={editList}
                       deleteList={deleteList}
                       setListEdit={setListEdit}
+                      handleButtonMove={handleButtonMove}
                     />
                     <Box
                       sx={{
