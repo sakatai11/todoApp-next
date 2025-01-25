@@ -2,34 +2,21 @@
 
 import { useState } from 'react';
 import { Button, Box } from '@mui/material';
-import { Status } from '@/types/todos';
+import { PushContainerType } from '@/types/conponents';
+import { TodoHookType } from '@/types/todos';
 import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
 
-type InputProps = {
-  addTodo: () => void;
-  setTodoInput: (input: { text: string; status: string }) => void;
-  setEditId: (id: string | null) => void;
-  todoInput: {
-    text: string;
-    status: string;
-  };
-  statusPull: Status[];
-  isEditing: boolean;
-  error: boolean;
-  setError: (error: boolean) => void;
-};
-
-const PushContainer = ({
+const PushContainer = <T extends TodoHookType>({
   addTodo,
-  setTodoInput,
+  setInput,
   setEditId,
-  todoInput,
+  input,
   statusPull,
   isEditing,
   error,
   setError,
-}: InputProps) => {
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+}: PushContainerType<T>) => {
+  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
 
   return (
     <Box
@@ -43,13 +30,15 @@ const PushContainer = ({
     >
       {!isEditing && (
         <EditModal
-          input={todoInput}
-          error={error}
+          input={input}
+          error={error.listPushArea}
           modalIsOpen={modalIsOpen}
           statusPull={statusPull}
-          setError={setError}
+          setError={(pushError) =>
+            setError({ ...error, listPushArea: pushError })
+          }
           setEditId={setEditId}
-          setInput={setTodoInput}
+          setInput={setInput}
           setModalIsOpen={setModalIsOpen}
           addTodo={addTodo}
         />

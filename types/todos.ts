@@ -24,3 +24,20 @@ export type TodoPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
           | Pick<TodoListProps, 'id' | 'updateTime' | 'text' | 'status'>
           | { oldStatus: string; status: string } // リスト名を変更するときの型定義
       : never;
+
+// TodoHooksの型定義
+export type TodoHookType = {
+  todos: TodoListProps[];
+  input: { text: string; status: string };
+  editId: string | null;
+  error: { listPushArea: boolean; listModalArea: boolean };
+  setTodos: (todos: TodoListProps[]) => void;
+  setEditId: (id: string | null) => void;
+  addTodo: () => void;
+  deleteTodo: (id: string) => void;
+  editTodo: (id: string) => void;
+  saveTodo: () => void;
+  toggleSelected: (id: string) => void;
+  setInput: (input: { text: string; status: string }) => void;
+  setError: (error: { listPushArea: boolean; listModalArea: boolean }) => void;
+};
