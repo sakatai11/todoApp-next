@@ -10,11 +10,11 @@ const PushContainer = <T extends TodoHookType>({
   addTodo,
   setInput,
   setEditId,
+  setError,
+  error,
   input,
   statusPull,
   isEditing,
-  error,
-  setError,
 }: PushContainerType<T>) => {
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
 

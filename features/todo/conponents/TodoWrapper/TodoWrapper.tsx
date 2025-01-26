@@ -19,93 +19,36 @@ const TodoWrapper = ({
   initialTodos,
   initialLists,
 }: DataProps): React.ReactElement => {
-  const {
-    todos,
-    input: todoInput,
-    editId: todoEdit,
-    error: todoError,
-    setTodos,
-    setEditId,
-    addTodo,
-    deleteTodo,
-    editTodo,
-    saveTodo,
-    toggleSelected,
-    setInput: setTodoInput,
-    setError: setTodoError,
-  } = useTodos(initialTodos);
-
-  const {
-    lists,
-    input: listInput,
-    error: listError,
-    addList,
-    setLists,
-    setInput: setListInput,
-    setError: setListError,
-    handleDragEnd,
-    handleButtonMove,
-  } = useLists(initialLists);
+  const todoHooks = useTodos(initialTodos);
+  const listHooks = useLists(initialLists);
 
   // useCallback使用
-  const {
-    editId: listEdit,
-    editList,
-    setEditId: updateSetListEdit,
-  } = useUpdateStatusAndCategory({
-    todos,
-    lists,
-    setTodos,
-    setLists,
+  const updateStatusAndCategoryHooks = useUpdateStatusAndCategory({
+    todos: todoHooks.todos,
+    lists: listHooks.lists,
+    setTodos: todoHooks.setTodos,
+    setLists: listHooks.setLists,
   });
 
   // useCallback使用
-  const { deleteList } = useDeleteList({ todos, setTodos, setLists });
+  const deleteListHooks = useDeleteList({
+    todos: todoHooks.todos,
+    setTodos: todoHooks.setTodos,
+    setLists: listHooks.setLists,
+  });
 
   return (
     <Box>
       <PushContainer
-        addTodo={addTodo}
-        setTodoInput={setTodoInput}
-        setEditId={setEditId}
-        todoInput={todoInput}
-        statusPull={lists}
-        isEditing={todoEdit !== null} // idがない場合はfalse
-        error={todoError.listPushArea}
-        setError={(pushError) =>
-          setTodoError({ ...todoError, listPushArea: pushError })
-        }
+        {...todoHooks}
+        statusPull={listHooks.lists}
+        isEditing={todoHooks.editId !== null}
       />
       <MainContainer
-        todos={todos}
-        lists={lists}
-        deleteList={deleteList}
-        statusTitleOption={{
-          listEdit: listEdit,
-          editList: editList,
-          setListEdit: updateSetListEdit,
-        }}
-        todoListOption={{
-          todoInput: todoInput,
-          editId: todoEdit,
-          todoError: todoError,
-          deleteTodo: deleteTodo,
-          editTodo: editTodo,
-          saveTodo: saveTodo,
-          setEditId: setEditId,
-          setTodoInput: setTodoInput,
-          setTodoError: setTodoError,
-          toggleSelected: toggleSelected,
-        }}
-        listAddOption={{
-          statusList: listInput.status,
-          listError: listError,
-          addList: addList,
-          setListInput: setListInput,
-          setListError: setListError,
-          handleDragEnd,
-          handleButtonMove,
-        }}
+        todoHooks={todoHooks}
+        listHooks={listHooks}
+        updateStatusAndCategoryHooks={updateStatusAndCategoryHooks}
+        deleteListHooks={deleteListHooks}
       />
     </Box>
   );

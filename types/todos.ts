@@ -1,3 +1,5 @@
+import { EditDataProps } from '@/types/common';
+
 // statusのプルダウンの型
 export type Status = {
   category: string;
@@ -29,10 +31,10 @@ export type TodoPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
 export type TodoHookType = {
   todos: TodoListProps[];
   input: { text: string; status: string };
-  editId: string | null;
+  // editId: string | null;
   error: { listPushArea: boolean; listModalArea: boolean };
   setTodos: (todos: TodoListProps[]) => void;
-  setEditId: (id: string | null) => void;
+  // setEditId: (id: string | null) => void;
   addTodo: () => void;
   deleteTodo: (id: string) => void;
   editTodo: (id: string) => void;
@@ -40,4 +42,4 @@ export type TodoHookType = {
   toggleSelected: (id: string) => void;
   setInput: (input: { text: string; status: string }) => void;
   setError: (error: { listPushArea: boolean; listModalArea: boolean }) => void;
-};
+} & EditDataProps;

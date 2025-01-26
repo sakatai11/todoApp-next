@@ -1,3 +1,5 @@
+import { DragEndEvent } from '@dnd-kit/core';
+
 // todoデータの型
 export type StatusListProps = {
   id: string;
@@ -13,3 +15,14 @@ export type ListPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
     : T extends 'PUT'
       ? Pick<StatusListProps, 'id' | 'category'>
       : never;
+
+export type ListHookType = {
+  lists: StatusListProps[];
+  error: { addListNull: boolean; addListSame: boolean };
+  setLists: (lists: StatusListProps[]) => void;
+  addList: () => Promise<boolean>;
+  setInput: (input: { status: string }) => void;
+  setError: (error: { addListNull: boolean; addListSame: boolean }) => void;
+  handleDragEnd: (event: DragEndEvent) => void;
+  handleButtonMove: (id: string, direction: 'right' | 'left') => void;
+};
