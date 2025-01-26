@@ -7,6 +7,7 @@ import {
 } from '@/types/common';
 import { Status } from '@/types/todos';
 
+// 制約あり（より型安全）
 export type PushContainerType<T extends TodoHookType> = T & {
   statusPull: Status[];
   isEditing: boolean;

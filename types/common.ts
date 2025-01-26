@@ -4,7 +4,8 @@ export type EditDataProps = {
   setEditId: (id: string | null) => void;
 };
 
-export type updateStatusAndCategoryHooks<T> = T & {
+// 制約あり（より型安全）
+export type updateStatusAndCategoryHooks<T extends EditDataProps> = T & {
   editList: (
     id: string,
     value: string,
