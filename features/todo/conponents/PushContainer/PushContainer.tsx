@@ -3,19 +3,16 @@
 import { useState } from 'react';
 import { Button, Box } from '@mui/material';
 import { PushContainerType } from '@/types/conponents';
-import { TodoHookType } from '@/types/todos';
+// import { TodoHookType } from '@/types/todos';
 import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
 
-const PushContainer = <T extends TodoHookType>({
-  addTodo,
-  setInput,
-  setEditId,
-  setError,
-  error,
-  input,
+const PushContainer = ({
+  todoHooks,
   statusPull,
   isEditing,
-}: PushContainerType<T>) => {
+}: PushContainerType) => {
+  const { addTodo, setInput, setEditId, setError, error, input } = todoHooks;
+
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
 
   return (

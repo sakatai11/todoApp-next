@@ -40,7 +40,7 @@ const TodoWrapper = ({
   return (
     <Box>
       <PushContainer
-        {...todoHooks}
+        todoHooks={todoHooks}
         statusPull={listHooks.lists}
         isEditing={todoHooks.editId !== null}
       />

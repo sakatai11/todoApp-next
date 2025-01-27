@@ -12,7 +12,7 @@ const MainContainer = ({
   listHooks,
   updateStatusAndCategoryHooks,
   deleteListHooks,
-}: MainContainerProps): React.ReactElement => {
+}: MainContainerProps) => {
   const {
     todos,
     input: todoInput,
