@@ -1,93 +1,53 @@
 import { Box } from '@mui/material';
-import {
-  DndContext,
-  closestCenter,
-  DragEndEvent,
-  // DragStartEvent,
-} from '@dnd-kit/core';
+import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import SortableItem from '@/features/todo/dnd/SortableItem';
-import { TodoListProps } from '@/types/todos';
-import { StatusListProps } from '@/types/lists';
+import { MainContainerProps } from '@/types/conponents';
 import TodoList from '@/features/todo/conponents/TodoList/TodoList';
 import StatusTitle from '@/features/todo/conponents/elements/Status/StatusTitle';
 import ListAdd from '@/features/todo/conponents/elements/List/ListAdd';
 
-type DataProps = {
-  todos: TodoListProps[];
-  lists: StatusListProps[];
-  deleteList: (id: string, title: string) => void;
-  statusTitleOption: {
-    listEdit: string | null;
-    editList: (
-      id: string,
-      value: string,
-      title: string,
-      initialTitle: string,
-    ) => Promise<boolean>;
-    setListEdit: (id: string) => void;
-  };
-  todoListOption: {
-    todoInput: { text: string; status: string };
-    editId: string | null;
-    todoError: { listPushArea: boolean; listModalArea: boolean };
-    deleteTodo: (id: string) => void;
-    editTodo: (id: string) => void;
-    saveTodo: () => void;
-    setEditId: (id: string | null) => void;
-    setTodoInput: (input: { text: string; status: string }) => void; // setInputもオブジェクトを受け取るように変更
-    setTodoError: (error: {
-      listPushArea: boolean;
-      listModalArea: boolean;
-    }) => void;
-    toggleSelected: (id: string) => void;
-  };
-  listAddOption: {
-    statusList: string;
-    listError: { addListNull: boolean; addListSame: boolean };
-    addList: () => Promise<boolean>;
-    setListInput: (input: { status: string }) => void;
-    setListError: (error: {
-      addListNull: boolean;
-      addListSame: boolean;
-    }) => void;
-    handleDragEnd: (event: DragEndEvent) => void;
-    handleButtonMove: (id: string, direction: 'right' | 'left') => void;
-  };
-};
-
 const MainContainer = ({
-  todos,
-  lists,
-  deleteList,
-  statusTitleOption,
-  todoListOption,
-  listAddOption,
-}: DataProps): React.ReactElement => {
-  const { listEdit, editList, setListEdit } = statusTitleOption;
-
+  todoHooks,
+  listHooks,
+  updateStatusAndCategoryHooks,
+  deleteListHooks,
+}: MainContainerProps): React.ReactElement => {
   const {
-    todoInput,
-    editId,
-    todoError,
+    todos,
+    input: todoInput,
+    editId: todoEdit,
+    error: todoError,
+    // setTodos,
+    setEditId,
+    // addTodo,
     deleteTodo,
     editTodo,
     saveTodo,
-    setEditId,
-    setTodoInput,
-    setTodoError,
     toggleSelected,
-  } = todoListOption;
+    setInput: setTodoInput,
+    setError: setTodoError,
+  } = todoHooks;
 
   const {
-    statusList,
-    listError,
+    lists,
+    input: statusList,
+    error: listError,
+    // setLists,
     addList,
-    setListInput,
-    setListError,
+    setInput: setListInput,
+    setError: setListError,
     handleDragEnd,
     handleButtonMove,
-  } = listAddOption;
+  } = listHooks;
+
+  const {
+    editId: listEdit,
+    setEditId: setListEdit,
+    editList,
+  } = updateStatusAndCategoryHooks;
+
+  const { deleteList } = deleteListHooks;
 
   return (
     <DndContext
@@ -192,7 +152,7 @@ const MainContainer = ({
                               saveTodo={saveTodo}
                               setEditId={setEditId}
                               statusPull={lists}
-                              isEditing={editId === todo.id}
+                              isEditing={todoEdit === todo.id}
                               input={todoInput}
                               setInput={setTodoInput}
                               error={todoError.listModalArea}
@@ -232,7 +192,7 @@ const MainContainer = ({
                               saveTodo={saveTodo}
                               setEditId={setEditId}
                               statusPull={lists}
-                              isEditing={editId === todo.id}
+                              isEditing={todoEdit === todo.id}
                               input={todoInput}
                               setInput={setTodoInput}
                               error={todoError.listModalArea}
@@ -267,7 +227,7 @@ const MainContainer = ({
               }}
             >
               <ListAdd
-                status={statusList}
+                status={statusList.status}
                 error={listError}
                 addList={addList}
                 setInput={(listStatus) => setListInput({ status: listStatus })}

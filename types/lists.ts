@@ -18,6 +18,7 @@ export type ListPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
 
 export type ListHookType = {
   lists: StatusListProps[];
+  input: { status: string };
   error: { addListNull: boolean; addListSame: boolean };
   setLists: (lists: StatusListProps[]) => void;
   addList: () => Promise<boolean>;

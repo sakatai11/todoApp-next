@@ -132,7 +132,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
 
   return {
     lists,
-    // input,
+    input,
     error,
     setLists,
     addList,
