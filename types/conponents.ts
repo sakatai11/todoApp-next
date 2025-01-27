@@ -7,15 +7,14 @@ import {
 } from '@/types/common';
 import { Status } from '@/types/todos';
 
-// 制約あり（より型安全）
 export type PushContainerType = {
-  todoHooks: TodoHookType;
+  todoHooks: TodoHookType<EditDataProps>;
   statusPull: Status[];
   isEditing: boolean;
 };
 
 export type MainContainerProps = {
-  todoHooks: TodoHookType;
+  todoHooks: TodoHookType<EditDataProps>;
   listHooks: ListHookType;
   updateStatusAndCategoryHooks: updateStatusAndCategoryHooks<EditDataProps>;
   deleteListHooks: deleteListHooks;

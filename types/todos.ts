@@ -28,7 +28,8 @@ export type TodoPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
       : never;
 
 // TodoHooksの型定義
-export type TodoHookType = {
+// 制約あり（より型安全）
+export type TodoHookType<T extends EditDataProps> = T & {
   todos: TodoListProps[];
   input: { text: string; status: string };
   error: { listPushArea: boolean; listModalArea: boolean };
@@ -40,4 +41,4 @@ export type TodoHookType = {
   toggleSelected: (id: string) => void;
   setInput: (input: { text: string; status: string }) => void;
   setError: (error: { listPushArea: boolean; listModalArea: boolean }) => void;
-} & EditDataProps;
+};
