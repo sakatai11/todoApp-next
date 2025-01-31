@@ -1,34 +1,39 @@
 import { Box } from '@mui/material';
 import React from 'react';
+import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import SortableItem from '@/features/todo/dnd/SortableItem';
-import { MainContainerProps } from '@/types/conponents';
+// import { MainContainerProps } from '@/types/conponents';
 import TodoList from '@/features/todo/conponents/TodoList/TodoList';
-import StatusTitle from '@/features/todo/conponents/elements/Status/StatusTitle';
+// import StatusTitle from '@/features/todo/conponents/elements/Status/StatusTitle';
 import ListAdd from '@/features/todo/conponents/elements/List/ListAdd';
+import StatusTitle from '@/features/todo/conponents/elements/Status/StatusTitle';
 
-const MainContainer = React.memo(
-  ({
-    todoHooks,
-    listHooks,
-    updateStatusAndCategoryHooks,
-    deleteListHooks,
-  }: MainContainerProps) => {
+const MainContainer = React.memo(() =>
+  //   {
+  //   // todoHooks,
+  //   // listHooks,
+  //   // updateStatusAndCategoryHooks,
+  //   // deleteListHooks,
+  // }:
+  {
+    const { todoHooks, listHooks } = useTodoContext();
+
     const {
       todos,
-      input: todoInput,
-      editId: todoEdit,
-      error: todoError,
+      // input: todoInput,
+      // editId: todoEdit,
+      // error: todoError,
       // setTodos,
-      setEditId,
+      // setEditId,
       // addTodo,
-      deleteTodo,
-      editTodo,
-      saveTodo,
-      toggleSelected,
-      setInput: setTodoInput,
-      setError: setTodoError,
+      // deleteTodo,
+      // editTodo,
+      // saveTodo,
+      // toggleSelected,
+      // setInput: setTodoInput,
+      // setError: setTodoError,
     } = todoHooks;
 
     const {
@@ -40,16 +45,16 @@ const MainContainer = React.memo(
       setInput: setListInput,
       setError: setListError,
       handleDragEnd,
-      handleButtonMove,
+      // handleButtonMove,
     } = listHooks;
 
-    const {
-      editId: listEdit,
-      setEditId: setListEdit,
-      editList,
-    } = updateStatusAndCategoryHooks;
+    // const {
+    //   editId: listEdit,
+    //   setEditId: setListEdit,
+    //   editList,
+    // } = updateStatusAndCategoryHooks;
 
-    const { deleteList } = deleteListHooks;
+    // const { deleteList } = deleteListHooks;
 
     return (
       <DndContext
@@ -108,7 +113,7 @@ const MainContainer = React.memo(
                         },
                       }}
                     >
-                      <StatusTitle
+                      {/* <StatusTitle
                         title={statusPull.category}
                         listNumber={statusPull.number}
                         listLength={lists.length}
@@ -118,7 +123,7 @@ const MainContainer = React.memo(
                         deleteList={deleteList}
                         setListEdit={setListEdit}
                         handleButtonMove={handleButtonMove}
-                      />
+                      /> */}
                       <Box
                         sx={{
                           display: 'flex',
@@ -150,26 +155,26 @@ const MainContainer = React.memo(
                               <TodoList
                                 key={todo.id}
                                 todo={todo}
-                                deleteTodo={deleteTodo}
-                                editTodo={editTodo}
-                                saveTodo={saveTodo}
-                                setEditId={setEditId}
-                                statusPull={lists}
-                                isEditing={todoEdit === todo.id}
-                                input={todoInput}
-                                setInput={setTodoInput}
-                                error={todoError.listModalArea}
-                                setError={(modalError) =>
-                                  setTodoError({
-                                    ...todoError,
-                                    listModalArea: modalError,
-                                  })
-                                }
-                                toggleSelected={() => {
-                                  if (todo.id) {
-                                    toggleSelected(todo.id);
-                                  }
-                                }} // idがundefinedでないことを確認
+                                // deleteTodo={deleteTodo}
+                                // editTodo={editTodo}
+                                // saveTodo={saveTodo}
+                                // setEditId={setEditId}
+                                // statusPull={lists}
+                                // isEditing={todoEdit === todo.id}
+                                // input={todoInput}
+                                // setInput={setTodoInput}
+                                // error={todoError.listModalArea}
+                                // setError={(modalError) =>
+                                //   setTodoError({
+                                //     ...todoError,
+                                //     listModalArea: modalError,
+                                //   })
+                                // }
+                                // toggleSelected={() => {
+                                //   if (todo.id) {
+                                //     toggleSelected(todo.id);
+                                //   }
+                                // }} // idがundefinedでないことを確認
                               />
                             ))}
                         </Box>
@@ -191,26 +196,26 @@ const MainContainer = React.memo(
                               <TodoList
                                 key={todo.id}
                                 todo={todo}
-                                deleteTodo={deleteTodo}
-                                editTodo={editTodo}
-                                saveTodo={saveTodo}
-                                setEditId={setEditId}
-                                statusPull={lists}
-                                isEditing={todoEdit === todo.id}
-                                input={todoInput}
-                                setInput={setTodoInput}
-                                error={todoError.listModalArea}
-                                setError={(modalError) =>
-                                  setTodoError({
-                                    ...todoError,
-                                    listModalArea: modalError,
-                                  })
-                                }
-                                toggleSelected={() => {
-                                  if (todo.id) {
-                                    toggleSelected(todo.id);
-                                  }
-                                }} // idがundefinedでないことを確認
+                                // deleteTodo={deleteTodo}
+                                // editTodo={editTodo}
+                                // saveTodo={saveTodo}
+                                // setEditId={setEditId}
+                                // statusPull={lists}
+                                // isEditing={todoEdit === todo.id}
+                                // input={todoInput}
+                                // setInput={setTodoInput}
+                                // error={todoError.listModalArea}
+                                // setError={(modalError) =>
+                                //   setTodoError({
+                                //     ...todoError,
+                                //     listModalArea: modalError,
+                                //   })
+                                // }
+                                // toggleSelected={() => {
+                                //   if (todo.id) {
+                                //     toggleSelected(todo.id);
+                                //   }
+                                // }} // idがundefinedでないことを確認
                               />
                             ))}
                         </Box>

@@ -5,7 +5,7 @@ export type EditDataProps = {
 };
 
 // 制約あり（より型安全）
-export type updateStatusAndCategoryHooks<T extends EditDataProps> = T & {
+export type UpdateStatusAndCategoryHooks<T extends EditDataProps> = T & {
   editList: (
     id: string,
     value: string,
@@ -14,6 +14,6 @@ export type updateStatusAndCategoryHooks<T extends EditDataProps> = T & {
   ) => Promise<boolean>;
 };
 
-export type deleteListHooks = {
+export type DeleteListHooks = {
   deleteList: (id: string, title: string) => void;
 };

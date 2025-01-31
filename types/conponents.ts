@@ -1,8 +1,8 @@
 import { TodoHookType } from '@/types/todos';
 import { ListHookType } from '@/types/lists';
 import {
-  updateStatusAndCategoryHooks,
-  deleteListHooks,
+  UpdateStatusAndCategoryHooks,
+  DeleteListHooks,
   EditDataProps,
 } from '@/types/common';
 import { Status } from '@/types/todos';
@@ -16,6 +16,6 @@ export type PushContainerType = {
 export type MainContainerProps = {
   todoHooks: TodoHookType<EditDataProps>;
   listHooks: ListHookType;
-  updateStatusAndCategoryHooks: updateStatusAndCategoryHooks<EditDataProps>;
-  deleteListHooks: deleteListHooks;
+  updateStatusAndCategoryHooks: UpdateStatusAndCategoryHooks<EditDataProps>;
+  deleteListHooks: DeleteListHooks;
 };

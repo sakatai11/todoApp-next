@@ -5,10 +5,11 @@ import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
 import PushContainer from '@/features/todo/conponents/PushContainer/PushContainer';
 import MainContainer from '@/features/todo/conponents/MainContainer/MainContainer';
-import { useTodos } from '@/features/todo/hooks/useTodos';
-import { useLists } from '@/features/todo/hooks/useLists';
-import { useUpdateStatusAndCategory } from '@/features/todo/hooks/useUpdateStatusAndCategory';
-import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
+// import { useTodos } from '@/features/todo/hooks/useTodos';
+// import { useLists } from '@/features/todo/hooks/useLists';
+// import { useUpdateStatusAndCategory } from '@/features/todo/hooks/useUpdateStatusAndCategory';
+// import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
+import { TodoProvider } from '@/features/todo/contexts/TodoContext';
 
 type DataProps = {
   initialTodos: TodoListProps[];
@@ -19,38 +20,21 @@ const TodoWrapper = ({
   initialTodos,
   initialLists,
 }: DataProps): React.ReactElement => {
-  const todoHooks = useTodos(initialTodos);
-  const listHooks = useLists(initialLists);
-
-  // useCallback使用
-  const updateStatusAndCategoryHooks = useUpdateStatusAndCategory({
-    todos: todoHooks.todos,
-    lists: listHooks.lists,
-    setTodos: todoHooks.setTodos,
-    setLists: listHooks.setLists,
-  });
-
-  // useCallback使用
-  const deleteListHooks = useDeleteList({
-    todos: todoHooks.todos,
-    setTodos: todoHooks.setTodos,
-    setLists: listHooks.setLists,
-  });
-
   return (
-    <Box>
-      <PushContainer
-        todoHooks={todoHooks}
-        statusPull={listHooks.lists}
-        isEditing={todoHooks.editId !== null}
-      />
-      <MainContainer
-        todoHooks={todoHooks}
-        listHooks={listHooks}
-        updateStatusAndCategoryHooks={updateStatusAndCategoryHooks}
-        deleteListHooks={deleteListHooks}
-      />
-    </Box>
+    <TodoProvider initialTodos={initialTodos} initialLists={initialLists}>
+      <Box>
+        <PushContainer
+        // statusPull={listHooks.lists}
+        // isEditing={todoHooks.editId !== null}
+        />
+        <MainContainer
+        // todoHooks={todoHooks}
+        // listHooks={listHooks}
+        // updateStatusAndCategoryHooks={updateStatusAndCategoryHooks}
+        // deleteListHooks={deleteListHooks}
+        />
+      </Box>
+    </TodoProvider>
   );
 };
 

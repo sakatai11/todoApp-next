@@ -1,41 +1,52 @@
 import { Button, Box, Typography, TextField } from '@mui/material';
 import { TodoListProps } from '@/types/todos';
 import { jstFormattedDate } from '@/app/utils/dateUtils';
-import { Status } from '@/types/todos';
+// import { Status } from '@/types/todos';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import StatusPullList from '@/features/todo/conponents/elements/Status/StatusPullList';
+import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 
 type ModalProp = {
   todo?: TodoListProps;
-  input: { text: string; status: string }; // inputをオブジェクト型に変更
-  error: boolean;
+  // input: { text: string; status: string }; // inputをオブジェクト型に変更
+  // error: boolean;
+  id: string;
   modalIsOpen: boolean;
-  statusPull: Status[];
-  setError: (error: boolean) => void;
-  setEditId: (id: string | null) => void;
-  setInput: (input: { text: string; status: string }) => void;
+  // statusPull: Status[];
+  // setError: (error: boolean) => void;
+  // setEditId: (id: string | null) => void;
+  // setInput: (input: { text: string; status: string }) => void;
   setModalIsOpen: (modalIsOpen: boolean) => void;
-  saveTodo?: () => void;
-  addTodo?: () => void;
+  // saveTodo?: () => void;
+  // addTodo?: () => void;
 };
 
 const EditModal = ({
   todo,
-  input,
-  error,
+  // input,
+  // error,
+  id,
   modalIsOpen,
-  statusPull,
-  setError,
-  setEditId,
-  setInput,
+  // statusPull,
+  // setError,
+  // setEditId,
+  // setInput,
   setModalIsOpen,
-  saveTodo,
-  addTodo,
+  // saveTodo,
+  // addTodo,
 }: ModalProp) => {
+  const { todoHooks, listHooks } = useTodoContext();
+  const { addTodo, setInput, setEditId, setError, saveTodo, error, input } =
+    todoHooks;
+
+  console.log(id);
+  const statusPull = listHooks.lists;
+  const isPushContainer = id === 'pushContainer' ? true : false;
+
   const handleClose = () => {
     setModalIsOpen(false);
-    setError(false); //エラーのリセット
+    setError({ ...error, listPushArea: false, listModalArea: false }); // エラーリセット
     setEditId(null);
     setInput({ text: '', status: '' }); // リセットする
   };
@@ -67,7 +78,7 @@ const EditModal = ({
             width: '100%',
             boxShadow: 24,
             boxSizing: 'border-box',
-            ...(addTodo ? { p: 4 } : { px: 4, pt: 2.5, pb: 4 }),
+            ...(isPushContainer ? { p: 4 } : { px: 4, pt: 2.5, pb: 4 }),
             position: 'relative',
           }}
         >
@@ -88,8 +99,16 @@ const EditModal = ({
             type="text"
             fullWidth
             value={input.text}
-            error={!input.text ? error : undefined}
-            helperText={!input.text && error ? '内容を入力してください' : null}
+            error={
+              !input.text && isPushContainer
+                ? error.listPushArea
+                : error.listModalArea
+            }
+            helperText={
+              !input.text && (error.listPushArea || error.listModalArea)
+                ? '内容を入力してください'
+                : null
+            }
             multiline
             rows={9}
             onChange={(e) => setInput({ ...input, text: e.target.value })}
@@ -98,7 +117,7 @@ const EditModal = ({
             // statusプルダウン
             pullDownList={statusPull}
             input={{ ...input, status: input.status }} // input.statusを渡す
-            error={error}
+            error={isPushContainer ? error.listPushArea : error.listModalArea}
             setInput={(statusInput) =>
               setInput({ ...input, status: statusInput.status })
             }
@@ -127,9 +146,9 @@ const EditModal = ({
               variant="contained"
               sx={{ display: 'block' }}
               onClick={() => {
-                if (addTodo) {
+                if (isPushContainer) {
                   addTodo();
-                } else if (saveTodo) {
+                } else {
                   saveTodo();
                 }
 
@@ -138,7 +157,7 @@ const EditModal = ({
                 }
               }}
             >
-              {addTodo ? '追加' : '保存'}
+              {isPushContainer ? '追加' : '保存'}
             </Button>
           </Box>
         </Box>

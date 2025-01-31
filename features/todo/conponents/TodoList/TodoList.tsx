@@ -6,42 +6,60 @@ import { useState } from 'react';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { Box, Button } from '@mui/material';
 import { formatter } from '@/app/utils/textUtils';
-import { Status } from '@/types/todos';
+// import { Status } from '@/types/todos';
 import ToggleButton from '@mui/material/ToggleButton';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
+import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 
 type TodoProps = {
   todo: TodoListProps;
-  deleteTodo: (id: string) => void;
-  editTodo: (id: string) => void;
-  saveTodo: () => void;
-  setEditId: (id: string | null) => void;
-  statusPull: Status[];
-  isEditing: boolean;
-  input: { text: string; status: string }; // inputをオブジェクト型に変更
-  setInput: (input: { text: string; status: string }) => void; // setInputもオブジェクトを受け取るように変更
-  error: boolean;
-  setError: (error: boolean) => void;
-  toggleSelected: () => void;
+  //   deleteTodo: (id: string) => void;
+  //   editTodo: (id: string) => void;
+  //   saveTodo: () => void;
+  //   setEditId: (id: string | null) => void;
+  //   statusPull: Status[];
+  //   isEditing: boolean;
+  //   input: { text: string; status: string }; // inputをオブジェクト型に変更
+  //   setInput: (input: { text: string; status: string }) => void; // setInputもオブジェクトを受け取るように変更
+  //   error: boolean;
+  //   setError: (error: boolean) => void;
+  //   toggleSelected: () => void;
 };
 
 const TodoList = ({
   todo,
-  deleteTodo,
-  editTodo,
-  saveTodo,
-  setEditId,
-  statusPull,
-  isEditing,
-  input,
-  setInput,
-  error,
-  setError,
-  toggleSelected,
+  // deleteTodo,
+  // editTodo,
+  // saveTodo,
+  // setEditId,
+  // statusPull,
+  // isEditing,
+  // input,
+  // setInput,
+  // error,
+  // setError,
+  // toggleSelected,
 }: TodoProps) => {
+  const { todoHooks } = useTodoContext();
+  const {
+    editId: todoEdit,
+    // input: todoInput,
+    // error: todoError,
+    deleteTodo,
+    editTodo,
+    // saveTodo,
+    // setEditId,
+    // setInput: setTodoInput,
+    // setError,
+    toggleSelected,
+  } = todoHooks;
+  // const { lists } = listHooks;
+
+  const isEditing = todo.id === todoEdit;
+
   const [modalIsOpen, setModalIsOpen] = useState({
     edit: false,
     delete: false,
@@ -109,7 +127,9 @@ const TodoList = ({
         <ToggleButton
           value="check"
           selected={todo.bool}
-          onChange={toggleSelected}
+          onChange={() => {
+            toggleSelected(todo.id);
+          }}
           sx={{
             width: 20,
             height: 20,
@@ -179,18 +199,19 @@ const TodoList = ({
         {isEditing && (
           // モーダル
           <EditModal
+            id="todoList"
             todo={todo}
-            input={input}
-            error={error}
+            // input={input}
+            // error={error}
             modalIsOpen={modalIsOpen.edit}
-            statusPull={statusPull}
-            setError={setError}
-            setEditId={setEditId}
-            setInput={setInput}
+            // statusPull={statusPull}
+            // setError={setError}
+            // setEditId={setEditId}
+            // setInput={setInput}
             setModalIsOpen={(editModal) =>
               setModalIsOpen({ ...modalIsOpen, edit: editModal })
             }
-            saveTodo={saveTodo}
+            // saveTodo={saveTodo}
           />
         )}
         <Button
