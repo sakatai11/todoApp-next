@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { StatusListProps } from '@/types/lists';
 import { ListPayload } from '@/types/lists';
 import { apiRequest } from '@/app/libs/apis';
@@ -16,12 +16,15 @@ export const useLists = (initialLists: StatusListProps[]) => {
   });
 
   // 重複するカテゴリが存在するかチェックする関数
-  const checkDuplicateCategory = (category: string) => {
-    return lists.some((list) => list.category === category);
-  };
+  const checkDuplicateCategory = useCallback(
+    (category: string) => {
+      return lists.some((list) => list.category === category);
+    },
+    [lists],
+  );
 
   // list追加
-  const addList = async () => {
+  const addList = useCallback(async () => {
     if (input.status) {
       // 重複チェック
       if (checkDuplicateCategory(input.status)) {
@@ -77,58 +80,64 @@ export const useLists = (initialLists: StatusListProps[]) => {
       })); // エラー表示
       return false;
     }
-  };
+  }, [input.status, lists, checkDuplicateCategory, error]);
 
   // ドラック&ドロップでのリストとしてlistsを更新
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
 
-    if (over && active.id !== over.id) {
-      const oldIndex = lists.findIndex((list) => list.id === active.id);
-      const newIndex = lists.findIndex((list) => list.id === over.id);
-      console.log(oldIndex + ':oldIndex');
-      console.log(newIndex + ':newIndex');
+      if (over && active.id !== over.id) {
+        const oldIndex = lists.findIndex((list) => list.id === active.id);
+        const newIndex = lists.findIndex((list) => list.id === over.id);
+        console.log(oldIndex + ':oldIndex');
+        console.log(newIndex + ':newIndex');
 
-      // client
-      setLists((prevLists) => {
-        const updatedLists = arrayMove(prevLists, oldIndex, newIndex); // 配列を新しい順序に並べ替える
-        return updatedLists.map((list, index) => ({
-          ...list,
-          number: index + 1, // 新しいインデックスに基づいて番号を再設定
-        }));
-      });
-    }
-  };
+        // client
+        setLists((prevLists) => {
+          const updatedLists = arrayMove(prevLists, oldIndex, newIndex); // 配列を新しい順序に並べ替える
+          return updatedLists.map((list, index) => ({
+            ...list,
+            number: index + 1, // 新しいインデックスに基づいて番号を再設定
+          }));
+        });
+      }
+    },
+    [lists],
+  );
 
   // クリックでの移動のリストとしてlistsを更新
-  const handleButtonMove = (id: string, direction: 'right' | 'left') => {
-    if (id) {
-      const currentIndex = lists.findIndex((list) => list.id === id);
-      console.log(lists);
+  const handleButtonMove = useCallback(
+    (id: string, direction: 'right' | 'left') => {
+      if (id) {
+        const currentIndex = lists.findIndex((list) => list.id === id);
+        console.log(lists);
 
-      // client
-      setLists((prevLists) => {
-        // 移動先のインデックスを計算
-        console.log(`test`);
-        const newIndex =
-          direction === 'right'
-            ? Math.min(prevLists.length - 1, currentIndex + 1)
-            : Math.max(0, currentIndex - 1);
+        // client
+        setLists((prevLists) => {
+          // 移動先のインデックスを計算
+          console.log(`test`);
+          const newIndex =
+            direction === 'right'
+              ? Math.min(prevLists.length - 1, currentIndex + 1)
+              : Math.max(0, currentIndex - 1);
 
-        // インデックスが変わらない場合、元のリストを返す
-        if (currentIndex === newIndex) return prevLists;
+          // インデックスが変わらない場合、元のリストを返す
+          if (currentIndex === newIndex) return prevLists;
 
-        // 配列を新しい順序に並べ替える
-        const updatedLists = arrayMove(prevLists, currentIndex, newIndex);
+          // 配列を新しい順序に並べ替える
+          const updatedLists = arrayMove(prevLists, currentIndex, newIndex);
 
-        // インデックスに基づいて番号を再設定してリストを更新
-        return updatedLists.map((list, index) => ({
-          ...list,
-          number: index + 1,
-        }));
-      });
-    }
-  };
+          // インデックスに基づいて番号を再設定してリストを更新
+          return updatedLists.map((list, index) => ({
+            ...list,
+            number: index + 1,
+          }));
+        });
+      }
+    },
+    [lists],
+  );
 
   return {
     lists,

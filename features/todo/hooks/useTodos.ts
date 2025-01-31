@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { TodoListProps, TodoPayload } from '@/types/todos';
 import { apiRequest } from '@/app/libs/apis';
 import { jstTime } from '@/app/utils/dateUtils';
@@ -15,7 +15,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   });
 
   // todo追加
-  const addTodo = async () => {
+  const addTodo = useCallback(async () => {
     if (input.text && input.status) {
       const newTodo = {
         updateTime: jstTime().getTime(),
@@ -49,10 +49,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       setError((prevError) => ({ ...prevError, listPushArea: true })); // エラー表示
       return;
     }
-  };
+  }, [input.text, input.status]);
 
   // todo削除
-  const deleteTodo = async (id: string) => {
+  const deleteTodo = useCallback(async (id: string) => {
     console.log(`Deleting todo with id: ${id}`);
     try {
       // server side
@@ -67,44 +67,54 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     } catch (error) {
       console.error('Error deleting todo:', error);
     }
-  };
+  }, []);
 
   // 編集（モーダル内）
-  const editTodo = (id: string) => {
-    const todoToEdit = todos.find((todo) => todo.id === id); // todo.id が指定された id と一致するかどうかをチェック
-    if (todoToEdit) {
-      setInput({ ...input, text: todoToEdit.text, status: todoToEdit.status });
-      setEditId(id);
-    }
-  };
+  const editTodo = useCallback(
+    (id: string) => {
+      const todoToEdit = todos.find((todo) => todo.id === id); // todo.id が指定された id と一致するかどうかをチェック
+      if (todoToEdit) {
+        setInput({
+          ...input,
+          text: todoToEdit.text,
+          status: todoToEdit.status,
+        });
+        setEditId(id);
+      }
+    },
+    [input, todos],
+  );
 
   // 選択状態を切り替える関数
-  const toggleSelected = async (id: string) => {
-    // 更新するboolの値を取得
-    const todoToUpdate = todos.find((todo) => todo.id === id);
-    if (todoToUpdate) {
-      try {
-        // server side
-        const result = await apiRequest<TodoPayload<'PUT'>>(
-          '/api/todos',
-          'PUT',
-          { id, bool: !todoToUpdate.bool },
-        );
-        console.log(result);
-        // client
-        setTodos((prevTodos) =>
-          prevTodos.map((todo) =>
-            todo.id === id ? { ...todo, bool: !todo.bool } : todo,
-          ),
-        );
-      } catch (error) {
-        console.error('Error puting toggle:', error);
+  const toggleSelected = useCallback(
+    async (id: string) => {
+      // 更新するboolの値を取得
+      const todoToUpdate = todos.find((todo) => todo.id === id);
+      if (todoToUpdate) {
+        try {
+          // server side
+          const result = await apiRequest<TodoPayload<'PUT'>>(
+            '/api/todos',
+            'PUT',
+            { id, bool: !todoToUpdate.bool },
+          );
+          console.log(result);
+          // client
+          setTodos((prevTodos) =>
+            prevTodos.map((todo) =>
+              todo.id === id ? { ...todo, bool: !todo.bool } : todo,
+            ),
+          );
+        } catch (error) {
+          console.error('Error puting toggle:', error);
+        }
       }
-    }
-  };
+    },
+    [todos],
+  );
 
   // 保存
-  const saveTodo = async () => {
+  const saveTodo = useCallback(async () => {
     if (editId !== null) {
       // trueの場合
       const todoToUpdate = todos.find((todo) => todo.id === editId);
@@ -148,7 +158,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         return;
       }
     }
-  };
+  }, [editId, input.text, input.status, todos]);
 
   return {
     todos,
