@@ -2,29 +2,33 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Box from '@mui/material/Box';
-// import { useLists } from '@/features/todo/hooks/useLists';
+import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 
 type HandleClickProps = {
   id: string;
   listNumber: number;
   listLength: number;
-  setListEdit: (id: string) => void;
+  // setListEdit: (id: string) => void;
   setSelectModalIsOpen: (selectModal: boolean) => void;
   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
   setTextRename: (textRename: boolean) => void;
-  handleButtonMove: (id: string, direction: 'right' | 'left') => void;
+  // handleButtonMove: (id: string, direction: 'right' | 'left') => void;
 };
 
 const SelectListModal = ({
   id,
   listNumber,
   listLength,
-  setListEdit,
+  // setListEdit,
   setSelectModalIsOpen,
   setDeleteIsModalOpen,
   setTextRename,
-  handleButtonMove,
+  // handleButtonMove,
 }: HandleClickProps) => {
+  const { listHooks, updateStatusAndCategoryHooks } = useTodoContext();
+  const { handleButtonMove } = listHooks;
+  const { setEditId: setListEdit } = updateStatusAndCategoryHooks;
+
   return (
     <Box
       sx={{

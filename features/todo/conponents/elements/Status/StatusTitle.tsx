@@ -1,43 +1,59 @@
 'use client';
 
 import { Box, IconButton } from '@mui/material';
+import { useTodoContext } from '@/features/todo/contexts/TodoContext';
+// import StatusPullList from '@/features/todo/conponents/elements/Status/StatusPullList';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSortable } from '@dnd-kit/sortable';
 import SelectListModal from '@/features/todo/conponents/elements/Modal/SelectListModal';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
+// import { StatusListProps } from '@/types/lists';
 
 type Prop = {
+  // lists: StatusListProps[]
+  id: string;
   title: string;
   listNumber: number;
-  listLength: number;
-  id: string;
-  isEditing: boolean;
-  editList: (
-    id: string,
-    value: string,
-    title: string,
-    initialTitle: string,
-  ) => Promise<boolean>;
-  deleteList: (id: string, title: string) => void;
-  setListEdit: (id: string) => void;
-  handleButtonMove: (id: string, direction: 'right' | 'left') => void;
+  // listLength: number;
+  // isEditing: boolean;
+  // editList: (
+  //   id: string,
+  //   value: string,
+  //   title: string,
+  //   initialTitle: string,
+  // ) => Promise<boolean>;
+  // deleteList: (id: string, title: string) => void;
+  // setListEdit: (id: string) => void;
+  // handleButtonMove: (id: string, direction: 'right' | 'left') => void;
 };
 
 const StatusTitle = memo(
   ({
+    id,
     title,
     listNumber,
-    listLength,
-    id,
-    isEditing,
-    editList,
-    deleteList,
-    setListEdit,
-    handleButtonMove,
+    //   listLength,
+    //   isEditing,
+    //   editList,
+    //   deleteList,
+    //   setListEdit,
+    //   handleButtonMove,
   }: Prop) => {
     const [selectModalIsOpen, setSelectModalIsOpen] = useState(false);
+    const { listHooks, deleteListHooks, updateStatusAndCategoryHooks } =
+      useTodoContext();
+    const { lists } = listHooks;
+    const {
+      editId: listEdit,
+      editList,
+      // setEditId: setListEdit,
+    } = updateStatusAndCategoryHooks;
+
+    const { deleteList } = deleteListHooks;
+
+    const isEditing = id === listEdit;
 
     const { attributes, listeners } = useSortable({ id });
 
@@ -171,12 +187,12 @@ const StatusTitle = memo(
             <SelectListModal
               id={id}
               listNumber={listNumber}
-              listLength={listLength}
-              setListEdit={setListEdit}
+              listLength={lists.length}
+              // setListEdit={setListEdit}
               setSelectModalIsOpen={setSelectModalIsOpen}
               setDeleteIsModalOpen={setDeleteIsModalOpen}
               setTextRename={setTextRename}
-              handleButtonMove={handleButtonMove}
+              // handleButtonMove={handleButtonMove}
             />
           </div>
         )}

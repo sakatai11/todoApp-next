@@ -113,17 +113,19 @@ const MainContainer = React.memo(() =>
                         },
                       }}
                     >
-                      {/* <StatusTitle
+                      <StatusTitle
+                        key={statusPull.id}
+                        id={statusPull.id}
                         title={statusPull.category}
                         listNumber={statusPull.number}
-                        listLength={lists.length}
-                        id={statusPull.id}
-                        isEditing={statusPull.id === listEdit} // true
-                        editList={editList}
-                        deleteList={deleteList}
-                        setListEdit={setListEdit}
-                        handleButtonMove={handleButtonMove}
-                      /> */}
+                        // lists={lists}
+                        // isEditing={statusPull.id === listEdit} // true
+                        // listLength={lists.length}
+                        // editList={editList}
+                        // deleteList={deleteList}
+                        // setListEdit={setListEdit}
+                        // handleButtonMove={handleButtonMove}
+                      />
                       <Box
                         sx={{
                           display: 'flex',
