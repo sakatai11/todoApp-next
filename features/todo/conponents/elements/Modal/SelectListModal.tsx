@@ -8,22 +8,18 @@ type HandleClickProps = {
   id: string;
   listNumber: number;
   listLength: number;
-  // setListEdit: (id: string) => void;
   setSelectModalIsOpen: (selectModal: boolean) => void;
   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
   setTextRename: (textRename: boolean) => void;
-  // handleButtonMove: (id: string, direction: 'right' | 'left') => void;
 };
 
 const SelectListModal = ({
   id,
   listNumber,
   listLength,
-  // setListEdit,
   setSelectModalIsOpen,
   setDeleteIsModalOpen,
   setTextRename,
-  // handleButtonMove,
 }: HandleClickProps) => {
   const { listHooks, updateStatusAndCategoryHooks } = useTodoContext();
   const { handleButtonMove } = listHooks;

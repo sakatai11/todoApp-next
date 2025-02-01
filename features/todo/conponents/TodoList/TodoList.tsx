@@ -6,7 +6,6 @@ import { useState } from 'react';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { Box, Button } from '@mui/material';
 import { formatter } from '@/app/utils/textUtils';
-// import { Status } from '@/types/todos';
 import ToggleButton from '@mui/material/ToggleButton';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
@@ -16,47 +15,11 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 
 type TodoProps = {
   todo: TodoListProps;
-  //   deleteTodo: (id: string) => void;
-  //   editTodo: (id: string) => void;
-  //   saveTodo: () => void;
-  //   setEditId: (id: string | null) => void;
-  //   statusPull: Status[];
-  //   isEditing: boolean;
-  //   input: { text: string; status: string }; // inputをオブジェクト型に変更
-  //   setInput: (input: { text: string; status: string }) => void; // setInputもオブジェクトを受け取るように変更
-  //   error: boolean;
-  //   setError: (error: boolean) => void;
-  //   toggleSelected: () => void;
 };
 
-const TodoList = ({
-  todo,
-  // deleteTodo,
-  // editTodo,
-  // saveTodo,
-  // setEditId,
-  // statusPull,
-  // isEditing,
-  // input,
-  // setInput,
-  // error,
-  // setError,
-  // toggleSelected,
-}: TodoProps) => {
+const TodoList = ({ todo }: TodoProps) => {
   const { todoHooks } = useTodoContext();
-  const {
-    editId: todoEdit,
-    // input: todoInput,
-    // error: todoError,
-    deleteTodo,
-    editTodo,
-    // saveTodo,
-    // setEditId,
-    // setInput: setTodoInput,
-    // setError,
-    toggleSelected,
-  } = todoHooks;
-  // const { lists } = listHooks;
+  const { editId: todoEdit, deleteTodo, editTodo, toggleSelected } = todoHooks;
 
   const isEditing = todo.id === todoEdit;
 
@@ -91,10 +54,6 @@ const TodoList = ({
     <Box
       width={1}
       boxSizing="border-box"
-      // display="flex"
-      // alignItems="center"
-      // justifyContent="space-between"
-
       sx={{
         boxShadow: 3, // 影の強さを指定
         padding: '16px 16px 10px 16px', // パディングを追加
@@ -108,17 +67,12 @@ const TodoList = ({
       <Box
         component="div"
         sx={{
-          // whiteSpace: "nowrap",
           margin: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           '@media (max-width: 767px)': {
             fontSize: '12px',
           },
-          // maxWidth: "65%",
-          // "&:hover": {
-          // 	overflowX: "auto",
-          // },
         }}
       >
         {displayText(todo.text)}
@@ -170,7 +124,6 @@ const TodoList = ({
           )}
         </ToggleButton>
         <Button
-          // variant="outlined"
           sx={{
             // p:0,
             minWidth: 'auto',
@@ -201,17 +154,10 @@ const TodoList = ({
           <EditModal
             id="todoList"
             todo={todo}
-            // input={input}
-            // error={error}
             modalIsOpen={modalIsOpen.edit}
-            // statusPull={statusPull}
-            // setError={setError}
-            // setEditId={setEditId}
-            // setInput={setInput}
             setModalIsOpen={(editModal) =>
               setModalIsOpen({ ...modalIsOpen, edit: editModal })
             }
-            // saveTodo={saveTodo}
           />
         )}
         <Button

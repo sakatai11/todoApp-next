@@ -21,8 +21,14 @@ export const useUpdateStatusAndCategory = ({
   setTodos,
   setLists,
 }: UpdateDataProp) => {
+  //
+  // ***** state ******
+  //
   const [editId, setEditId] = useState<string | null>(null);
 
+  //
+  // ***** actions ******
+  //
   // 編集（リスト名）
   const editList = useCallback(
     async (

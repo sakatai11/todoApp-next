@@ -9,33 +9,12 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 
 type ModalProp = {
   todo?: TodoListProps;
-  // input: { text: string; status: string }; // inputをオブジェクト型に変更
-  // error: boolean;
   id: string;
   modalIsOpen: boolean;
-  // statusPull: Status[];
-  // setError: (error: boolean) => void;
-  // setEditId: (id: string | null) => void;
-  // setInput: (input: { text: string; status: string }) => void;
   setModalIsOpen: (modalIsOpen: boolean) => void;
-  // saveTodo?: () => void;
-  // addTodo?: () => void;
 };
 
-const EditModal = ({
-  todo,
-  // input,
-  // error,
-  id,
-  modalIsOpen,
-  // statusPull,
-  // setError,
-  // setEditId,
-  // setInput,
-  setModalIsOpen,
-  // saveTodo,
-  // addTodo,
-}: ModalProp) => {
+const EditModal = ({ todo, id, modalIsOpen, setModalIsOpen }: ModalProp) => {
   const { todoHooks, listHooks } = useTodoContext();
   const { addTodo, setInput, setEditId, setError, saveTodo, error, input } =
     todoHooks;

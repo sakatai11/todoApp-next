@@ -6,6 +6,9 @@ import { apiRequest } from '@/app/libs/apis';
 import { jstTime } from '@/app/utils/dateUtils';
 
 export const useTodos = (initialTodos: TodoListProps[]) => {
+  //
+  // ***** state ******
+  //
   const [todos, setTodos] = useState<TodoListProps[]>(initialTodos);
   const [input, setInput] = useState({ text: '', status: '' });
   const [editId, setEditId] = useState<string | null>(null);
@@ -14,6 +17,9 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     listModalArea: false,
   });
 
+  //
+  // ***** actions ******
+  //
   // todo追加
   const addTodo = useCallback(async () => {
     if (input.text && input.status) {

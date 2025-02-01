@@ -8,6 +8,9 @@ import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 
 export const useLists = (initialLists: StatusListProps[]) => {
+  //
+  // ***** state ******
+  //
   const [lists, setLists] = useState<StatusListProps[]>(initialLists);
   const [input, setInput] = useState({ status: '' });
   const [error, setError] = useState({
@@ -15,6 +18,9 @@ export const useLists = (initialLists: StatusListProps[]) => {
     addListSame: false,
   });
 
+  //
+  // ***** getters ******
+  //
   // 重複するカテゴリが存在するかチェックする関数
   const checkDuplicateCategory = useCallback(
     (category: string) => {
@@ -23,6 +29,9 @@ export const useLists = (initialLists: StatusListProps[]) => {
     [lists],
   );
 
+  //
+  // ***** actions ******
+  //
   // list追加
   const addList = useCallback(async () => {
     if (input.status) {

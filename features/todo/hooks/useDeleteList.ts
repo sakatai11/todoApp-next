@@ -18,6 +18,9 @@ export const useDeleteList = ({
   setTodos,
   setLists,
 }: DeleteListProps) => {
+  //
+  // ***** actions ******
+  //
   const deleteList = useCallback(
     async (id: string, title: string) => {
       try {
