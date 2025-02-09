@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { TodoListProps } from '@/types/todos';
 import { useState } from 'react';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { Box, Button } from '@mui/material';
@@ -12,12 +11,9 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
+import { TodoPropsType } from '@/types/conponents';
 
-type TodoProps = {
-  todo: TodoListProps;
-};
-
-const TodoList = ({ todo }: TodoProps) => {
+const TodoList = ({ todo }: TodoPropsType) => {
   const { todoHooks } = useTodoContext();
   const { editId: todoEdit, deleteTodo, editTodo, toggleSelected } = todoHooks;
 

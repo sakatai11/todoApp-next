@@ -1,14 +1,7 @@
 import { Button, Box, Typography } from '@mui/material';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
-
-type DeleteProp = {
-  title?: string;
-  modalIsOpen: boolean;
-  onDelete: () => void;
-  setModalIsOpen: (modalIsOpen: boolean) => void;
-  setSelectModalIsOpen?: (listModal: boolean) => void;
-};
+import { DeletePropType } from '@/types/conponents';
 
 const DeleteModal = ({
   title,
@@ -16,7 +9,7 @@ const DeleteModal = ({
   onDelete,
   setModalIsOpen,
   setSelectModalIsOpen,
-}: DeleteProp) => {
+}: DeletePropType) => {
   return (
     <>
       <Modal //モーダル

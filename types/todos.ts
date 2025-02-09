@@ -1,9 +1,4 @@
-import { EditDataProps } from '@/types/common';
-
-// statusのプルダウンの型
-export type Status = {
-  category: string;
-};
+import { EditDataProps, BaseHookType } from '@/types/common';
 
 // todoデータの型
 export type TodoListProps = {
@@ -29,16 +24,16 @@ export type TodoPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
 
 // TodoHooksの型定義
 // 制約あり（より型安全）
-export type TodoHookType<T extends EditDataProps> = T & {
-  todos: TodoListProps[];
-  input: { text: string; status: string };
-  error: { listPushArea: boolean; listModalArea: boolean };
-  setTodos: (todos: TodoListProps[]) => void;
-  addTodo: () => void;
-  deleteTodo: (id: string) => void;
-  editTodo: (id: string) => void;
-  saveTodo: () => void;
-  toggleSelected: (id: string) => void;
-  setInput: (input: { text: string; status: string }) => void;
-  setError: (error: { listPushArea: boolean; listModalArea: boolean }) => void;
-};
+export type TodoHookType<T extends EditDataProps> = T &
+  BaseHookType<
+    { text: string; status: string },
+    { listPushArea: boolean; listModalArea: boolean }
+  > & {
+    todos: TodoListProps[];
+    setTodos: (todos: TodoListProps[]) => void;
+    addTodo: () => void;
+    deleteTodo: (id: string) => void;
+    editTodo: (id: string) => void;
+    saveTodo: () => void;
+    toggleSelected: (id: string) => void;
+  };

@@ -1,20 +1,17 @@
 import { Button, Box, Typography, TextField } from '@mui/material';
-import { TodoListProps } from '@/types/todos';
+import { ModalPropType } from '@/types/conponents';
 import { jstFormattedDate } from '@/app/utils/dateUtils';
-// import { Status } from '@/types/todos';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import StatusPullList from '@/features/todo/conponents/elements/Status/StatusPullList';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 
-type ModalProp = {
-  todo?: TodoListProps;
-  id: string;
-  modalIsOpen: boolean;
-  setModalIsOpen: (modalIsOpen: boolean) => void;
-};
-
-const EditModal = ({ todo, id, modalIsOpen, setModalIsOpen }: ModalProp) => {
+const EditModal = ({
+  todo,
+  id,
+  modalIsOpen,
+  setModalIsOpen,
+}: ModalPropType) => {
   const { todoHooks, listHooks } = useTodoContext();
   const { addTodo, setInput, setEditId, setError, saveTodo, error, input } =
     todoHooks;
@@ -102,8 +99,6 @@ const EditModal = ({ todo, id, modalIsOpen, setModalIsOpen }: ModalProp) => {
             }
           />
           <CloseIcon
-            // 閉じる
-
             sx={{
               position: 'absolute',
               top: '-27px',

@@ -3,15 +3,16 @@ import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Box from '@mui/material/Box';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
+import { HandleClickPropsType } from '@/types/conponents';
 
-type HandleClickProps = {
-  id: string;
-  listNumber: number;
-  listLength: number;
-  setSelectModalIsOpen: (selectModal: boolean) => void;
-  setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
-  setTextRename: (textRename: boolean) => void;
-};
+// type HandleClickProps = {
+//   id: string;
+//   listNumber: number;
+//   listLength: number;
+//   setSelectModalIsOpen: (selectModal: boolean) => void;
+//   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
+//   setTextRename: (textRename: boolean) => void;
+// };
 
 const SelectListModal = ({
   id,
@@ -20,7 +21,7 @@ const SelectListModal = ({
   setSelectModalIsOpen,
   setDeleteIsModalOpen,
   setTextRename,
-}: HandleClickProps) => {
+}: HandleClickPropsType) => {
   const { listHooks, updateStatusAndCategoryHooks } = useTodoContext();
   const { handleButtonMove } = listHooks;
   const { setEditId: setListEdit } = updateStatusAndCategoryHooks;

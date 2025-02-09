@@ -1,24 +1,13 @@
 'use client';
 
 import React, { createContext, useContext } from 'react';
-import { TodoListProps, TodoHookType } from '@/types/todos';
-import { StatusListProps, ListHookType } from '@/types/lists';
-import {
-  EditDataProps,
-  UpdateStatusAndCategoryHooks,
-  DeleteListHooks,
-} from '@/types/common';
+import { TodoListProps } from '@/types/todos';
+import { StatusListProps } from '@/types/lists';
 import { useTodos } from '@/features/todo/hooks/useTodos';
 import { useLists } from '@/features/todo/hooks/useLists';
 import { useUpdateStatusAndCategory } from '@/features/todo/hooks/useUpdateStatusAndCategory';
 import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
-
-type TodoContextType = {
-  todoHooks: TodoHookType<EditDataProps>;
-  listHooks: ListHookType;
-  updateStatusAndCategoryHooks: UpdateStatusAndCategoryHooks<EditDataProps>;
-  deleteListHooks: DeleteListHooks;
-};
+import { TodoContextType } from '@/types/conponents';
 
 const TodoContext = createContext<TodoContextType | null>(null);
 

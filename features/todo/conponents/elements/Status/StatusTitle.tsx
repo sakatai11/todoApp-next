@@ -8,14 +8,9 @@ import { useSortable } from '@dnd-kit/sortable';
 import SelectListModal from '@/features/todo/conponents/elements/Modal/SelectListModal';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { StatusTitlePropType } from '@/types/conponents';
 
-type Prop = {
-  id: string;
-  title: string;
-  listNumber: number;
-};
-
-const StatusTitle = memo(({ id, title, listNumber }: Prop) => {
+const StatusTitle = memo(({ id, title, listNumber }: StatusTitlePropType) => {
   const [selectModalIsOpen, setSelectModalIsOpen] = useState(false);
   const { listHooks, deleteListHooks, updateStatusAndCategoryHooks } =
     useTodoContext();

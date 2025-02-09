@@ -1,20 +1,13 @@
 import { useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
-import { Status } from '@/types/todos';
-
-type PullDownType = {
-  pullDownList: Status[];
-  input: { status: string };
-  error: boolean;
-  setInput: (input: { status: string }) => void;
-};
+import { PullDownPropsType } from '@/types/conponents';
 
 const StatusPullList = ({
   pullDownList,
   input,
   error,
   setInput,
-}: PullDownType) => {
+}: PullDownPropsType) => {
   const [label, setLabel] = useState(input.status);
 
   // console.log(setInput);
