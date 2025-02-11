@@ -1,11 +1,10 @@
 'use client';
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, Box } from '@mui/material';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
 
-const PushContainer = React.memo(() => {
+const PushContainer = () => {
   const { todoHooks } = useTodoContext();
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
 
@@ -39,7 +38,7 @@ const PushContainer = React.memo(() => {
       </Button>
     </Box>
   );
-});
+};
 PushContainer.displayName = 'PushContainer';
 
 export default PushContainer;

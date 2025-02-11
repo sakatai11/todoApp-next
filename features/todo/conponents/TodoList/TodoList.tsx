@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useState } from 'react';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { Box, Button } from '@mui/material';
@@ -13,7 +13,7 @@ import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { TodoPropsType } from '@/types/conponents';
 
-const TodoList = ({ todo }: TodoPropsType) => {
+const TodoList = React.memo(({ todo }: TodoPropsType) => {
   const { todoHooks } = useTodoContext();
   const { editId: todoEdit, deleteTodo, editTodo, toggleSelected } = todoHooks;
 
@@ -46,6 +46,8 @@ const TodoList = ({ todo }: TodoPropsType) => {
     });
   };
 
+  const formattedText = useMemo(() => displayText(todo.text), [todo.text]);
+
   return (
     <Box
       width={1}
@@ -71,7 +73,7 @@ const TodoList = ({ todo }: TodoPropsType) => {
           },
         }}
       >
-        {displayText(todo.text)}
+        {formattedText}
       </Box>
       <Box display="flex" alignItems="center" justifyContent="end" pt={1}>
         <ToggleButton
@@ -194,6 +196,8 @@ const TodoList = ({ todo }: TodoPropsType) => {
       </Box>
     </Box>
   );
-};
+});
+
+TodoList.displayName = 'TodoList';
 
 export default TodoList;

@@ -1,24 +1,13 @@
 'use client';
-
 import { useState } from 'react';
+import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { Button, TextField, Box } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
-type ListAddProps = {
-  status: string;
-  error: { addListNull: boolean; addListSame: boolean };
-  addList: () => Promise<boolean>;
-  setInput: (status: string) => void;
-  setError: (error: { addListNull: boolean; addListSame: boolean }) => void;
-};
+const ListAdd = () => {
+  const { listHooks } = useTodoContext();
+  const { input: status, error, addList, setInput, setError } = listHooks;
 
-const ListAdd = ({
-  status,
-  error,
-  addList,
-  setInput,
-  setError,
-}: ListAddProps) => {
   const [addBtn, setAddBtn] = useState(false);
 
   const handleAddList = async () => {
@@ -52,7 +41,7 @@ const ListAdd = ({
                   ? '同じリスト名が存在します'
                   : null
             }
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => setInput({ status: e.target.value })}
           />
           <Box
             sx={{
@@ -73,7 +62,7 @@ const ListAdd = ({
               }}
               onClick={() => {
                 setAddBtn(false);
-                setInput('');
+                setInput({ status: '' });
               }}
             >
               戻る

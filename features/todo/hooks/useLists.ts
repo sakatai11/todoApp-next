@@ -12,8 +12,11 @@ export const useLists = (initialLists: StatusListProps[]) => {
   // ***** state ******
   //
   const [lists, setLists] = useState<StatusListProps[]>(initialLists);
-  const [input, setInput] = useState({ status: '' });
-  const [error, setError] = useState({
+  const [input, setInput] = useState<{ status: string }>({ status: '' });
+  const [error, setError] = useState<{
+    addListNull: boolean;
+    addListSame: boolean;
+  }>({
     addListNull: false,
     addListSame: false,
   });
@@ -37,7 +40,11 @@ export const useLists = (initialLists: StatusListProps[]) => {
     if (input.status) {
       // 重複チェック
       if (checkDuplicateCategory(input.status)) {
-        setError({ ...error, addListNull: false, addListSame: true }); // エラー表示
+        setError((prevError) => ({
+          ...prevError,
+          addListNull: false,
+          addListSame: true,
+        })); // エラー表示
         return false;
       }
 
@@ -89,7 +96,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
       })); // エラー表示
       return false;
     }
-  }, [input.status, lists, checkDuplicateCategory, error]);
+  }, [input.status, lists, checkDuplicateCategory]);
 
   // ドラック&ドロップでのリストとしてlistsを更新
   const handleDragEnd = useCallback(

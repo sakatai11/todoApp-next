@@ -10,9 +10,15 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // ***** state ******
   //
   const [todos, setTodos] = useState<TodoListProps[]>(initialTodos);
-  const [input, setInput] = useState({ text: '', status: '' });
+  const [input, setInput] = useState<{ text: string; status: string }>({
+    text: '',
+    status: '',
+  });
   const [editId, setEditId] = useState<string | null>(null);
-  const [error, setError] = useState({
+  const [error, setError] = useState<{
+    listPushArea: boolean;
+    listModalArea: boolean;
+  }>({
     listPushArea: false,
     listModalArea: false,
   });

@@ -1,5 +1,4 @@
 import { Box } from '@mui/material';
-import React from 'react';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -8,19 +7,10 @@ import TodoList from '@/features/todo/conponents/TodoList/TodoList';
 import ListAdd from '@/features/todo/conponents/elements/List/ListAdd';
 import StatusTitle from '@/features/todo/conponents/elements/Status/StatusTitle';
 
-const MainContainer = React.memo(() => {
+const MainContainer = () => {
   const { todoHooks, listHooks } = useTodoContext();
   const { todos } = todoHooks;
-
-  const {
-    lists,
-    input: statusList,
-    error: listError,
-    addList,
-    setInput: setListInput,
-    setError: setListError,
-    handleDragEnd,
-  } = listHooks;
+  const { lists, handleDragEnd } = listHooks;
 
   return (
     <DndContext
@@ -148,20 +138,14 @@ const MainContainer = React.memo(() => {
                 },
               }}
             >
-              <ListAdd
-                status={statusList.status}
-                error={listError}
-                addList={addList}
-                setInput={(listStatus) => setListInput({ status: listStatus })}
-                setError={setListError}
-              />
+              <ListAdd />
             </Box>
           </Box>
         </Box>
       </SortableContext>
     </DndContext>
   );
-});
+};
 
 MainContainer.displayName = 'MainContainer';
 

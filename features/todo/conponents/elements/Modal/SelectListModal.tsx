@@ -5,15 +5,6 @@ import Box from '@mui/material/Box';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { HandleClickPropsType } from '@/types/conponents';
 
-// type HandleClickProps = {
-//   id: string;
-//   listNumber: number;
-//   listLength: number;
-//   setSelectModalIsOpen: (selectModal: boolean) => void;
-//   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
-//   setTextRename: (textRename: boolean) => void;
-// };
-
 const SelectListModal = ({
   id,
   listNumber,
@@ -55,7 +46,7 @@ const SelectListModal = ({
           <Button
             onClick={() => {
               handleButtonMove(id, 'right');
-              setSelectModalIsOpen(false);
+              setSelectModalIsOpen!(false);
             }}
           >
             1つ右へ移動する
@@ -65,7 +56,7 @@ const SelectListModal = ({
           <Button
             onClick={() => {
               handleButtonMove(id, 'left');
-              setSelectModalIsOpen(false);
+              setSelectModalIsOpen!(false);
             }}
           >
             1つ左へ移動する
@@ -76,7 +67,7 @@ const SelectListModal = ({
             <Button
               onClick={() => {
                 handleButtonMove(id, 'left');
-                setSelectModalIsOpen(false);
+                setSelectModalIsOpen!(false);
               }}
             >
               1つ左へ移動する
@@ -84,7 +75,7 @@ const SelectListModal = ({
             <Button
               onClick={() => {
                 handleButtonMove(id, 'right');
-                setSelectModalIsOpen(false);
+                setSelectModalIsOpen!(false);
               }}
             >
               1つ右へ移動する
@@ -94,7 +85,7 @@ const SelectListModal = ({
         <Button
           onClick={() => {
             setDeleteIsModalOpen(true);
-            setSelectModalIsOpen(true);
+            setSelectModalIsOpen!(true);
           }}
         >
           リストを削除する
@@ -102,7 +93,7 @@ const SelectListModal = ({
         <Button
           onClick={() => {
             console.log('rename');
-            setSelectModalIsOpen(false);
+            setSelectModalIsOpen!(false);
             setTextRename(true);
             setListEdit(id);
           }}

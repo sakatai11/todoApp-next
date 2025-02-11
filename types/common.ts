@@ -11,7 +11,7 @@ export type IsModalBaseType = {
 };
 
 export type IsModalWithSelectType = {
-  setSelectModalIsOpen: (selectModal: boolean) => void;
+  setSelectModalIsOpen?: (selectModal: boolean) => void;
 };
 
 export type IsModalWithDeleteType = {
