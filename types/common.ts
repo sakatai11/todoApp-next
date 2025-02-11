@@ -1,4 +1,4 @@
-// TodoHookTypeでも静的に参照
+// TodoHookTypeでも動的に参照
 export type EditDataProps = {
   editId: string | null;
   setEditId: (id: string | null) => void;
@@ -18,7 +18,7 @@ export type IsModalWithDeleteType = {
   setDeleteIsModalOpen: (deleteIsModalOpen: boolean) => void;
 };
 
-// Hooks型の共有部分のコンポーネント化
+// Hooks型の共通プロパティをコンポーネント化
 export type BaseHookType<TInput, TError> = {
   input: TInput;
   error: TError;
@@ -31,7 +31,6 @@ export type StatusType = {
   category: string;
 };
 
-// 制約あり（より型安全）
 export type UpdateStatusAndCategoryHooks<T extends EditDataProps> = T & {
   editList: (
     id: string,

@@ -19,15 +19,12 @@ export type TodoContextType = {
   deleteListHooks: DeleteListHooks;
 };
 
-export type ModalPropType = IsModalBaseType & {
-  todo?: TodoListProps;
-  id: string;
-};
-
+// TodoList
 export type TodoPropsType = {
   todo: TodoListProps;
 };
 
+// StatusPullList
 // setErrorの型定義を除外
 export type PullDownPropsType = Omit<
   BaseHookType<{ status: string }, boolean>,
@@ -36,17 +33,18 @@ export type PullDownPropsType = Omit<
   pullDownList: StatusType[];
 };
 
+// EditModal
+export type ModalPropType = IsModalBaseType & {
+  todo?: TodoListProps;
+  id: string;
+};
+
+// DeleteModal
 export type DeletePropType = IsModalBaseType &
   IsModalWithSelectType & {
     title?: string;
     onDelete: () => void;
   };
-
-export type StatusTitlePropType = {
-  id: string;
-  title: string;
-  listNumber: number;
-};
 
 // SelectListModal
 export type HandleClickPropsType = IsModalWithDeleteType &
@@ -56,3 +54,10 @@ export type HandleClickPropsType = IsModalWithDeleteType &
     listLength: number;
     setTextRename: (textRename: boolean) => void;
   };
+
+// StatusTitle
+export type StatusTitlePropType = {
+  id: string;
+  title: string;
+  listNumber: number;
+};
