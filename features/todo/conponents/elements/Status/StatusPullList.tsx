@@ -10,7 +10,6 @@ const StatusPullList = ({
 }: PullDownPropsType) => {
   const [label, setLabel] = useState(input.status);
 
-  // console.log(setInput);
   return (
     <Autocomplete
       disablePortal

@@ -6,7 +6,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 
 const ListAdd = () => {
   const { listHooks } = useTodoContext();
-  const { input: status, error, addList, setInput, setError } = listHooks;
+  const { input, error, addList, setInput, setError } = listHooks;
 
   const [addBtn, setAddBtn] = useState(false);
 
@@ -32,7 +32,7 @@ const ListAdd = () => {
               marginBottom: '10px',
               width: '100%',
             }}
-            value={status}
+            value={input.status}
             error={error.addListNull || error.addListSame}
             helperText={
               error.addListNull
