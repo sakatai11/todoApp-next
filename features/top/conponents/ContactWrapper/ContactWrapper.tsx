@@ -1,4 +1,5 @@
 'use client';
+import { Box } from '@mui/material';
 import * as Field from './components/Index';
 import { createContactData } from '@/app/_action/contact';
 import { useRef, useEffect, useActionState, startTransition } from 'react';
@@ -52,19 +53,26 @@ const ContactWrapper = () => {
 
   return (
     <div>
-      <form action={formAction} onSubmit={handleSubmit} ref={formRef}>
-        <Field.NameField
-          success={formState.success}
-          message={formState.message}
-          option={formState.option}
-        />
-        <Field.MailField
-          success={formState.success}
-          message={formState.message}
-          option={formState.option}
-        />
-        <Field.SendButton isPending={isPending} />
-      </form>
+      <Box sx={{ maxWidth: 500, mx: 'auto', boxShadow: 3, borderRadius: 2 }}>
+        <form
+          action={formAction}
+          onSubmit={handleSubmit}
+          ref={formRef}
+          className="p-5"
+        >
+          <Field.NameField
+            success={formState.success}
+            message={formState.message}
+            option={formState.option}
+          />
+          <Field.MailField
+            success={formState.success}
+            message={formState.message}
+            option={formState.option}
+          />
+          <Field.SendButton isPending={isPending} />
+        </form>
+      </Box>
     </div>
   );
 };

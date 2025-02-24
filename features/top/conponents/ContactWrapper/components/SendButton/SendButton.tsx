@@ -1,14 +1,16 @@
+import { Box, Button } from '@mui/material';
+
 type PendingProps = {
   isPending: boolean;
 };
 
 const SendButton = ({ isPending }: PendingProps): React.ReactElement => {
   return (
-    <div>
-      <button type="submit" className="" disabled={isPending}>
+    <Box sx={{ textAlign: 'center' }}>
+      <Button type="submit" variant="contained" disabled={isPending}>
         {isPending ? 'ログイン中' : 'サインイン'}
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 };
 

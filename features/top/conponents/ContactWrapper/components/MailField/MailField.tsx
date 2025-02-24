@@ -7,7 +7,7 @@ const MailField = ({
   option,
 }: PrevState): React.ReactElement => {
   return (
-    <div className="mb-4">
+    <div className="mb-6">
       <label
         htmlFor="email"
         className={`mb-2 block text-sm font-medium text-gray-600 ${
