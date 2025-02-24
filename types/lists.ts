@@ -14,7 +14,16 @@ export type ListPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
   : T extends 'DELETE'
     ? Pick<StatusListProps, 'id'> // DELETEではidのみ必須
     : T extends 'PUT'
-      ? Pick<StatusListProps, 'id' | 'category'>
+      ?
+          | {
+              type: 'reorder';
+              newOrder: string[]; // 新しい順序のID配列
+            }
+          | {
+              type: 'update';
+              id: string;
+              data: Partial<Pick<StatusListProps, 'category'>>;
+            }
       : never;
 
 // ListHooksの型定義

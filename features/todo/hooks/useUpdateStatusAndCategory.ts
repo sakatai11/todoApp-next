@@ -53,7 +53,11 @@ export const useUpdateStatusAndCategory = ({
         const resultList = await apiRequest<ListPayload<'PUT'>>(
           '/api/lists',
           'PUT',
-          { id, category: finalCategory },
+          {
+            type: 'update',
+            id,
+            data: { category: finalCategory },
+          },
         );
         console.log(resultList);
 

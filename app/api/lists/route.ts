@@ -6,6 +6,8 @@ import {
   collection,
   updateDoc,
   runTransaction,
+  query,
+  orderBy,
 } from 'firebase/firestore';
 import { NextRequest, NextResponse } from 'next/server';
 import { ListPayload } from '@/types/lists';
@@ -38,28 +40,64 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const body = await req.json();
   const payload: ListPayload<'PUT'> = body;
-  const { id, category } = payload;
 
-  if (id && category) {
-    try {
+  try {
+    // editList
+    if (payload.type === 'update') {
+      const { id } = payload;
       await updateDoc(doc(db, 'lists', id), {
-        category: category,
+        category: payload.data.category,
       });
       return NextResponse.json(
         { message: 'List updated category' },
         { status: 200 },
       );
-    } catch (error) {
-      console.error('Error update list category:', error);
+    }
+
+    // handleButtonMov
+    // handleDragEnd
+    if (payload.type === 'reorder') {
+      await runTransaction(db, async (transaction) => {
+        // 順序変更処理
+        const listsCollection = collection(db, 'lists');
+
+        // 現在の全リストを取得
+        const snapshot = await getDocs(listsCollection);
+        const currentLists = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // バリデーション
+        const isValidOrder = payload.newOrder.every((id) =>
+          currentLists.some((list) => list.id === id),
+        );
+
+        if (!isValidOrder) {
+          throw new Error('Invalid list IDs in newOrder');
+        }
+
+        // 新しい順序で番号更新
+        payload.newOrder.forEach(async (listId, index) => {
+          const docRef = doc(db, 'lists', listId);
+          transaction.update(docRef, { number: index + 1 });
+        });
+      });
       return NextResponse.json(
-        { error: 'Error updating list category' },
-        { status: 500 },
+        { message: 'List updated number' },
+        { status: 200 },
       );
     }
-  } else {
+
     return NextResponse.json(
       { error: 'Invalid payload: Missing required fields.' },
       { status: 400 },
+    );
+  } catch (error) {
+    console.error('Error update list:', error);
+    return NextResponse.json(
+      { error: 'Error updating list category' },
+      { status: 500 },
     );
   }
 }
@@ -72,22 +110,27 @@ export async function DELETE(req: NextRequest) {
       await runTransaction(db, async (transaction) => {
         const listsCollection = collection(db, 'lists');
 
-        // すべてのリストを取得
-        const snapshot = await getDocs(listsCollection);
-        const lists = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        // リストを番号順に取得
+        const snapshot = await getDocs(
+          query(listsCollection, orderBy('number', 'asc')),
+        );
+
+        // 削除対象を除外しつつ番号順を維持
+        const lists = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((list) => list.id !== id);
 
         // 削除対象のリストドキュメント
         const listDocRef = doc(db, 'lists', id);
-        // リストを削除
         transaction.delete(listDocRef);
 
-        // リストをフィルタリングして番号を再割り振り
-        const updatedLists = lists
-          .filter((list) => list.id !== id)
-          .map((list, index) => ({ ...list, number: index + 1 }));
+        // 番号を1から再割り振り
+        const updatedLists = lists.map((list, index) => ({
+          ...list,
+          number: index + 1,
+        }));
+
+        console.log(updatedLists);
 
         // トランザクション内でリスト番号を更新
         updatedLists.forEach((list) => {
