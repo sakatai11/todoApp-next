@@ -77,8 +77,8 @@ export async function PUT(req: NextRequest) {
     }
 
     // editList（バッチ処理）
-    if ('oldStatus' in payload && 'status' in payload) {
-      const { oldStatus, status } = payload;
+    if (payload.type === 'restatus') {
+      const { oldStatus, status } = payload.data;
 
       const todosQuerySnapshot = await getDocs(collection(db, 'todos'));
       const batch = writeBatch(db);

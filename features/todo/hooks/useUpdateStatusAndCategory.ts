@@ -65,7 +65,10 @@ export const useUpdateStatusAndCategory = ({
         const resultTodo = await apiRequest<TodoPayload<'PUT'>>(
           '/api/todos',
           'PUT',
-          { oldStatus: oldCategory, status: finalCategory },
+          {
+            type: 'restatus',
+            data: { oldStatus: oldCategory, status: finalCategory },
+          },
         );
         console.log(resultTodo);
 

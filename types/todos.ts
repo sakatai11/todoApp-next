@@ -19,7 +19,10 @@ export type TodoPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
       ?
           | Pick<TodoListProps, 'id' | 'bool'>
           | Pick<TodoListProps, 'id' | 'updateTime' | 'text' | 'status'>
-          | { oldStatus: string; status: string } // リスト名を変更するときの型定義
+          | {
+              type: 'restatus';
+              data: { oldStatus: string; status: string }; // リスト名を変更するときの型定義
+            }
       : never;
 
 // TodoHooksの型定義

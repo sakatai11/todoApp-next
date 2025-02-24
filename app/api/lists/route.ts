@@ -69,7 +69,7 @@ export async function PUT(req: NextRequest) {
         }));
 
         // バリデーション
-        const isValidOrder = payload.newOrder.every((id) =>
+        const isValidOrder = payload.data.every((id) =>
           currentLists.some((list) => list.id === id),
         );
 
@@ -78,7 +78,7 @@ export async function PUT(req: NextRequest) {
         }
 
         // 新しい順序で番号更新
-        payload.newOrder.forEach(async (listId, index) => {
+        payload.data.forEach(async (listId, index) => {
           const docRef = doc(db, 'lists', listId);
           transaction.update(docRef, { number: index + 1 });
         });

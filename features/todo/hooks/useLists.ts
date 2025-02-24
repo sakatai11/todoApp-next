@@ -128,7 +128,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
             'PUT',
             {
               type: 'reorder',
-              newOrder: updateListsNumber,
+              data: updateListsNumber,
             },
           );
           console.log(result);
@@ -177,7 +177,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
             'PUT',
             {
               type: 'reorder',
-              newOrder: updateListsNumber,
+              data: updateListsNumber,
             },
           );
           console.log(result);

@@ -17,7 +17,7 @@ export type ListPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
       ?
           | {
               type: 'reorder';
-              newOrder: string[]; // 新しい順序のID配列
+              data: string[]; // 新しい順序のID配列
             }
           | {
               type: 'update';
