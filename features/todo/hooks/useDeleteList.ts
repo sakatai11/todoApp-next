@@ -35,7 +35,9 @@ export const useDeleteList = ({
         // client
         setLists((prevLists) => {
           // todo.id が id と一致しない list だけを残す新しい配列を作成
-          const updatedLists = prevLists.filter((list) => list.id !== id);
+          const updatedLists = prevLists
+            .filter((list) => list.id !== id)
+            .sort((a, b) => a.number - b.number);
 
           // `number` を 1, 2, 3, ... と再設定
           return updatedLists.map((list, index) => ({
