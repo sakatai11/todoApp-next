@@ -52,8 +52,16 @@ const ContactWrapper = () => {
   }, [formState.success]);
 
   return (
-    <div>
-      <Box sx={{ maxWidth: 500, mx: 'auto', boxShadow: 3, borderRadius: 2 }}>
+    <div className="min-h-screen flex flex-col justify-center ">
+      <Box
+        sx={{
+          maxWidth: 350,
+          width: '100%',
+          mx: 'auto',
+          boxShadow: 3,
+          borderRadius: 2,
+        }}
+      >
         <form
           action={formAction}
           onSubmit={handleSubmit}
