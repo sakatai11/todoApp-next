@@ -3,22 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/email/formData';
 import { messageType } from '@/data/form';
-// import { sendMessage } from '@/data/accounts';
-// import { Resend } from 'resend';
-// import * as React from 'react';
-// import { db } from '@/app/utils/firebase';
-import {
-  // collection, addDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
-// import { FirebaseError } from 'firebase/app';
+import { serverTimestamp } from 'firebase/firestore';
 
 function validateEmail(email: string) {
   const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|jp|net|to|cx)$/;
   return pattern.test(email);
 }
 
-export async function createContactData(
+export async function createLoginData(
   _prevState: PrevState,
   formData: FormData,
 ) {
@@ -61,8 +53,25 @@ export async function createContactData(
     };
   }
 
+  try {
+    const authResponse = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: rawFormData.name,
+        email: rawFormData.email,
+      }),
+    });
+    const data = await authResponse.json();
+    console.log(data);
+  } catch (e) {
+    console.error('Error during authentication:', e);
+  }
+
   // Cacheの再検証
-  revalidatePath('/contact');
+  revalidatePath('/');
 
   return { success: true };
 }

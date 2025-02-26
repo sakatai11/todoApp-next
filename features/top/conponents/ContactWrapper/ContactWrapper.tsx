@@ -1,7 +1,7 @@
 'use client';
 import { Box } from '@mui/material';
 import * as Field from './components/Index';
-import { createContactData } from '@/app/_action/contact';
+import { createLoginData } from '@/app/_action/login';
 import { useRef, useEffect, useActionState, startTransition } from 'react';
 import { PrevState } from '@/types/email/formData';
 import { validationMessage } from '@/data/form';
@@ -24,7 +24,7 @@ const ContactWrapper = () => {
       option: string;
       message: validationMessage | undefined;
     }> => {
-      const { success, option, message } = await createContactData(
+      const { success, option, message } = await createLoginData(
         _prevState,
         formData,
       );
