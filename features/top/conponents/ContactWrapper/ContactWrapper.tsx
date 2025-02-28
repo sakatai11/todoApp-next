@@ -3,9 +3,8 @@ import { Box } from '@mui/material';
 import * as Field from './components/Index';
 import { createLoginData } from '@/app/_action/login';
 import { useRef, useEffect, useActionState, startTransition } from 'react';
-import { PrevState } from '@/types/email/formData';
+import { PrevState } from '@/types/form/formData';
 import { validationMessage } from '@/data/form';
-// import { sendMessage } from '@/data/accounts';
 
 // 初期値
 const initialState = {
@@ -68,12 +67,12 @@ const ContactWrapper = () => {
           ref={formRef}
           className="p-5"
         >
-          <Field.NameField
+          <Field.MailField
             success={formState.success}
             message={formState.message}
             option={formState.option}
           />
-          <Field.MailField
+          <Field.PasswordField
             success={formState.success}
             message={formState.message}
             option={formState.option}

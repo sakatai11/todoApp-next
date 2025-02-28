@@ -1,4 +1,4 @@
-import { PrevState } from '@/types/email/formData';
+import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 
 const MailField = ({
@@ -13,7 +13,7 @@ const MailField = ({
         className={`mb-2 block text-sm font-medium text-gray-600 ${
           (success === false &&
             (message === messageType.mail ||
-              message === messageType.nameAndmail ||
+              message === messageType.passwordAndmail ||
               message === messageType.addressError)) ||
           option === 'email'
             ? 'text-red-600'
@@ -25,7 +25,7 @@ const MailField = ({
           className={`mx-2 inline-block text-[10px] leading-3 ${
             (success === false &&
               (message === messageType.mail ||
-                message === messageType.nameAndmail ||
+                message === messageType.passwordAndmail ||
                 message === messageType.addressError)) ||
             option === 'email'
               ? 'text-red-600'
@@ -34,7 +34,7 @@ const MailField = ({
         >
           {(success === false &&
             (message === messageType.mail ||
-              message === messageType.nameAndmail ||
+              message === messageType.passwordAndmail ||
               message === messageType.addressError)) ||
           option === 'email'
             ? message === messageType.mail
