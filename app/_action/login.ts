@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { PrevState } from '@/types/email/formData';
+import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { serverTimestamp } from 'firebase/firestore';
 
@@ -14,28 +14,28 @@ export async function createLoginData(
   _prevState: PrevState,
   formData: FormData,
 ) {
-  // formのname属性ごとにformData.get()で値を取り出す
+  // formの属性ごとにformData.get()で値を取り出す
   const rawFormData = {
-    name: formData.get('name') as string,
     email: formData.get('email') as string,
+    password: formData.get('password') as string,
     timestamp: serverTimestamp(),
   };
 
   if (
-    !rawFormData.name &&
+    !rawFormData.password &&
     (!rawFormData.email || !validateEmail(rawFormData.email))
   ) {
     return {
       success: false,
-      message: messageType.nameAndmail,
+      message: messageType.passwordAndmail,
     };
   }
 
-  if (!rawFormData.name) {
+  if (!rawFormData.password) {
     return {
       success: false,
-      option: 'name',
-      message: messageType.name,
+      option: 'password',
+      message: messageType.password,
     };
   }
 
@@ -53,22 +53,29 @@ export async function createLoginData(
     };
   }
 
-  try {
-    const authResponse = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: rawFormData.name,
-        email: rawFormData.email,
-      }),
-    });
-    const data = await authResponse.json();
-    console.log(data);
-  } catch (e) {
-    console.error('Error during authentication:', e);
-  }
+  // try {
+  //   const authResponse = await fetch(
+  //     `${process.env.NEXTAUTH_URL}/api/auth/signup`,
+  //     {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         name: rawFormData.password,
+  //         email: rawFormData.email,
+  //       }),
+  //     },
+  //   );
+
+  //   // if (!authResponse.ok) {
+  //   //   throw new Error(`HTTP error! Status: ${authResponse.status}`);
+  //   // }
+  //   const data = await authResponse.json();
+  //   console.log(data);
+  // } catch (e) {
+  //   console.error('Error during authentication:', e);
+  // }
 
   // Cacheの再検証
   revalidatePath('/');
