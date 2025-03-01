@@ -8,3 +8,7 @@ export type PrevState = {
   option?: string;
   message?: string;
 };
+
+export type ValidationParams = PrevState & {
+  fieldType?: 'password' | 'email';
+};

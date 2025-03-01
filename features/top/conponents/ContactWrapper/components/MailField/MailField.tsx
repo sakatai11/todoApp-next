@@ -1,59 +1,50 @@
+import { TextField } from '@mui/material';
 import { PrevState } from '@/types/form/formData';
-import { messageType } from '@/data/form';
+import {
+  getValidationStatus,
+  getErrorMessage,
+} from '@/app/utils/validationUtils';
 
-const MailField = ({
+const EmailField = ({
   success,
   message,
   option,
 }: PrevState): React.ReactElement => {
+  const isError = getValidationStatus({
+    success,
+    message,
+    option,
+    fieldType: 'email',
+  });
+  const errorMessage = getErrorMessage({ message, fieldType: 'email' });
+
   return (
     <div className="mb-6">
       <label
         htmlFor="email"
         className={`mb-2 block text-sm font-medium text-gray-600 ${
-          (success === false &&
-            (message === messageType.mail ||
-              message === messageType.passwordAndmail ||
-              message === messageType.addressError)) ||
-          option === 'email'
-            ? 'text-red-600'
-            : ''
+          isError ? 'text-red-600' : ''
         }`}
       >
         Email
-        <span
-          className={`mx-2 inline-block text-[10px] leading-3 ${
-            (success === false &&
-              (message === messageType.mail ||
-                message === messageType.passwordAndmail ||
-                message === messageType.addressError)) ||
-            option === 'email'
-              ? 'text-red-600'
-              : ''
-          }`}
-        >
-          {(success === false &&
-            (message === messageType.mail ||
-              message === messageType.passwordAndmail ||
-              message === messageType.addressError)) ||
-          option === 'email'
-            ? message === messageType.mail
-              ? messageType.mail
-              : message === messageType.addressError
-                ? messageType.addressError
-                : messageType.mail
-            : null}
-        </span>
+        {isError && (
+          <span className="mx-2 inline-block text-[10px] leading-3 text-red-600">
+            {errorMessage}
+          </span>
+        )}
       </label>
-      <input
-        type="email"
+      <TextField
         id="email"
+        type="email"
         name="email"
-        className={'mt-1 w-full rounded-md border bg-[#F3F7FB] p-2'}
+        label=""
+        size="small"
+        fullWidth
+        error={isError}
         disabled={success}
       />
     </div>
   );
 };
 
-export default MailField;
+export default EmailField;

@@ -1,54 +1,86 @@
+import { IconButton } from '@mui/material';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputAdornment from '@mui/material/InputAdornment';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { PrevState } from '@/types/form/formData';
-import { messageType } from '@/data/form';
+import { useState } from 'react';
+import {
+  getValidationStatus,
+  getErrorMessage,
+} from '@/app/utils/validationUtils';
 
-const NameField = ({
+const PasswordField = ({
   success,
   message,
   option,
 }: PrevState): React.ReactElement => {
+  const isError = getValidationStatus({
+    success,
+    message,
+    option,
+    fieldType: 'password',
+  });
+  const errorMessage = getErrorMessage({ message, fieldType: 'password' });
+
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+  };
+
   return (
     <div className="mb-4">
       <label
-        htmlFor="name"
+        htmlFor="password"
         className={`mb-2 block text-sm font-medium text-gray-600 ${
-          (success === false &&
-            (message === messageType.password ||
-              message === messageType.passwordAndmail)) ||
-          option === 'password'
-            ? 'text-red-600'
-            : ''
+          isError ? 'text-red-600' : ''
         }`}
       >
         Password
-        <span
-          className={`mx-2 inline-block text-[10px] leading-3 ${
-            (success === false &&
-              (message === messageType.password ||
-                message === messageType.passwordAndmail)) ||
-            option === 'password'
-              ? 'text-red-600'
-              : ''
-          }`}
-        >
-          {(success === false &&
-            (message === messageType.password ||
-              message === messageType.passwordAndmail)) ||
-          option === 'password'
-            ? message === messageType.password
-              ? messageType.password
-              : messageType.password
-            : null}
-        </span>
+        {isError && (
+          <span className="mx-2 inline-block text-[10px] leading-3 text-red-600">
+            {errorMessage}
+          </span>
+        )}
       </label>
-      <input
-        type="password"
+      <OutlinedInput
         id="password"
+        type={showPassword ? 'text' : 'password'}
         name="password"
-        className={'mt-1 w-full rounded-md border bg-[#F3F7FB] p-2'}
+        label=""
+        size="small"
+        fullWidth
+        error={isError}
         disabled={success}
+        endAdornment={
+          <InputAdornment position="end">
+            <IconButton
+              aria-label={
+                showPassword ? 'hide the password' : 'display the password'
+              }
+              onClick={handleClickShowPassword}
+              onMouseDown={handleMouseDownPassword}
+              onMouseUp={handleMouseUpPassword}
+              edge="end"
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </InputAdornment>
+        }
       />
     </div>
   );
 };
 
-export default NameField;
+export default PasswordField;
