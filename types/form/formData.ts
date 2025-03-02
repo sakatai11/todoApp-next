@@ -12,3 +12,5 @@ export type PrevState = {
 export type ValidationParams = PrevState & {
   fieldType?: 'password' | 'email';
 };
+
+export type ValidationCheckProps = Omit<PrevState, 'option'>;

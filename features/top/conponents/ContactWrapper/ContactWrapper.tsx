@@ -27,7 +27,11 @@ const ContactWrapper = () => {
         _prevState,
         formData,
       );
-      return { success, option: option ?? '', message };
+      return {
+        success,
+        option: option ?? '',
+        message: message as validationMessage,
+      };
     },
     initialState,
   ); // 第2引数に初期値を指定
@@ -76,6 +80,10 @@ const ContactWrapper = () => {
             success={formState.success}
             message={formState.message}
             option={formState.option}
+          />
+          <Field.ValidationCheck
+            success={formState.success}
+            message={formState.message}
           />
           <Field.SendButton isPending={isPending} />
         </form>

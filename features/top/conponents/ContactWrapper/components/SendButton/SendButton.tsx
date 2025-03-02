@@ -8,7 +8,7 @@ const SendButton = ({ isPending }: PendingProps): React.ReactElement => {
   return (
     <Box sx={{ textAlign: 'center' }}>
       <Button type="submit" variant="contained" disabled={isPending}>
-        {isPending ? 'ログイン中' : 'サインイン'}
+        {isPending ? '認証中' : '登録する'}
       </Button>
     </Box>
   );

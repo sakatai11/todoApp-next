@@ -16,7 +16,7 @@ const EmailField = ({
     option,
     fieldType: 'email',
   });
-  const errorMessage = getErrorMessage({ message, fieldType: 'email' });
+  const errorMessage = getErrorMessage({ message, option, fieldType: 'email' });
 
   return (
     <div className="mb-6">

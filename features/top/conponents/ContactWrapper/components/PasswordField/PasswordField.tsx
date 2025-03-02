@@ -21,7 +21,12 @@ const PasswordField = ({
     option,
     fieldType: 'password',
   });
-  const errorMessage = getErrorMessage({ message, fieldType: 'password' });
+
+  const errorMessage = getErrorMessage({
+    message,
+    option,
+    fieldType: 'password',
+  });
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
