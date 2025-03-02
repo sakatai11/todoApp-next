@@ -1,9 +1,9 @@
 import * as Top from '@/features/top/conponents/Index';
 
-export default function TopPage() {
+export default function SignupPage() {
   return (
     <>
-      <Top.TopNav />
+      <Top.ContactWrapper />
     </>
   );
 }
