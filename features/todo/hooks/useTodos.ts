@@ -131,18 +131,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       // trueの場合
       const todoToUpdate = todos.find((todo) => todo.id === editId);
       if (todoToUpdate && input.text && input.status) {
-        // 更新が必要か確認
-        if (
-          todoToUpdate.text === input.text &&
-          todoToUpdate.status === input.status
-        ) {
-          console.log('No changes detected, skipping update.');
-          // 不要な場合はtext,statusともに''に処理を終了する
-          setInput({ text: '', status: '' });
-          setEditId(null);
-          return;
-        }
-
         const updateTodo = {
           updateTime: jstTime().getTime(),
           text: input.text,
