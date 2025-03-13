@@ -1,5 +1,4 @@
-import { db } from '@/app/libs/firebase';
-import { getDocs, collection, query, orderBy } from 'firebase/firestore';
+import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
@@ -8,18 +7,18 @@ import { StatusListProps } from '@/types/lists';
 export async function GET() {
   try {
     // Firestoreクエリ
-    const qTodos = query(
-      collection(db, 'todos'),
-      orderBy('updateTime', 'desc'),
-    ); // 降順
-    const qLists = query(collection(db, 'lists'), orderBy('number', 'asc')); // 昇順
+    const todosSnapshot = await adminDB
+      .collection('todos')
+      .orderBy('updateTime', 'desc') // 降順
+      .get();
 
-    // データ取得
-    const todoSnapshot = await getDocs(qTodos);
-    const listSnapshot = await getDocs(qLists);
+    const listsSnapshot = await adminDB
+      .collection('lists')
+      .orderBy('number', 'asc') // 昇順
+      .get();
 
     // データマッピング
-    const todosData: TodoListProps[] = todoSnapshot.docs.map((document) => ({
+    const todosData: TodoListProps[] = todosSnapshot.docs.map((document) => ({
       id: document.id,
       updateTime: document.data().updateTime,
       createdTime: document.data().createdTime,
@@ -28,7 +27,7 @@ export async function GET() {
       bool: document.data().bool,
     }));
 
-    const listsData: StatusListProps[] = listSnapshot.docs.map((document) => ({
+    const listsData: StatusListProps[] = listsSnapshot.docs.map((document) => ({
       id: document.id,
       category: document.data().category,
       number: document.data().number,

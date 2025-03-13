@@ -9,6 +9,7 @@ export const apiRequest = async <T = undefined>(
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
       body: body ? JSON.stringify(body) : undefined,
     });
 
