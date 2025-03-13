@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getApi } from '@/app/libs/apis';
 import * as Todo from '@/features/todo/templates/Index';
 
