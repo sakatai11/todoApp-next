@@ -1,7 +1,9 @@
 'use client';
 import { Box } from '@mui/material';
 import * as Field from './components/Index';
-import { signInData } from '@/app/_action/action';
+import { signInData } from '@/app/(auth)/_signIn/signIn';
+import { signUpData } from '@/app/(auth)/_signUp/signUp';
+import { usePathname } from 'next/navigation';
 import { useRef, useEffect, useActionState, startTransition } from 'react';
 import { PrevState } from '@/types/form/formData';
 import { validationMessage } from '@/data/form';
@@ -14,6 +16,11 @@ const initialState = {
 };
 
 const ContactWrapper = () => {
+  const pathname = usePathname();
+  const formActionHandler = pathname.includes('signup')
+    ? signUpData
+    : signInData;
+
   const [formState, formAction, isPending] = useActionState(
     async (
       _prevState: PrevState,
@@ -23,10 +30,11 @@ const ContactWrapper = () => {
       option: string;
       message: validationMessage | undefined;
     }> => {
-      const { success, option, message } = await signInData(
+      const { success, option, message } = await formActionHandler(
         _prevState,
         formData,
       );
+
       return {
         success,
         option: option ?? '',

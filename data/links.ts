@@ -18,4 +18,8 @@ export const pageLinks: PageLink[] = [
     name: 'SignIn',
     href: '/signin',
   },
+  {
+    name: 'SignUp',
+    href: '/signup',
+  },
 ];
