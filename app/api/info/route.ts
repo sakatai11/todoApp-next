@@ -2,7 +2,6 @@ import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
-
 // 初回レンダリング時にデータを取得する関数
 export async function GET() {
   try {

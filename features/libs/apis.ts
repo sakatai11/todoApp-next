@@ -9,7 +9,6 @@ export const apiRequest = async <T>(
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 60 },
       body: body ? JSON.stringify(body) : undefined,
     });
 
