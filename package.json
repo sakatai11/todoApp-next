@@ -11,6 +11,7 @@
     "format": "npm run prettier && npm run lint"
   },
   "dependencies": {
+    "@auth/firebase-adapter": "2.8.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.1.1",
@@ -22,7 +23,8 @@
     "next-auth": "^5.0.0-beta.25",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "reusify": "^1.0.4"
+    "reusify": "^1.0.4",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -1,5 +1,6 @@
 import { messageType } from '@/data/form';
 import { ValidationParams } from '@/types/form/formData';
+import { AuthResponseSchema } from '@/types/auth/authData';
 
 // バリデーション判定する関数
 export const getValidationStatus = ({
@@ -58,4 +59,14 @@ export const getErrorMessage = ({
   }
 
   return null;
+};
+
+export const validateResponse = async (response: Response) => {
+  try {
+    const rawData = await response.json();
+    return AuthResponseSchema.parse(rawData);
+  } catch (error) {
+    console.error('Response validation failed:', error);
+    throw new Error('Invalid response format', { cause: error });
+  }
 };
