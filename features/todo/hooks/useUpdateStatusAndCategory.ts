@@ -7,7 +7,7 @@ import {
   isDuplicateCategory,
   updateListsAndTodos,
 } from '@/app/utils/updateStatusUtils';
-import { apiRequest } from '@/app/libs/apis';
+import { apiRequest } from '@/features/libs/apis';
 
 type UpdateDataProp = {
   todos: TodoListProps[];

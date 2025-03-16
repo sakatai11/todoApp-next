@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { StatusListProps } from '@/types/lists';
 import { ListPayload } from '@/types/lists';
-import { apiRequest } from '@/app/libs/apis';
+import { apiRequest } from '@/features/libs/apis';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 

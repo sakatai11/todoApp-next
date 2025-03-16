@@ -1,6 +1,3 @@
-import { TodoListProps } from '@/types/todos';
-import { StatusListProps } from '@/types/lists';
-
 // TodoHookTypeでも動的に参照
 export type EditDataProps = {
   editId: string | null;
@@ -45,10 +42,4 @@ export type UpdateStatusAndCategoryHooks<T extends EditDataProps> = T & {
 
 export type DeleteListHooks = {
   deleteList: (id: string, title: string) => void;
-};
-
-// 初回レンダリング時の型
-export type GetApiResponse = {
-  todos: TodoListProps[];
-  lists: StatusListProps[];
 };

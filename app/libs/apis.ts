@@ -1,16 +1,24 @@
-export const apiRequest = async <T = undefined>(
-  url: string, // エンドポイントURL
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-  body?: T,
-): Promise<T | undefined> => {
+export const getApiRequest = async (pathname: string) => {
+  // API エンドポイントのパスをマッピングするオブジェクト
+  // キー（string） → ページ名やリソース名
+  // 値（string） → 対応する API のエンドポイントパス
+  const authUrlMap: Record<string, string> = {
+    todo: '/api/info/',
+  };
+
+  const authUrl = authUrlMap[pathname];
+
+  if (!authUrl) {
+    throw new Error('Invalid pathname: No API endpoint found.');
+  }
+
   try {
-    const response = await fetch(url, {
-      method,
+    const response = await fetch(`${process.env.NEXTAUTH_URL}${authUrl}`, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
       cache: 'no-store',
-      body: body ? JSON.stringify(body) : undefined,
     });
 
     if (!response.ok) {

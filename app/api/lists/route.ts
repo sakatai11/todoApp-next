@@ -1,14 +1,13 @@
-import { db } from '@/app/libs/firebase';
-import {
-  doc,
-  getDocs,
-  addDoc,
-  collection,
-  updateDoc,
-  runTransaction,
-  query,
-  orderBy,
-} from 'firebase/firestore';
+import { adminDB } from '@/app/libs/firebaseAdmin';
+import {} from // doc,
+// getDocs,
+// addDoc,
+// collection,
+// updateDoc,
+// runTransaction,
+// query,
+// orderBy,
+'firebase/firestore';
 import { NextRequest, NextResponse } from 'next/server';
 import { ListPayload } from '@/types/lists';
 
@@ -23,7 +22,7 @@ export async function POST(req: NextRequest) {
     };
 
     try {
-      const docRef = await addDoc(collection(db, 'lists'), newList);
+      const docRef = await adminDB.collection('lists').add(newList);
       return NextResponse.json({ id: docRef.id, ...newList }, { status: 200 });
     } catch (error) {
       console.error('Error add list:', error);
@@ -45,7 +44,7 @@ export async function PUT(req: NextRequest) {
     // editList
     if (payload.type === 'update') {
       const { id } = payload;
-      await updateDoc(doc(db, 'lists', id), {
+      await adminDB.collection('lists').doc(id).update({
         category: payload.data.category,
       });
       return NextResponse.json(
@@ -57,12 +56,11 @@ export async function PUT(req: NextRequest) {
     // handleButtonMov
     // handleDragEnd
     if (payload.type === 'reorder') {
-      await runTransaction(db, async (transaction) => {
-        // 順序変更処理
-        const listsCollection = collection(db, 'lists');
-
+      await adminDB.runTransaction(async (transaction) => {
         // 現在の全リストを取得
-        const snapshot = await getDocs(listsCollection);
+        const listsCollection = adminDB.collection('lists');
+
+        const snapshot = await listsCollection.get();
         const currentLists = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -79,7 +77,7 @@ export async function PUT(req: NextRequest) {
 
         // 新しい順序で番号更新
         payload.data.forEach(async (listId, index) => {
-          const docRef = doc(db, 'lists', listId);
+          const docRef = listsCollection.doc(listId);
           transaction.update(docRef, { number: index + 1 });
         });
       });
@@ -107,13 +105,11 @@ export async function DELETE(req: NextRequest) {
   const { id }: ListPayload<'DELETE'> = body;
   if (id) {
     try {
-      await runTransaction(db, async (transaction) => {
-        const listsCollection = collection(db, 'lists');
+      await adminDB.runTransaction(async (transaction) => {
+        const listsCollection = adminDB.collection('lists');
 
         // リストを番号順に取得
-        const snapshot = await getDocs(
-          query(listsCollection, orderBy('number', 'asc')),
-        );
+        const snapshot = await listsCollection.orderBy('number', 'asc').get();
 
         // 削除対象を除外しつつ番号順を維持
         const lists = snapshot.docs
@@ -121,7 +117,7 @@ export async function DELETE(req: NextRequest) {
           .filter((list) => list.id !== id);
 
         // 削除対象のリストドキュメント
-        const listDocRef = doc(db, 'lists', id);
+        const listDocRef = listsCollection.doc(id);
         transaction.delete(listDocRef);
 
         // 番号を1から再割り振り
@@ -134,7 +130,7 @@ export async function DELETE(req: NextRequest) {
 
         // トランザクション内でリスト番号を更新
         updatedLists.forEach((list) => {
-          const docRef = doc(db, 'lists', list.id);
+          const docRef = listsCollection.doc(list.id);
           transaction.update(docRef, { number: list.number });
         });
       });
