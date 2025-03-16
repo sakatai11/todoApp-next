@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { useState } from 'react';
 import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
 import { Box, Button } from '@mui/material';
-import { formatter } from '@/app/utils/textUtils';
+import { formatter } from '@/features/utils/textUtils';
 import ToggleButton from '@mui/material/ToggleButton';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';

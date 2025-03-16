@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { TodoListProps, TodoPayload } from '@/types/todos';
 import { apiRequest } from '@/features/libs/apis';
-import { jstTime } from '@/app/utils/dateUtils';
+import { jstTime } from '@/features/utils/dateUtils';
 
 export const useTodos = (initialTodos: TodoListProps[]) => {
   //
