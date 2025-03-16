@@ -2,6 +2,8 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
+// import { FirestoreAdapter } from '@auth/firebase-adapter';
+// import firebaseAdminApp from '@/app/libs/firebaseAdmin';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -53,6 +55,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       },
     }),
   ],
+  // 認証成功したらデータを取得するようにする（複数箇所ででfirebaseAdminAppのインポートしない）
+  // adapter: FirestoreAdapter(firebaseAdminApp),
   // リダイレクト設定
   callbacks: {
     ...authConfig.callbacks,
