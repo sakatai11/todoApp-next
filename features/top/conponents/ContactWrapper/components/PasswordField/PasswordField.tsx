@@ -8,7 +8,7 @@ import { useState } from 'react';
 import {
   getValidationStatus,
   getErrorMessage,
-} from '@/app/utils/validationUtils';
+} from '@/features/utils/validationUtils';
 
 const PasswordField = ({
   success,

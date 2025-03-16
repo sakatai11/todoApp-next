@@ -3,7 +3,7 @@ import { PrevState } from '@/types/form/formData';
 import {
   getValidationStatus,
   getErrorMessage,
-} from '@/app/utils/validationUtils';
+} from '@/features/utils/validationUtils';
 
 const EmailField = ({
   success,
