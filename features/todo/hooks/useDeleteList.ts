@@ -5,7 +5,7 @@ import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { ListPayload } from '@/types/lists';
 import { TodoPayload } from '@/types/todos';
-import { apiRequest } from '@/app/libs/apis';
+import { apiRequest } from '@/features/libs/apis';
 
 type DeleteListProps = {
   todos: TodoListProps[];

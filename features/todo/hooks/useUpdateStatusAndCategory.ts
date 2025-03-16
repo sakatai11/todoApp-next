@@ -6,8 +6,8 @@ import { TodoListProps, TodoPayload } from '@/types/todos';
 import {
   isDuplicateCategory,
   updateListsAndTodos,
-} from '@/app/utils/updateStatusUtils';
-import { apiRequest } from '@/app/libs/apis';
+} from '@/features/utils/updateStatusUtils';
+import { apiRequest } from '@/features/libs/apis';
 
 type UpdateDataProp = {
   todos: TodoListProps[];

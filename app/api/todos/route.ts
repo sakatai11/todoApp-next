@@ -1,15 +1,14 @@
-import { db } from '@/app/libs/firebase';
-import {
-  doc,
-  getDocs,
-  addDoc,
-  collection,
-  deleteDoc,
-  updateDoc,
-  writeBatch,
-} from 'firebase/firestore';
+import {} from // doc,
+// getDocs,
+// addDoc,
+// collection,
+// deleteDoc,
+// updateDoc,
+// writeBatch,
+'firebase/firestore';
 import { NextRequest, NextResponse } from 'next/server';
 import { TodoPayload } from '@/types/todos';
+import { adminDB } from '@/app/libs/firebaseAdmin';
 
 export async function POST(req: NextRequest) {
   const body = await req.json(); // JSONデータを取得
@@ -25,7 +24,7 @@ export async function POST(req: NextRequest) {
     };
 
     try {
-      const docRef = await addDoc(collection(db, 'todos'), newTodo);
+      const docRef = await adminDB.collection('todos').add(newTodo);
       return NextResponse.json({ id: docRef.id, ...newTodo }, { status: 200 });
     } catch (error) {
       console.error('Error add todo:', error);
@@ -47,9 +46,7 @@ export async function PUT(req: NextRequest) {
     //  toggleSelected
     if ('id' in payload && 'bool' in payload) {
       const { id, bool } = payload;
-      await updateDoc(doc(db, 'todos', id), {
-        bool: bool,
-      });
+      await adminDB.collection('todos').doc(id).update({ bool: bool });
       return NextResponse.json(
         { message: 'Todo updated toggle' },
         { status: 200 },
@@ -65,7 +62,7 @@ export async function PUT(req: NextRequest) {
     ) {
       const { id, updateTime, text, status } = payload;
       console.log(text);
-      await updateDoc(doc(db, 'todos', id), {
+      await adminDB.collection('todos').doc(id).update({
         updateTime: updateTime,
         text: text,
         status: status,
@@ -79,13 +76,14 @@ export async function PUT(req: NextRequest) {
     // editList（バッチ処理）
     if (payload.type === 'restatus') {
       const { oldStatus, status } = payload.data;
+      const todosQuerySnapshot = await adminDB.collection('todos').get();
+      const batch = adminDB.batch();
 
-      const todosQuerySnapshot = await getDocs(collection(db, 'todos'));
-      const batch = writeBatch(db);
       todosQuerySnapshot.forEach((doc) => {
         const todo = doc.data();
+        const docRef = doc.ref;
         if (todo.status === oldStatus) {
-          batch.update(doc.ref, { status: status });
+          batch.update(docRef, { status: status });
         }
       });
 
@@ -112,7 +110,7 @@ export async function DELETE(req: NextRequest) {
 
   if (id) {
     try {
-      await deleteDoc(doc(db, 'todos', id.toString()));
+      await adminDB.collection('todos').doc(id.toString()).delete();
       return NextResponse.json({ message: 'Todo deleted' }, { status: 200 });
     } catch (error) {
       console.error('Error delete todo:', error);

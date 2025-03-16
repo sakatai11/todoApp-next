@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Button, Box, Typography, TextField } from '@mui/material';
 import { ModalPropType } from '@/types/conponents';
-import { jstFormattedDate } from '@/app/utils/dateUtils';
+import { jstFormattedDate } from '@/features/utils/dateUtils';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import StatusPullList from '@/features/todo/conponents/elements/Status/StatusPullList';
