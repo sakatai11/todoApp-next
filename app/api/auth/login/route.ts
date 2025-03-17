@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthData } from '@/types/auth/authData';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-// import { clientAuth } from '@/app/libs/firebase';
+import { clientAuth } from '@/app/libs/firebase';
 
 export async function POST(req: NextRequest) {
   const body = await req.json(); // JSONデータを取得

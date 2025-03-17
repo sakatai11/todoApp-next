@@ -4,12 +4,10 @@
 import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
-import {} from //   doc,
-//  setDoc,
-//  getDoc,
-// serverTimestamp,
-'firebase/firestore';
-// import { db } from '@/app/libs/firebase';
+import { getClientApiRequest } from '@/app/libs/apis';
+import { db } from '@/app/libs/firebase';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { handleError } from '@/app/utils/authUtils';
 // import { hashPassword } from '@/app/utils/auth-utils';
 // import { redirect } from 'next/navigation';
 // import { signIn } from '@/auth';
@@ -79,70 +77,55 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
     };
   }
 
-  // try {
-  // メール重複チェック
-  // const userDoc = await getDoc(doc(db, 'users', rawFormData.email));
-  // if (userDoc.exists()) {
-  //   return {
-  //     success: false,
-  //     option: 'email',
-  //     message: messageType.mailError,
-  //   };
-  // }
+  try {
+    // メール重複チェック
+    const existingUser = await getClientApiRequest(rawFormData.email);
+    if (existingUser.exists()) {
+      return {
+        success: false,
+        option: 'email',
+        message: messageType.mailError,
+      };
+    }
 
-  // パスワードハッシュ化
-  // const hashedPassword = hashPassword(rawFormData.password);
+    // パスワードハッシュ化
+    // const hashedPassword = hashPassword(rawFormData.password);
 
-  // // ユーザーデータ保存
-  // await setDoc(
-  //   doc(db, 'users', rawFormData.email),
-  //   {
-  //     email: rawFormData.email,
-  //     password: hashedPassword,
-  //     createdAt: serverTimestamp(),
-  //     lastLogin: null,
-  //     failedAttempts: 0,
-  //     lockedUntil: null,
-  //   },
-  //   { merge: true },
-  // );
+    // ユーザーデータ保存
+    await setDoc(
+      doc(db, 'users', rawFormData.email),
+      {
+        email: rawFormData.email,
+        password: rawFormData.password,
+        createdAt: serverTimestamp(),
+        lastLogin: null,
+        failedAttempts: 0,
+        lockedUntil: null,
+      },
+      { merge: true },
+    );
 
-  // // 自動ログイン処理
-  // const email = rawFormData.email;
-  // const password = rawFormData.password;
+    // // 自動ログイン処理
+    // const email = rawFormData.email;
+    // const password = rawFormData.password;
 
-  // const result = await signIn('credentials', {
-  //   email,
-  //   password,
-  //   redirect: false,
-  // });
+    // const result = await signIn('credentials', {
+    //   email,
+    //   password,
+    //   redirect: false,
+    // });
 
-  // if (result?.error) {
-  //   throw new Error('自動ログインに失敗しました');
-  // }
+    // if (result?.error) {
+    //   throw new Error('自動ログインに失敗しました');
+    // }
 
-  // NEXT_REDIRECTが投げられ，catchでリダイレクトされる
-  // await signIn('credentials', rawFormData);
+    // NEXT_REDIRECTが投げられ，catchでリダイレクトされる
+    // await signIn('credentials', rawFormData);
 
-  // Cacheの再検証
-  revalidatePath('/signup');
-  // } catch (error) {
-  //   if (error instanceof AuthError) {
-  //     switch (error.type) {
-  //       case 'CredentialsSignin':
-  //         console.error('Signin error:', error);
-  //         return {
-  //           success: false,
-  //           message: 'メールアドレスまたはパスワードが間違っています',
-  //         };
-  //     }
-  //     return {
-  //       success: false,
-  //       message:
-  //         '登録処理中にエラーが発生しました。時間をおいて再度お試しください',
-  //     };
-  //   }
-  // }
-
+    // Cacheの再検証
+    revalidatePath('/signup');
+  } catch (error) {
+    return handleError(error);
+  }
   return { success: true, message: '登録しました！' };
 }

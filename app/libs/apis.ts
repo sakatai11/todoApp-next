@@ -1,3 +1,6 @@
+import { db } from '@/app/libs/firebase';
+import { getDoc, doc } from 'firebase/firestore';
+
 export const getApiRequest = async (pathname: string) => {
   // API エンドポイントのパスをマッピングするオブジェクト
   // キー（string） → ページ名やリソース名
@@ -26,6 +29,17 @@ export const getApiRequest = async (pathname: string) => {
     }
 
     return response.json();
+  } catch (error) {
+    console.error('API request error:', error);
+    throw error; // 呼び出し元でエラーハンドリング
+  }
+};
+
+export const getClientApiRequest = async (email: string) => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', email));
+
+    return userDoc;
   } catch (error) {
     console.error('API request error:', error);
     throw error; // 呼び出し元でエラーハンドリング
