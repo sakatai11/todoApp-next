@@ -57,11 +57,4 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   // 認証成功したらデータを取得するようにする（複数箇所ででfirebaseAdminAppのインポートしない）
   // adapter: FirestoreAdapter(firebaseAdminApp),
-  // リダイレクト設定
-  callbacks: {
-    ...authConfig.callbacks,
-    async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : baseUrl + '/confirm';
-    },
-  },
 });

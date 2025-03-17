@@ -59,6 +59,10 @@ export const authConfig = {
       session.user = token.user;
       return session;
     },
+    // リダイレクト設定
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl + '/confirm';
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
   providers: [],
