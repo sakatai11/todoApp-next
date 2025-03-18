@@ -28,7 +28,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         }
 
         // 実際にはここでバックエンドにリクエストを送信して認証を行う
-        const url = process.env.NEXTAUTH_URL + '/api/auth/login';
+        const url = process.env.NEXTAUTH_URL + '/api/auth/signin';
         const res = await fetch(url, {
           method: 'POST',
           headers: {
@@ -58,5 +58,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     }),
   ],
   // 認証成功したらデータを取得するようにする（複数箇所ででfirebaseAdminAppのインポートしない）
+  // Google 認証や GitHub 認証などで使用できる
   adapter: FirestoreAdapter(firebaseAdminApp),
 });
