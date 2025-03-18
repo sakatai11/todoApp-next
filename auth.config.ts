@@ -1,6 +1,7 @@
 // auth.config.ts
 import type { NextAuthConfig, Session, User } from 'next-auth';
 import { NextRequest } from 'next/server';
+import { getClientUserById } from '@/app/libs/apis';
 // import { verifyPassword } from '@/app/utils/auth-utils';
 // import { db } from '@/app/libs/firebase';
 // import { doc, getDoc } from 'firebase/firestore';
@@ -39,13 +40,26 @@ export const authConfig = {
     // ここで返されるものはすべて JWT に保存され，session callbackに転送される。そこで、クライアントに返すべきものを制御できる。それ以外のものは、フロントエンドからは秘匿される。
     // JWTはAUTH_SECRET環境変数によってデフォルトで暗号化される。
     // セッションに何を追加するかを決定するために使用される
+
     async jwt({ token, user }) {
-      console.log('jwt', token, user);
       if (user) {
         token.backendToken = user.backendToken;
         token.uid = user.id;
         token.email = user.email;
+        token.role = user.role; // ログイン時に role を保存
       }
+
+      // 10分ごとにDBから最新のroleを取得
+      const shouldRefresh =
+        Date.now() - (token.lastUpdated || 0) > 10 * 60 * 1000;
+      if (shouldRefresh && token.sub) {
+        const existingUser = await getClientUserById(token.sub);
+        if (existingUser?.role) {
+          token.role = existingUser.role;
+          token.lastUpdated = Date.now(); // 更新タイムスタンプを保存
+        }
+      }
+
       return token;
     },
     //セッションがチェックされるたびに呼び出される（useSessionやgetSessionを使用して/api/sessionエンドポイントを呼び出した場合など）。
@@ -56,7 +70,11 @@ export const authConfig = {
     async session({ session, token }) {
       console.log('session', session, token);
       session.backendToken = token.backendToken;
-      session.user = token.user;
+      session.user = {
+        id: token.uid,
+        email: token.email,
+        role: token.role,
+      };
       return session;
     },
     // リダイレクト設定

@@ -8,6 +8,9 @@ export type AuthData = {
   password: string;
 };
 
+// tokenRoleのリテラル型
+export type UserRole = 'ADMIN' | 'USER';
+
 // Zodスキーマで厳密に定義
 export const AuthResponseSchema = z.object({
   id: z.string(),

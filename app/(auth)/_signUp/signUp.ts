@@ -80,7 +80,7 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
   try {
     // メール重複チェック
     const existingUser = await getClientApiRequest(rawFormData.email);
-    if (existingUser.exists()) {
+    if (existingUser) {
       return {
         success: false,
         option: 'email',
@@ -96,11 +96,9 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
       doc(db, 'users', rawFormData.email),
       {
         email: rawFormData.email,
+        role: 'USER',
         password: rawFormData.password,
         createdAt: serverTimestamp(),
-        lastLogin: null,
-        failedAttempts: 0,
-        lockedUntil: null,
       },
       { merge: true },
     );

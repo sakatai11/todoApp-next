@@ -39,7 +39,18 @@ export const getClientApiRequest = async (email: string) => {
   try {
     const userDoc = await getDoc(doc(db, 'users', email));
 
-    return userDoc;
+    return userDoc.exists() ? userDoc.exists() : null;
+  } catch (error) {
+    console.error('API request error:', error);
+    throw error; // 呼び出し元でエラーハンドリング
+  }
+};
+
+export const getClientUserById = async (id: string) => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', id));
+
+    return userDoc.exists() ? userDoc.data() : null;
   } catch (error) {
     console.error('API request error:', error);
     throw error; // 呼び出し元でエラーハンドリング
