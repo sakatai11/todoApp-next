@@ -4,7 +4,7 @@
 import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
-import { getClientApiRequest } from '@/app/libs/apis';
+import { getServerApiRequest } from '@/app/libs/apis';
 import { db } from '@/app/libs/firebase';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleError } from '@/app/utils/authUtils';
@@ -79,7 +79,7 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
 
   try {
     // メール重複チェック
-    const existingUser = await getClientApiRequest(rawFormData.email);
+    const existingUser = await getServerApiRequest(rawFormData.email);
     if (existingUser) {
       return {
         success: false,

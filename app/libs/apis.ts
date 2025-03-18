@@ -35,7 +35,7 @@ export const getApiRequest = async (pathname: string) => {
   }
 };
 
-export const getClientApiRequest = async (email: string) => {
+export const getServerApiRequest = async (email: string) => {
   try {
     const userDoc = await getDoc(doc(db, 'users', email));
 
