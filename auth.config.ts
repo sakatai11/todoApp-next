@@ -44,9 +44,14 @@ export const authConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.backendToken = user.backendToken;
-        token.uid = user.id;
+        token.sub ??= user.id; // `sub` が未定義の場合のみ `user.id` を設定
         token.email = user.email;
         token.role = user.role; // ログイン時に role を保存
+
+        // 初回ログイン時に `lastUpdated` をセット
+        if (!token.lastUpdated) {
+          token.lastUpdated = Date.now();
+        }
       }
 
       // 10分ごとにDBから最新のroleを取得

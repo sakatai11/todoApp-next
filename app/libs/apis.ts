@@ -1,5 +1,12 @@
 import { db } from '@/app/libs/firebase';
-import { getDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+} from 'firebase/firestore';
 
 export const getApiRequest = async (pathname: string) => {
   // API エンドポイントのパスをマッピングするオブジェクト
@@ -37,9 +44,12 @@ export const getApiRequest = async (pathname: string) => {
 
 export const getServerApiRequest = async (email: string) => {
   try {
-    const userDoc = await getDoc(doc(db, 'users', email));
+    // Firestoreのusersコレクションからemailが一致するドキュメントを取得
+    const q = query(collection(db, 'users'), where('email', '==', email));
+    const querySnapshot = await getDocs(q);
 
-    return userDoc.exists() ? userDoc.exists() : null;
+    // もし1つでも一致するユーザーがいれば存在する
+    return !querySnapshot.empty ? true : null;
   } catch (error) {
     console.error('API request error:', error);
     throw error; // 呼び出し元でエラーハンドリング

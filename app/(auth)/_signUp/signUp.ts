@@ -6,7 +6,7 @@ import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { getServerApiRequest } from '@/app/libs/apis';
 import { db } from '@/app/libs/firebase';
-import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { handleError } from '@/app/utils/authUtils';
 // import { hashPassword } from '@/app/utils/auth-utils';
 // import { redirect } from 'next/navigation';
@@ -92,16 +92,12 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
     // const hashedPassword = hashPassword(rawFormData.password);
 
     // ユーザーデータ保存
-    await setDoc(
-      doc(db, 'users', rawFormData.email),
-      {
-        email: rawFormData.email,
-        role: 'USER',
-        password: rawFormData.password,
-        createdAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
+    await addDoc(collection(db, 'users'), {
+      email: rawFormData.email,
+      role: 'USER',
+      password: rawFormData.password,
+      createdAt: serverTimestamp(),
+    });
 
     // // 自動ログイン処理
     // const email = rawFormData.email;
