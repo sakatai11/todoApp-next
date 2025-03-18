@@ -8,6 +8,7 @@ import firebaseAdminApp from '@/app/libs/firebaseAdmin';
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   providers: [
+    // signInが呼ばれた際にこの関数が呼び出される
     Credentials({
       name: 'Credentials',
       credentials: {
@@ -26,6 +27,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           throw new Error('NEXTAUTH_URL is not defined');
         }
 
+        // 実際にはここでバックエンドにリクエストを送信して認証を行う
         const url = process.env.NEXTAUTH_URL + '/api/auth/login';
         const res = await fetch(url, {
           method: 'POST',
