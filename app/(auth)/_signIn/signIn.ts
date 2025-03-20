@@ -4,16 +4,15 @@
 import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
-import {} from //   doc,
-//  setDoc,
-//  getDoc,
-// serverTimestamp,
-'firebase/firestore';
+// import { getServerApiRequest } from '@/app/libs/apis';
 // import { db } from '@/app/libs/firebase';
+// import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+// import { handleError } from '@/app/utils/authUtils';
+import { AuthError } from 'next-auth';
 // import { hashPassword } from '@/app/utils/auth-utils';
 // import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
-import { AuthError } from 'next-auth';
+// import { AuthError } from 'next-auth';
 // import { validatePassword } from 'firebase/auth';
 
 function validateEmail(email: string) {
@@ -81,8 +80,8 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
 
   try {
     // メール重複チェック
-    // const userDoc = await getDoc(doc(db, 'users', rawFormData.email));
-    // if (userDoc.exists()) {
+    // const existingUser = await getServerApiRequest(rawFormData.email);
+    // if (existingUser) {
     //   return {
     //     success: false,
     //     option: 'email',
@@ -92,20 +91,6 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
 
     // パスワードハッシュ化
     // const hashedPassword = hashPassword(rawFormData.password);
-
-    // // ユーザーデータ保存
-    // await setDoc(
-    //   doc(db, 'users', rawFormData.email),
-    //   {
-    //     email: rawFormData.email,
-    //     password: hashedPassword,
-    //     createdAt: serverTimestamp(),
-    //     lastLogin: null,
-    //     failedAttempts: 0,
-    //     lockedUntil: null,
-    //   },
-    //   { merge: true },
-    // );
 
     // // 自動ログイン処理
     // const email = rawFormData.email;
@@ -143,6 +128,5 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
       };
     }
   }
-
   return { success: true, message: 'ログイン成功！' };
 }
