@@ -4,6 +4,8 @@ import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
 import { FirestoreAdapter } from '@auth/firebase-adapter';
 import firebaseAdminApp from '@/app/libs/firebaseAdmin';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { clientAuth } from '@/app/libs/firebase';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -27,37 +29,48 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           throw new Error('NEXTAUTH_URL is not defined');
         }
 
-        // 実際にはここでバックエンドにリクエストを送信して認証を行う
-        const url = process.env.NEXTAUTH_URL + '/api/auth/signin';
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(credentials),
-        });
+        try {
+          const email = credentials.email as string;
+          const password = credentials.password as string;
 
-        if (!res.ok) {
-          throw new Error('ログインに失敗しました');
+          // Firebase Authentication でログイン（メール+パスワードを検証）
+          const userCredential = await signInWithEmailAndPassword(
+            clientAuth,
+            email,
+            password,
+          );
+          const idToken = await userCredential.user.getIdToken(); // IDトークンを取得
+
+          // ここでバックエンドにリクエストを送信してサーバートークンを取得
+          const url = process.env.NEXTAUTH_URL + '/api/auth/token';
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ idToken }),
+          });
+
+          if (!res.ok) {
+            throw new Error('ログインに失敗しました');
+          }
+
+          const { customToken, decodedToken } = await res.json();
+          console.log('token:', customToken);
+          return {
+            id: decodedToken.uid,
+            email: decodedToken.email,
+            customToken,
+          };
+        } catch (error) {
+          console.error('Error signing in with custom token:', error);
+          throw new Error('カスタムトークンによるログインに失敗しました');
         }
-
-        const responseData = await res.json();
-        const backendToken = responseData.accessToken;
-
-        console.log('token:', backendToken);
-        if (!backendToken) {
-          // 認証に失敗した場合は nullを返すか，エラーを投げることが期待される
-          // CredentialsSignin がスローされた場合、または null が返された場合、以下の 2 つのことが起こる：
-          // 1. URL に error=CredentialsSignin&code=credentials を指定して、ユーザーをログインページにリダイレクトする。
-          // 2. フォームアクションをサーバーサイドで処理するフレームワークでこのエラーを投げる場合(例えばserver actionsでsignInを呼び出す場合)、このエラーはログインフォームアクションによって投げられるので、そこで処理する必要がある。
-          throw new Error('トークンの取得に失敗しました');
-        }
-        return { backendToken };
       },
     }),
   ],
-  // 認証成功したらデータを取得するようにする（複数箇所ででfirebaseAdminAppのインポートしない）
   // Google 認証や GitHub 認証などで使用できる
+  // 認証成功したらデータを取得するようにする（複数箇所ででfirebaseAdminAppのインポートしない）
   adapter: FirestoreAdapter(firebaseAdminApp),
 });

@@ -28,7 +28,7 @@ export const authConfig = {
 
       // /todo配下のルートの保護
       const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/confirm');
-      const isLoggedin = !!auth?.backendToken;
+      const isLoggedin = !!auth?.customToken;
 
       if (isOnAuthenticatedPage && !isLoggedin) {
         // 未認証ならfalseを返し，Signinページにリダイレクトされる
@@ -40,13 +40,14 @@ export const authConfig = {
     // ここで返されるものはすべて JWT に保存され，session callbackに転送される。そこで、クライアントに返すべきものを制御できる。それ以外のものは、フロントエンドからは秘匿される。
     // JWTはAUTH_SECRET環境変数によってデフォルトで暗号化される。
     // セッションに何を追加するかを決定するために使用される
-
+    // user は authorize() の結果として渡される。
+    // token に user の情報をコピー。
     async jwt({ token, user }) {
       if (user) {
-        token.backendToken = user.backendToken;
         token.sub ??= user.id; // `sub` が未定義の場合のみ `user.id` を設定
         token.email = user.email;
         token.role = user.role; // ログイン時に role を保存
+        token.customToken = user.customToken;
 
         // 初回ログイン時に `lastUpdated` をセット
         if (!token.lastUpdated) {
@@ -54,12 +55,13 @@ export const authConfig = {
         }
       }
 
-      // 10分ごとにDBから最新のroleを取得
+      const REFRESH_INTERVAL = 60 * 60 * 1000; // 1時間
+
       const shouldRefresh =
-        Date.now() - (token.lastUpdated || 0) > 10 * 60 * 1000;
+        Date.now() - (token.lastUpdated || 0) > REFRESH_INTERVAL;
       if (shouldRefresh && token.sub) {
         const existingUser = await getClientUserById(token.sub);
-        if (existingUser?.role) {
+        if (existingUser?.role && existingUser.role !== token.role) {
           token.role = existingUser.role;
           token.lastUpdated = Date.now(); // 更新タイムスタンプを保存
         }
@@ -74,17 +76,21 @@ export const authConfig = {
     // JWTに保存されたデータのうち，クライアントに公開したいものを返す
     async session({ session, token }) {
       console.log('session', session, token);
-      session.backendToken = token.backendToken;
       session.user = {
-        id: token.uid,
+        id: token.sub,
         email: token.email,
         role: token.role,
+        customToken: token.customToken,
       };
+
       return session;
     },
     // リダイレクト設定
     async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : baseUrl + '/confirm';
+      if (url.startsWith(baseUrl)) {
+        return url; // 通常のリダイレクト
+      }
+      return baseUrl + '/confirm'; // 既定のリダイレクト先
     },
   },
   secret: process.env.NEXTAUTH_SECRET,

@@ -4,8 +4,8 @@ import { z } from 'zod';
 
 // 認証データの型
 export type AuthData = {
-  email: string;
-  password: string;
+  email?: string;
+  password?: string;
 };
 
 // tokenRoleのリテラル型
