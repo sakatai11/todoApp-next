@@ -1,4 +1,4 @@
-// api/auth/sigin/route.ts
+// api/auth/token/route.ts
 // import { AuthData } from '@/types/auth/authData';
 import { adminAuth } from '@/app/libs/firebaseAdmin';
 
