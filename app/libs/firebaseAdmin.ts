@@ -13,6 +13,14 @@ const serviceAccount: ServiceAccount = {
   clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
 };
 
+if (
+  !serviceAccount.projectId ||
+  !serviceAccount.privateKey ||
+  !serviceAccount.clientEmail
+) {
+  throw new Error('FIREBASE_SERVICE_ACCOUNT is missing required fields');
+}
+
 // Firebase Admin の初期化（既存のインスタンスがない場合のみ実行）
 const firebaseAdminApp =
   getApps().length > 0
@@ -20,4 +28,4 @@ const firebaseAdminApp =
     : initializeApp({ credential: cert(serviceAccount) });
 
 export default firebaseAdminApp;
-export const adminDB = getFirestore();
+export const adminDB = getFirestore(firebaseAdminApp);
