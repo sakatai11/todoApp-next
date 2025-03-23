@@ -12,7 +12,6 @@ export const authConfig = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30日
   },
   callbacks: {
     // Middlewareでユーザーの認証を行うときに呼び出される
@@ -48,23 +47,6 @@ export const authConfig = {
         token.email = user.email;
         token.role = user.role; // ログイン時に role を保存
         token.customToken = user.customToken;
-
-        // 初回ログイン時に `lastUpdated` をセット
-        if (!token.lastUpdated) {
-          token.lastUpdated = Date.now();
-        }
-      }
-
-      const REFRESH_INTERVAL = 60 * 60 * 1000; // 1時間
-
-      const shouldRefresh =
-        Date.now() - (token.lastUpdated || 0) > REFRESH_INTERVAL;
-      if (shouldRefresh && token.sub) {
-        const existingUser = await getClientUserById(token.sub);
-        if (existingUser?.role && existingUser.role !== token.role) {
-          token.role = existingUser.role;
-          token.lastUpdated = Date.now(); // 更新タイムスタンプを保存
-        }
       }
 
       return token;
