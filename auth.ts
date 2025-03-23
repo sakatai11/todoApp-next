@@ -3,7 +3,7 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
 import { FirestoreAdapter } from '@auth/firebase-adapter';
-import firebaseAdminApp from '@/app/libs/firebaseAdmin';
+import { firebaseAdminApp } from '@/app/libs/firebaseAdmin';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/app/libs/firebase';
 

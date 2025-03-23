@@ -5,6 +5,7 @@ import {
   ServiceAccount,
 } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 // サービスアカウントの設定
 const serviceAccount: ServiceAccount = {
@@ -27,5 +28,8 @@ const firebaseAdminApp =
     ? getApps()[0]
     : initializeApp({ credential: cert(serviceAccount) });
 
-export default firebaseAdminApp;
-export const adminDB = getFirestore(firebaseAdminApp);
+const adminDB = getFirestore(firebaseAdminApp);
+// サーバー側の認証インスタンスを取得
+const adminAuth = getAuth(firebaseAdminApp);
+
+export { firebaseAdminApp, adminDB, adminAuth };

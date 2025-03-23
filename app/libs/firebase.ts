@@ -17,7 +17,7 @@ const firebaseConfig = {
 
 // アプリの初期化（既に初期化されている場合は再利用）
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore();
+const db = getFirestore(firebaseApp);
 // クライアント側の認証インスタンスを取得
 const clientAuth = getAuth(firebaseApp);
 

@@ -1,7 +1,6 @@
 // api/auth/sigin/route.ts
 // import { AuthData } from '@/types/auth/authData';
-import { getAuth } from 'firebase-admin/auth';
-import firebaseAdminApp from '@/app/libs/firebaseAdmin';
+import { adminAuth } from '@/app/libs/firebaseAdmin';
 
 export async function POST(req: Request) {
   try {
@@ -10,14 +9,12 @@ export async function POST(req: Request) {
     if (!idToken) {
       return Response.json({ error: 'IDトークンが必要です' }, { status: 400 });
     }
-
-    const auth = getAuth(firebaseAdminApp);
     // Firebase Admin SDK を使ってトークンを検証
-    const decodedToken = await auth.verifyIdToken(idToken);
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
     // カスタムトークンを発行
-    const customToken = await auth.createCustomToken(uid);
+    const customToken = await adminAuth.createCustomToken(uid);
 
     return Response.json({ customToken, decodedToken });
   } catch (error) {
