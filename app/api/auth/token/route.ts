@@ -1,18 +1,14 @@
 // api/auth/sigin/route.ts
-import { NextRequest, NextResponse } from 'next/server';
 // import { AuthData } from '@/types/auth/authData';
 import { getAuth } from 'firebase-admin/auth';
 import firebaseAdminApp from '@/app/libs/firebaseAdmin';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const { idToken } = await req.json();
 
     if (!idToken) {
-      return NextResponse.json(
-        { error: 'IDトークンが必要です' },
-        { status: 400 },
-      );
+      return Response.json({ error: 'IDトークンが必要です' }, { status: 400 });
     }
 
     const auth = getAuth(firebaseAdminApp);
@@ -23,9 +19,9 @@ export async function POST(req: NextRequest) {
     // カスタムトークンを発行
     const customToken = await auth.createCustomToken(uid);
 
-    return NextResponse.json({ customToken, decodedToken });
+    return Response.json({ customToken, decodedToken });
   } catch (error) {
     console.error('Error generating custom token:', error);
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 500 });
+    return Response.json({ error: 'Invalid credentials' }, { status: 500 });
   }
 }

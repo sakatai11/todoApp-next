@@ -8,10 +8,9 @@ import {} from // doc,
 // query,
 // orderBy,
 'firebase/firestore';
-import { NextRequest, NextResponse } from 'next/server';
 import { ListPayload } from '@/types/lists';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   const body = await req.json(); // JSONデータを取得
   const { category, number }: ListPayload<'POST'> = body;
 
@@ -23,20 +22,20 @@ export async function POST(req: NextRequest) {
 
     try {
       const docRef = await adminDB.collection('lists').add(newList);
-      return NextResponse.json({ id: docRef.id, ...newList }, { status: 200 });
+      return Response.json({ id: docRef.id, ...newList }, { status: 200 });
     } catch (error) {
       console.error('Error add list:', error);
-      return NextResponse.json({ error: 'Error adding list' }, { status: 500 });
+      return Response.json({ error: 'Error adding list' }, { status: 500 });
     }
   } else {
-    return NextResponse.json(
+    return Response.json(
       { error: 'Category and Number are required' },
       { status: 400 },
     );
   }
 }
 
-export async function PUT(req: NextRequest) {
+export async function PUT(req: Request) {
   const body = await req.json();
   const payload: ListPayload<'PUT'> = body;
 
@@ -47,7 +46,7 @@ export async function PUT(req: NextRequest) {
       await adminDB.collection('lists').doc(id).update({
         category: payload.data.category,
       });
-      return NextResponse.json(
+      return Response.json(
         { message: 'List updated category' },
         { status: 200 },
       );
@@ -81,26 +80,23 @@ export async function PUT(req: NextRequest) {
           transaction.update(docRef, { number: index + 1 });
         });
       });
-      return NextResponse.json(
-        { message: 'List updated number' },
-        { status: 200 },
-      );
+      return Response.json({ message: 'List updated number' }, { status: 200 });
     }
 
-    return NextResponse.json(
+    return Response.json(
       { error: 'Invalid payload: Missing required fields.' },
       { status: 400 },
     );
   } catch (error) {
     console.error('Error update list:', error);
-    return NextResponse.json(
+    return Response.json(
       { error: 'Error updating list category' },
       { status: 500 },
     );
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: Request) {
   const body = await req.json();
   const { id }: ListPayload<'DELETE'> = body;
   if (id) {
@@ -134,18 +130,12 @@ export async function DELETE(req: NextRequest) {
           transaction.update(docRef, { number: list.number });
         });
       });
-      return NextResponse.json({ message: 'List deleted' }, { status: 200 });
+      return Response.json({ message: 'List deleted' }, { status: 200 });
     } catch (error) {
       console.error('Error deleting list:', error);
-      return NextResponse.json(
-        { error: 'Error deleting list' },
-        { status: 500 },
-      );
+      return Response.json({ error: 'Error deleting list' }, { status: 500 });
     }
   } else {
-    return NextResponse.json(
-      { error: 'ListDelete is required' },
-      { status: 400 },
-    );
+    return Response.json({ error: 'ListDelete is required' }, { status: 400 });
   }
 }

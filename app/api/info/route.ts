@@ -1,5 +1,5 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
-import { NextResponse } from 'next/server';
+// import { NextResponse } from 'next/server';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 // 初回レンダリング時にデータを取得する関数
@@ -33,15 +33,12 @@ export async function GET() {
     }));
 
     // JSONレスポンスを返す
-    return NextResponse.json(
+    return Response.json(
       { todos: todosData, lists: listsData },
       { status: 200 },
     );
   } catch (error) {
     console.error('Error fetching data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch data' },
-      { status: 500 },
-    );
+    return Response.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 }
