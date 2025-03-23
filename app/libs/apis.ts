@@ -7,38 +7,47 @@ import {
   doc,
   getDoc,
 } from 'firebase/firestore';
+import { adminDB } from '@/app/libs/firebaseAdmin';
+import { TodoListProps } from '@/types/todos';
+import { StatusListProps } from '@/types/lists';
 
-export const getApiRequest = async (pathname: string) => {
-  // API エンドポイントのパスをマッピングするオブジェクト
-  // キー（string） → ページ名やリソース名
-  // 値（string） → 対応する API のエンドポイントパス
-  const authUrlMap: Record<string, string> = {
-    todo: '/api/info/',
-  };
-
-  const authUrl = authUrlMap[pathname];
-
-  if (!authUrl) {
-    throw new Error('Invalid pathname: No API endpoint found.');
-  }
-
+export const getApiRequest = async (): Promise<{
+  todos: TodoListProps[];
+  lists: StatusListProps[];
+}> => {
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL}${authUrl}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Firestoreクエリ
+    const todosSnapshot = await adminDB
+      .collection('todos')
+      .orderBy('updateTime', 'desc') // 降順
+      .get();
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'API request failed');
-    }
+    const listsSnapshot = await adminDB
+      .collection('lists')
+      .orderBy('number', 'asc') // 昇順
+      .get();
 
-    return response.json();
+    // データマッピング
+    const todosData: TodoListProps[] = todosSnapshot.docs.map((document) => ({
+      id: document.id,
+      updateTime: document.data().updateTime,
+      createdTime: document.data().createdTime,
+      text: document.data().text,
+      status: document.data().status,
+      bool: document.data().bool,
+    }));
+
+    const listsData: StatusListProps[] = listsSnapshot.docs.map((document) => ({
+      id: document.id,
+      category: document.data().category,
+      number: document.data().number,
+    }));
+
+    // JSONレスポンスを返す
+    return { todos: todosData, lists: listsData };
   } catch (error) {
-    console.error('API request error:', error);
-    throw error; // 呼び出し元でエラーハンドリング
+    console.error('Error fetching data:', error);
+    return { todos: [], lists: [] };
   }
 };
 

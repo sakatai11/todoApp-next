@@ -2,7 +2,7 @@ import { getApiRequest } from '@/app/libs/apis';
 import * as Todo from '@/features/todo/templates/Index';
 
 export default async function TodoPage() {
-  const { todos, lists } = await getApiRequest('todo');
+  const { todos, lists } = await getApiRequest();
 
   if (!todos || !lists) {
     console.error('No response received from API');
