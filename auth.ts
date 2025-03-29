@@ -56,12 +56,13 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             throw new Error('ログインに失敗しました');
           }
 
-          const { customToken, decodedToken } = await res.json();
+          const { customToken, decodedToken, tokenExpiry } = await res.json();
           console.log('token:', customToken);
           return {
             id: decodedToken.uid,
             email: decodedToken.email,
             customToken,
+            tokenExpiry,
           };
         } catch (error) {
           console.error('Error signing in with custom token:', error);

@@ -13,10 +13,13 @@ export async function POST(req: Request) {
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
+    // Firebase トークンの有効期限を取得（秒単位）
+    const tokenExpiry = decodedToken.exp - Math.floor(Date.now() / 1000);
+
     // カスタムトークンを発行
     const customToken = await adminAuth.createCustomToken(uid);
 
-    return Response.json({ customToken, decodedToken });
+    return Response.json({ customToken, decodedToken, tokenExpiry });
   } catch (error) {
     console.error('Error generating custom token:', error);
     return Response.json({ error: 'Invalid credentials' }, { status: 500 });

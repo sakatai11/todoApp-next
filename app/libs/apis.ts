@@ -1,12 +1,5 @@
 import { db } from '@/app/libs/firebase';
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-} from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
@@ -59,17 +52,6 @@ export const getServerApiRequest = async (email: string) => {
 
     // もし1つでも一致するユーザーがいれば存在する
     return !querySnapshot.empty ? true : null;
-  } catch (error) {
-    console.error('API request error:', error);
-    throw error; // 呼び出し元でエラーハンドリング
-  }
-};
-
-export const getClientUserById = async (id: string) => {
-  try {
-    const userDoc = await getDoc(doc(db, 'users', id));
-
-    return userDoc.exists() ? userDoc.data() : null;
   } catch (error) {
     console.error('API request error:', error);
     throw error; // 呼び出し元でエラーハンドリング

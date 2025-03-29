@@ -1,7 +1,6 @@
 // auth.config.ts
 import type { NextAuthConfig, Session, User } from 'next-auth';
 import { NextRequest } from 'next/server';
-import { getClientUserById } from '@/app/libs/apis';
 // import { verifyPassword } from '@/app/utils/auth-utils';
 // import { db } from '@/app/libs/firebase';
 // import { doc, getDoc } from 'firebase/firestore';
@@ -23,11 +22,16 @@ export const authConfig = {
       auth: Session | null;
       request: NextRequest;
     }) {
-      console.log('authorized', auth, nextUrl.pathname);
+      console.log('Middleware authorized check:', {
+        auth,
+        pathName: nextUrl.pathname,
+        hasCustomToken: !!auth?.user?.customToken,
+        user: auth?.user,
+      });
 
       // /todo配下のルートの保護
       const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/confirm');
-      const isLoggedin = !!auth?.customToken;
+      const isLoggedin = !!auth?.user?.customToken;
 
       if (isOnAuthenticatedPage && !isLoggedin) {
         // 未認証ならfalseを返し，Signinページにリダイレクトされる
@@ -41,12 +45,58 @@ export const authConfig = {
     // セッションに何を追加するかを決定するために使用される
     // user は authorize() の結果として渡される。
     // token に user の情報をコピー。
-    async jwt({ token, user }) {
+    async jwt({ token, user, session, trigger }) {
+      // 初回ログイン時にユーザー情報をトークンにコピー
       if (user) {
         token.sub ??= user.id; // `sub` が未定義の場合のみ `user.id` を設定
         token.email = user.email;
         token.role = user.role; // ログイン時に role を保存
         token.customToken = user.customToken;
+        token.tokenExpiry = user.tokenExpiry; // トークン有効期限を保存
+        token.tokenIssuedAt = Math.floor(Date.now() / 1000); // トークン発行時刻を保存
+      }
+
+      // トークンリフレッシュの処理
+      if (token.customToken && token.tokenIssuedAt) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        const tokenAge = currentTime - token.tokenIssuedAt;
+
+        // トークンが45分以上経過していたらリフレッシュ（1時間の有効期限の前にリフレッシュ）
+        if (tokenAge > 45 * 60) {
+          try {
+            console.log('リフレッシュトークンを取得します');
+            const refreshResponse = await fetch(
+              `${process.env.NEXTAUTH_URL}/api/auth/refresh`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  uid: token.sub,
+                  email: token.email,
+                }),
+              },
+            );
+
+            if (refreshResponse.ok) {
+              const { customToken } = await refreshResponse.json();
+              token.customToken = customToken;
+              token.tokenIssuedAt = currentTime;
+              console.log('トークンが更新されました');
+            } else {
+              console.error('トークンの更新に失敗しました');
+            }
+          } catch (error) {
+            console.error('トークンリフレッシュエラー:', error);
+          }
+        }
+      }
+
+      // update トリガーの場合（セッションが更新された場合）
+      if (trigger === 'update' && session?.customToken) {
+        token.customToken = session.customToken;
+        token.tokenIssuedAt = Math.floor(Date.now() / 1000);
       }
 
       return token;
@@ -64,6 +114,10 @@ export const authConfig = {
         role: token.role,
         customToken: token.customToken,
       };
+
+      // トークンの有効期限情報をセッションに追加
+      session.tokenExpiry = token.tokenExpiry;
+      session.tokenIssuedAt = token.tokenIssuedAt;
 
       return session;
     },
