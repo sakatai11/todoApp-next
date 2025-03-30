@@ -2,13 +2,14 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
-import { FirestoreAdapter } from '@auth/firebase-adapter';
-import { firebaseAdminApp } from '@/app/libs/firebaseAdmin';
+// import { FirestoreAdapter } from '@auth/firebase-adapter';
+// import { firebaseAdminApp } from '@/app/libs/firebaseAdmin';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/app/libs/firebase';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
+  trustHost: true,
   providers: [
     // signInが呼ばれた際にこの関数が呼び出される
     Credentials({
@@ -73,5 +74,5 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   // Google 認証や GitHub 認証などで使用できる
   // 認証成功したらデータを取得するようにする（複数箇所ででfirebaseAdminAppのインポートしない）
-  adapter: FirestoreAdapter(firebaseAdminApp),
+  // adapter: FirestoreAdapter(firebaseAdminApp),
 });
