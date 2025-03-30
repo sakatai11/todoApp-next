@@ -48,7 +48,7 @@ const ContactWrapper = () => {
           return {
             success: true,
             option: '',
-            message: undefined,
+            message: 'リダイレクト中...' as validationMessage,
           };
         }
         throw e; // その他のエラーは再スロー
