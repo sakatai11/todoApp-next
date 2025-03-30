@@ -30,16 +30,29 @@ const ContactWrapper = () => {
       option: string;
       message: validationMessage | undefined;
     }> => {
-      const { success, option, message } = await formActionHandler(
-        _prevState,
-        formData,
-      );
+      try {
+        const { success, option, message } = await formActionHandler(
+          _prevState,
+          formData,
+        );
 
-      return {
-        success,
-        option: option ?? '',
-        message: message as validationMessage,
-      };
+        return {
+          success,
+          option: option ?? '',
+          message: message as validationMessage,
+        };
+      } catch (e) {
+        if (e instanceof Error && e.message === 'NEXT_REDIRECT') {
+          // リダイレクトが必要な状態を返す
+          console.log(e.message);
+          return {
+            success: true,
+            option: '',
+            message: undefined,
+          };
+        }
+        throw e; // その他のエラーは再スロー
+      }
     },
     initialState,
   ); // 第2引数に初期値を指定
@@ -61,6 +74,9 @@ const ContactWrapper = () => {
       formRef.current?.reset();
     }
   }, [formState.success]);
+
+  console.log(formState.success);
+  console.log(formState.message);
 
   return (
     <div className="min-h-screen flex flex-col justify-center ">

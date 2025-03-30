@@ -33,9 +33,16 @@ export const authConfig = {
       const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/confirm');
       const isLoggedin = !!auth?.user?.customToken;
 
+      const isOnSignInPage = nextUrl.pathname === '/signin';
+
       if (isOnAuthenticatedPage && !isLoggedin) {
         // 未認証ならfalseを返し，Signinページにリダイレクトされる
         return false;
+      }
+
+      // ログイン済みでサインインページにアクセス → ダッシュボードへリダイレクト
+      if (isOnSignInPage && isLoggedin) {
+        return Response.redirect(new URL('/confirm', nextUrl.origin));
       }
       return true;
     },
@@ -122,12 +129,14 @@ export const authConfig = {
       return session;
     },
     // リダイレクト設定
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) {
-        return url; // 通常のリダイレクト
-      }
-      return baseUrl + '/confirm'; // 既定のリダイレクト先
-    },
+    // async redirect({ url, baseUrl }) {
+    //   console.log(`Redirect Check - URL: ${url}, BaseURL: ${baseUrl}`);
+
+    //   if (url.startsWith(baseUrl)) {
+    //     return url; // 通常のリダイレクト
+    //   }
+    //   return baseUrl + '/confirm'; // 既定のリダイレクト先
+    // },
   },
   secret: process.env.NEXTAUTH_SECRET,
   providers: [],

@@ -12,6 +12,7 @@ import { AuthError } from 'next-auth';
 // import { hashPassword } from '@/app/utils/auth-utils';
 // import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
+import { redirect } from 'next/navigation';
 // import { AuthError } from 'next-auth';
 // import { validatePassword } from 'firebase/auth';
 
@@ -32,7 +33,6 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
   const rawFormData = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
-    // timestamp: serverTimestamp(),
   };
 
   if (
@@ -107,10 +107,13 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
     // }
 
     // NEXT_REDIRECTが投げられ，catchでリダイレクトされる
-    await signIn('credentials', rawFormData);
+    await signIn('credentials', {
+      email: rawFormData.email,
+      password: rawFormData.password,
+      redirect: false, // 明示的に自動リダイレクトを無効化
+    });
 
-    // Cacheの再検証
-    revalidatePath('/signin');
+    throw new Error('NEXT_REDIRECT');
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -128,5 +131,8 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
       };
     }
   }
-  return { success: true, message: 'ログイン成功！' };
+  // Cacheの再検証
+  revalidatePath('/signin');
+  // リダイレクト
+  redirect('/confirm');
 }
