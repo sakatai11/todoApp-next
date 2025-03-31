@@ -4,9 +4,6 @@
 import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
-// import { db } from '@/app/libs/firebase';
-// import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-// import { handleError } from '@/app/utils/authUtils';
 import { AuthError } from 'next-auth';
 // import { hashPassword } from '@/app/utils/auth-utils';
 // import { redirect } from 'next/navigation';
@@ -78,24 +75,6 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
   }
 
   try {
-    // パスワードハッシュ化
-    // const hashedPassword = hashPassword(rawFormData.password);
-
-    // // 自動ログイン処理
-    // const email = rawFormData.email;
-    // const password = rawFormData.password;
-
-    // const result = await signIn('credentials', {
-    //   email,
-    //   password,
-    //   redirect: false,
-    // });
-
-    // if (result?.error) {
-    //   throw new Error('自動ログインに失敗しました');
-    // }
-
-    // NEXT_REDIRECTが投げられ，catchでリダイレクトされる
     await signIn('credentials', {
       email: rawFormData.email,
       password: rawFormData.password,
@@ -105,9 +84,10 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
     throw new Error('NEXT_REDIRECT');
   } catch (error) {
     if (error instanceof AuthError) {
+      console.error('Signin error:', error);
+
       switch (error.type) {
-        case 'CredentialsSignin':
-          console.error('Signin error:', error);
+        case 'CallbackRouteError':
           return {
             success: false,
             message: 'メールアドレスまたはパスワードが間違っています',

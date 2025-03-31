@@ -44,7 +44,6 @@ const ContactWrapper = () => {
       } catch (e) {
         if (e instanceof Error && e.message === 'NEXT_REDIRECT') {
           // リダイレクトが必要な状態を返す
-          console.log(e.message);
           return {
             success: true,
             option: '',
@@ -74,9 +73,6 @@ const ContactWrapper = () => {
       formRef.current?.reset();
     }
   }, [formState.success]);
-
-  console.log(formState.success);
-  console.log(formState.message);
 
   return (
     <div className="min-h-screen flex flex-col justify-center ">

@@ -1,9 +1,6 @@
 // auth.config.ts
 import type { NextAuthConfig, Session, User } from 'next-auth';
-import { NextRequest } from 'next/server';
-// import { verifyPassword } from '@/app/utils/auth-utils';
-// import { db } from '@/app/libs/firebase';
-// import { doc, getDoc } from 'firebase/firestore';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const authConfig = {
   pages: {
@@ -42,7 +39,7 @@ export const authConfig = {
 
       // ログイン済みでサインインページにアクセス → ダッシュボードへリダイレクト
       if (isOnSignInPage && isLoggedin) {
-        return Response.redirect(new URL('/confirm', nextUrl.origin));
+        return NextResponse.redirect(new URL('/confirm', nextUrl.origin));
       }
       return true;
     },
@@ -128,15 +125,6 @@ export const authConfig = {
 
       return session;
     },
-    // リダイレクト設定
-    // async redirect({ url, baseUrl }) {
-    //   console.log(`Redirect Check - URL: ${url}, BaseURL: ${baseUrl}`);
-
-    //   if (url.startsWith(baseUrl)) {
-    //     return url; // 通常のリダイレクト
-    //   }
-    //   return baseUrl + '/confirm'; // 既定のリダイレクト先
-    // },
   },
   secret: process.env.NEXTAUTH_SECRET,
   providers: [],

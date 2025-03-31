@@ -32,7 +32,6 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
   const rawFormData = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
-    // timestamp: serverTimestamp(),
   };
 
   if (

@@ -11,14 +11,13 @@
     "format": "npm run prettier && npm run lint"
   },
   "dependencies": {
-    "@auth/firebase-adapter": "2.8.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.1.1",
     "@mui/icons-material": "^6.4.3",
     "@mui/material": "^6.4.3",
-    "firebase": "^11.3.0",
-    "firebase-admin": "^12.7.0",
+    "firebase": "^11.5.0",
+    "firebase-admin": "^13.2.0",
     "next": "^15.2.4",
     "next-auth": "^5.0.0-beta.25",
     "react": "^19.0.0",

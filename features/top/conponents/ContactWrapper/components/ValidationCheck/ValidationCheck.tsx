@@ -6,7 +6,7 @@ const ValidationCheck = ({
 }: ValidationCheckProps): React.ReactElement => {
   return (
     <p className={'text-sm mb-4 flex justify-center'}>
-      {success === true && message}
+      {success === false && message}
     </p>
   );
 };

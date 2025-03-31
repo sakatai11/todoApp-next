@@ -1,5 +1,6 @@
 import { TodoPayload } from '@/types/todos';
 import { adminDB } from '@/app/libs/firebaseAdmin';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const body = await req.json(); // JSONデータを取得
@@ -16,13 +17,13 @@ export async function POST(req: Request) {
 
     try {
       const docRef = await adminDB.collection('todos').add(newTodo);
-      return Response.json({ id: docRef.id, ...newTodo }, { status: 200 });
+      return NextResponse.json({ id: docRef.id, ...newTodo }, { status: 200 });
     } catch (error) {
       console.error('Error add todo:', error);
-      return Response.json({ error: 'Error adding todo' }, { status: 500 });
+      return NextResponse.json({ error: 'Error adding todo' }, { status: 500 });
     }
   } else {
-    return Response.json(
+    return NextResponse.json(
       { error: 'Text and status are required' },
       { status: 400 },
     );
@@ -38,7 +39,10 @@ export async function PUT(req: Request) {
     if ('id' in payload && 'bool' in payload) {
       const { id, bool } = payload;
       await adminDB.collection('todos').doc(id).update({ bool: bool });
-      return Response.json({ message: 'Todo updated toggle' }, { status: 200 });
+      return NextResponse.json(
+        { message: 'Todo updated toggle' },
+        { status: 200 },
+      );
     }
 
     // saveTodo
@@ -55,7 +59,10 @@ export async function PUT(req: Request) {
         text: text,
         status: status,
       });
-      return Response.json({ message: 'Todo updated save' }, { status: 200 });
+      return NextResponse.json(
+        { message: 'Todo updated save' },
+        { status: 200 },
+      );
     }
 
     // editList（バッチ処理）
@@ -73,19 +80,19 @@ export async function PUT(req: Request) {
       });
 
       await batch.commit();
-      return Response.json(
+      return NextResponse.json(
         { message: 'Todo updated successfully' },
         { status: 200 },
       );
     }
 
-    return Response.json(
+    return NextResponse.json(
       { error: 'Invalid payload: Missing required fields.' },
       { status: 400 },
     );
   } catch (error) {
     console.error('Error update todo:', error);
-    return Response.json({ error: 'Error updating todo' }, { status: 500 });
+    return NextResponse.json({ error: 'Error updating todo' }, { status: 500 });
   }
 }
 
@@ -96,12 +103,18 @@ export async function DELETE(req: Request) {
   if (id) {
     try {
       await adminDB.collection('todos').doc(id.toString()).delete();
-      return Response.json({ message: 'Todo deleted' }, { status: 200 });
+      return NextResponse.json({ message: 'Todo deleted' }, { status: 200 });
     } catch (error) {
       console.error('Error delete todo:', error);
-      return Response.json({ error: 'Error deleting todo' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Error deleting todo' },
+        { status: 500 },
+      );
     }
   } else {
-    return Response.json({ error: 'TodoDelete is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'TodoDelete is required' },
+      { status: 400 },
+    );
   }
 }

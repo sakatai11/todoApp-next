@@ -1,5 +1,6 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { ListPayload } from '@/types/lists';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const body = await req.json(); // JSONデータを取得
@@ -13,13 +14,13 @@ export async function POST(req: Request) {
 
     try {
       const docRef = await adminDB.collection('lists').add(newList);
-      return Response.json({ id: docRef.id, ...newList }, { status: 200 });
+      return NextResponse.json({ id: docRef.id, ...newList }, { status: 200 });
     } catch (error) {
       console.error('Error add list:', error);
-      return Response.json({ error: 'Error adding list' }, { status: 500 });
+      return NextResponse.json({ error: 'Error adding list' }, { status: 500 });
     }
   } else {
-    return Response.json(
+    return NextResponse.json(
       { error: 'Category and Number are required' },
       { status: 400 },
     );
@@ -37,7 +38,7 @@ export async function PUT(req: Request) {
       await adminDB.collection('lists').doc(id).update({
         category: payload.data.category,
       });
-      return Response.json(
+      return NextResponse.json(
         { message: 'List updated category' },
         { status: 200 },
       );
@@ -71,16 +72,19 @@ export async function PUT(req: Request) {
           transaction.update(docRef, { number: index + 1 });
         });
       });
-      return Response.json({ message: 'List updated number' }, { status: 200 });
+      return NextResponse.json(
+        { message: 'List updated number' },
+        { status: 200 },
+      );
     }
 
-    return Response.json(
+    return NextResponse.json(
       { error: 'Invalid payload: Missing required fields.' },
       { status: 400 },
     );
   } catch (error) {
     console.error('Error update list:', error);
-    return Response.json(
+    return NextResponse.json(
       { error: 'Error updating list category' },
       { status: 500 },
     );
@@ -121,12 +125,18 @@ export async function DELETE(req: Request) {
           transaction.update(docRef, { number: list.number });
         });
       });
-      return Response.json({ message: 'List deleted' }, { status: 200 });
+      return NextResponse.json({ message: 'List deleted' }, { status: 200 });
     } catch (error) {
       console.error('Error deleting list:', error);
-      return Response.json({ error: 'Error deleting list' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Error deleting list' },
+        { status: 500 },
+      );
     }
   } else {
-    return Response.json({ error: 'ListDelete is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'ListDelete is required' },
+      { status: 400 },
+    );
   }
 }
