@@ -4,7 +4,6 @@
 import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
-// import { getServerApiRequest } from '@/app/libs/apis';
 // import { db } from '@/app/libs/firebase';
 // import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 // import { handleError } from '@/app/utils/authUtils';
@@ -79,16 +78,6 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
   }
 
   try {
-    // メール重複チェック
-    // const existingUser = await getServerApiRequest(rawFormData.email);
-    // if (existingUser) {
-    //   return {
-    //     success: false,
-    //     option: 'email',
-    //     message: messageType.mailError,
-    //   };
-    // }
-
     // パスワードハッシュ化
     // const hashedPassword = hashPassword(rawFormData.password);
 
