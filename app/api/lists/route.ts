@@ -1,13 +1,4 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
-import {} from // doc,
-// getDocs,
-// addDoc,
-// collection,
-// updateDoc,
-// runTransaction,
-// query,
-// orderBy,
-'firebase/firestore';
 import { ListPayload } from '@/types/lists';
 
 export async function POST(req: Request) {

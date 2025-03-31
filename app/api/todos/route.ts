@@ -1,11 +1,3 @@
-import {} from // doc,
-// getDocs,
-// addDoc,
-// collection,
-// deleteDoc,
-// updateDoc,
-// writeBatch,
-'firebase/firestore';
 import { TodoPayload } from '@/types/todos';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 
