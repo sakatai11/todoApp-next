@@ -1,7 +1,7 @@
 // api/auth/token/route.ts
-// import { AuthData } from '@/types/auth/authData';
 import { adminAuth } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
+import { AuthResponseSchema } from '@/data/validatedData';
 
 export async function POST(req: Request) {
   try {
@@ -16,14 +16,16 @@ export async function POST(req: Request) {
     // Firebase Admin SDK を使ってトークンを検証
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
     // Firebase トークンの有効期限を取得（秒単位）
     const tokenExpiry = decodedToken.exp - Math.floor(Date.now() / 1000);
-
     // カスタムトークンを発行
     const customToken = await adminAuth.createCustomToken(uid);
 
-    return NextResponse.json({ customToken, decodedToken, tokenExpiry });
+    const response = { decodedToken, customToken, tokenExpiry };
+    // **Zod でバリデーション**
+    const validatedData = AuthResponseSchema.parse(response);
+
+    return NextResponse.json(validatedData);
   } catch (error) {
     console.error('Error generating custom token:', error);
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 500 });

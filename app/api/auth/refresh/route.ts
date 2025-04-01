@@ -1,17 +1,22 @@
 // /app/api/auth/refresh/route.ts
 import { adminAuth } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
+import { AuthDecodedTokenSchema } from '@/data/validatedData';
 
 export async function POST(req: Request) {
   try {
-    const { uid, email } = await req.json();
+    const response = await req.json();
 
-    if (!uid || !email) {
+    // **Zod でバリデーション**
+    const validatedData = AuthDecodedTokenSchema.safeParse(response);
+    if (!validatedData.success) {
       return NextResponse.json(
-        { error: 'ユーザーIDもしくはemailが必要です' },
+        { error: '無効なリクエスト: ユーザーIDが必要です' },
         { status: 400 },
       );
     }
+
+    const { uid } = validatedData.data;
 
     // Firebase Admin SDK を使って新しいカスタムトークンを発行
     const customToken = await adminAuth.createCustomToken(uid);
@@ -23,11 +28,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Error refreshing token:', error);
-    return NextResponse.json(
-      {
-        error: 'トークンの更新に失敗しました',
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'sever error' }, { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/app/libs/firebase';
+import { CredentialsSchema } from '@/data/validatedData';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -18,8 +19,16 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       },
       async authorize(credentials) {
         console.log('authorize:', credentials);
+
+        const parsedCredentials = CredentialsSchema.safeParse(credentials);
+        if (!parsedCredentials.success) {
+          throw new Error('認証情報が不足しているか、形式が間違っています');
+        }
+
+        const { email, password } = parsedCredentials.data;
+
         // credentialsの存在チェックを追加
-        if (!credentials?.email || !credentials?.password) {
+        if (!email || !password) {
           throw new Error('認証情報が不足しています');
         }
 
@@ -29,9 +38,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         }
 
         try {
-          const email = credentials.email as string;
-          const password = credentials.password as string;
-
           // Firebase Authentication でログイン（メール+パスワードを検証）
           const userCredential = await signInWithEmailAndPassword(
             clientAuth,
