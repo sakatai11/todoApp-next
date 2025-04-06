@@ -10,10 +10,10 @@ export const topLink: PageLink = {
 };
 /** 各ページへのリンク */
 export const pageLinks: PageLink[] = [
-  {
-    name: 'Todo',
-    href: '/todo',
-  },
+  // {
+  //   name: 'Todo',
+  //   href: '/todo',
+  // },
   {
     name: 'SignIn',
     href: '/signin',
