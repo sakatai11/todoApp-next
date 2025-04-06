@@ -40,3 +40,26 @@ export type TodoHookType<T extends EditDataProps> = T &
     saveTodo: () => void;
     toggleSelected: (id: string) => void;
   };
+
+// POST / PUT / DELETE、それぞれのメソッドに応じたレスポンス型を定義します。
+export type TodoResponse<T extends 'POST' | 'PUT' | 'DELETE'> = T extends 'POST'
+  ? {
+      id?: string;
+      text?: string;
+      status?: string;
+      bool?: boolean;
+      createdTime?: number;
+      updateTime?: number;
+      error?: string;
+    }
+  : T extends 'PUT'
+    ? {
+        message?: string;
+        error?: string;
+      }
+    : T extends 'DELETE'
+      ? {
+          message?: string;
+          error?: string;
+        }
+      : never;

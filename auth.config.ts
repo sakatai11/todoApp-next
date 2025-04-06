@@ -64,10 +64,15 @@ export const authConfig = {
       if (token.customToken && token.tokenIssuedAt) {
         const currentTime = Math.floor(Date.now() / 1000);
         const tokenAge = currentTime - token.tokenIssuedAt;
+        console.log(tokenAge);
 
-        // トークンが45分以上経過していたらリフレッシュ（1時間の有効期限の前にリフレッシュ）
-        if (tokenAge > 45 * 60) {
+        // トークンが45分以上経過していて、かつ最後のリフレッシュから最低5分以上経っている場合のみ
+        if (
+          tokenAge > 45 * 60 ||
+          currentTime - (token.lastRefresh ?? 0) > 5 * 60
+        ) {
           try {
+            console.log(token.lastRefresh);
             console.log('リフレッシュトークンを取得します');
             const refreshResponse = await fetch(
               `${process.env.NEXTAUTH_URL}/api/auth/refresh`,
@@ -87,6 +92,7 @@ export const authConfig = {
               const { customToken } = await refreshResponse.json();
               token.customToken = customToken;
               token.tokenIssuedAt = currentTime;
+              token.lastRefresh = currentTime;
               console.log('トークンが更新されました');
             } else {
               console.error('トークンの更新に失敗しました');

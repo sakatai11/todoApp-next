@@ -3,20 +3,25 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
+import { Session } from 'next-auth';
 
-export const getApiRequest = async (): Promise<{
+export const getApiRequest = async (
+  session: Session | null,
+): Promise<{
   todos: TodoListProps[];
   lists: StatusListProps[];
 }> => {
+  const uid = session?.user?.id;
+
   try {
     // Firestoreクエリ
     const todosSnapshot = await adminDB
-      .collection('todos')
+      .collection(`users/${uid}/todos`)
       .orderBy('updateTime', 'desc') // 降順
       .get();
 
     const listsSnapshot = await adminDB
-      .collection('lists')
+      .collection(`users/${uid}/lists`)
       .orderBy('number', 'asc') // 昇順
       .get();
 

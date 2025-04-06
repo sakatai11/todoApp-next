@@ -1,142 +1,187 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
-import { ListPayload } from '@/types/lists';
+import { ListPayload, ListResponse } from '@/types/lists';
 import { NextResponse } from 'next/server';
+import { withAuthenticatedUser } from '@/app/libs/withAuth';
 
 export async function POST(req: Request) {
-  const body = await req.json(); // JSONデータを取得
-  const { category, number }: ListPayload<'POST'> = body;
+  return withAuthenticatedUser<ListPayload<'POST'>, ListResponse<'POST'>>(
+    req,
+    async (uid, body) => {
+      const { category, number } = body;
 
-  if (category && number) {
-    const newList = {
-      category,
-      number,
-    };
+      if (!category || !number) {
+        return NextResponse.json(
+          { error: 'Category and Number are required' },
+          { status: 400 },
+        );
+      }
 
-    try {
-      const docRef = await adminDB.collection('lists').add(newList);
-      return NextResponse.json({ id: docRef.id, ...newList }, { status: 200 });
-    } catch (error) {
-      console.error('Error add list:', error);
-      return NextResponse.json({ error: 'Error adding list' }, { status: 500 });
-    }
-  } else {
-    return NextResponse.json(
-      { error: 'Category and Number are required' },
-      { status: 400 },
-    );
-  }
+      const newList = {
+        category,
+        number,
+      };
+
+      try {
+        const docRef = await adminDB
+          .collection('users')
+          .doc(uid)
+          .collection('lists')
+          .add(newList);
+        return NextResponse.json(
+          { id: docRef.id, ...newList },
+          { status: 200 },
+        );
+      } catch (error) {
+        console.error('Error add list:', error);
+        return NextResponse.json(
+          { error: 'Error adding list' },
+          { status: 500 },
+        );
+      }
+    },
+  );
 }
 
 export async function PUT(req: Request) {
-  const body = await req.json();
-  const payload: ListPayload<'PUT'> = body;
+  return withAuthenticatedUser<ListPayload<'PUT'>, ListResponse<'PUT'>>(
+    req,
+    async (uid, payload) => {
+      try {
+        const listsCollection = adminDB
+          .collection('users')
+          .doc(uid)
+          .collection('lists');
 
-  try {
-    // editList
-    if (payload.type === 'update') {
-      const { id } = payload;
-      await adminDB.collection('lists').doc(id).update({
-        category: payload.data.category,
-      });
-      return NextResponse.json(
-        { message: 'List updated category' },
-        { status: 200 },
-      );
-    }
+        // editList
+        if (payload.type === 'update') {
+          const { id } = payload;
+          if (!id || !payload.data?.category) {
+            return NextResponse.json(
+              { error: 'ID and category are required' },
+              { status: 400 },
+            );
+          }
 
-    // handleButtonMov
-    // handleDragEnd
-    if (payload.type === 'reorder') {
-      await adminDB.runTransaction(async (transaction) => {
-        // 現在の全リストを取得
-        const listsCollection = adminDB.collection('lists');
+          await listsCollection.doc(id).update({
+            category: payload.data.category,
+          });
 
-        const snapshot = await listsCollection.get();
-        const currentLists = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        // バリデーション
-        const isValidOrder = payload.data.every((id) =>
-          currentLists.some((list) => list.id === id),
-        );
-
-        if (!isValidOrder) {
-          throw new Error('Invalid list IDs in newOrder');
+          return NextResponse.json(
+            { message: 'List updated category' },
+            { status: 200 },
+          );
         }
 
-        // 新しい順序で番号更新
-        payload.data.forEach(async (listId, index) => {
-          const docRef = listsCollection.doc(listId);
-          transaction.update(docRef, { number: index + 1 });
-        });
-      });
-      return NextResponse.json(
-        { message: 'List updated number' },
-        { status: 200 },
-      );
-    }
+        // handleButtonMov
+        // handleDragEnd
+        if (payload.type === 'reorder') {
+          if (!Array.isArray(payload.data) || payload.data.length === 0) {
+            return NextResponse.json(
+              { error: 'Valid order array is required' },
+              { status: 400 },
+            );
+          }
 
-    return NextResponse.json(
-      { error: 'Invalid payload: Missing required fields.' },
-      { status: 400 },
-    );
-  } catch (error) {
-    console.error('Error update list:', error);
-    return NextResponse.json(
-      { error: 'Error updating list category' },
-      { status: 500 },
-    );
-  }
+          await adminDB.runTransaction(async (transaction) => {
+            // 現在の全リストを取得
+            const snapshot = await listsCollection.get();
+            const currentLists = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+
+            // バリデーション
+            const isValidOrder = payload.data.every((id) =>
+              currentLists.some((list) => list.id === id),
+            );
+
+            if (!isValidOrder) {
+              throw new Error('Invalid list IDs in newOrder');
+            }
+
+            // 新しい順序で番号更新
+            payload.data.forEach((listId, index) => {
+              const docRef = listsCollection.doc(listId);
+              transaction.update(docRef, { number: index + 1 });
+            });
+          });
+
+          return NextResponse.json(
+            { message: 'List updated number' },
+            { status: 200 },
+          );
+        }
+
+        return NextResponse.json(
+          {
+            error: 'Invalid payload: Missing required fields or invalid type.',
+          },
+          { status: 400 },
+        );
+      } catch (error) {
+        console.error('Error update list:', error);
+        return NextResponse.json(
+          { error: 'Error updating list category' },
+          { status: 500 },
+        );
+      }
+    },
+  );
 }
 
 export async function DELETE(req: Request) {
-  const body = await req.json();
-  const { id }: ListPayload<'DELETE'> = body;
-  if (id) {
-    try {
-      await adminDB.runTransaction(async (transaction) => {
-        const listsCollection = adminDB.collection('lists');
+  return withAuthenticatedUser<ListPayload<'DELETE'>, ListResponse<'DELETE'>>(
+    req,
+    async (uid, body) => {
+      const { id } = body;
 
-        // リストを番号順に取得
-        const snapshot = await listsCollection.orderBy('number', 'asc').get();
+      if (!id) {
+        return NextResponse.json(
+          { error: 'ListDelete is required' },
+          { status: 400 },
+        );
+      }
 
-        // 削除対象を除外しつつ番号順を維持
-        const lists = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((list) => list.id !== id);
+      try {
+        const listsCollection = adminDB
+          .collection('users')
+          .doc(uid)
+          .collection('lists');
 
-        // 削除対象のリストドキュメント
-        const listDocRef = listsCollection.doc(id);
-        transaction.delete(listDocRef);
+        await adminDB.runTransaction(async (transaction) => {
+          // リストを番号順に取得
+          const snapshot = await listsCollection.orderBy('number', 'asc').get();
 
-        // 番号を1から再割り振り
-        const updatedLists = lists.map((list, index) => ({
-          ...list,
-          number: index + 1,
-        }));
+          // 削除対象を除外しつつ番号順を維持
+          const lists = snapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .filter((list) => list.id !== id);
 
-        console.log(updatedLists);
+          // 削除対象のリストドキュメント
+          const listDocRef = listsCollection.doc(id);
+          transaction.delete(listDocRef);
 
-        // トランザクション内でリスト番号を更新
-        updatedLists.forEach((list) => {
-          const docRef = listsCollection.doc(list.id);
-          transaction.update(docRef, { number: list.number });
+          // 番号を1から再割り振り
+          const updatedLists = lists.map((list, index) => ({
+            ...list,
+            number: index + 1,
+          }));
+
+          // トランザクション内でリスト番号を更新
+          updatedLists.forEach((list) => {
+            const docRef = listsCollection.doc(list.id);
+            transaction.update(docRef, { number: list.number });
+          });
         });
-      });
-      return NextResponse.json({ message: 'List deleted' }, { status: 200 });
-    } catch (error) {
-      console.error('Error deleting list:', error);
-      return NextResponse.json(
-        { error: 'Error deleting list' },
-        { status: 500 },
-      );
-    }
-  } else {
-    return NextResponse.json(
-      { error: 'ListDelete is required' },
-      { status: 400 },
-    );
-  }
+
+        return NextResponse.json({ message: 'List deleted' }, { status: 200 });
+      } catch (error) {
+        console.error('Error deleting list:', error);
+        return NextResponse.json(
+          { error: 'Error deleting list' },
+          { status: 500 },
+        );
+      }
+    },
+  );
 }

@@ -6,6 +6,7 @@ export const apiRequest = async <T>(
   try {
     const response = await fetch(url, {
       method,
+      credentials: 'include', // セッション情報を送信
       headers: {
         'Content-Type': 'application/json',
       },

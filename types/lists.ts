@@ -37,3 +37,23 @@ export type ListHookType = BaseHookType<
   handleDragEnd: (event: DragEndEvent) => void;
   handleButtonMove: (id: string, direction: 'right' | 'left') => void;
 };
+
+// POST / PUT / DELETE、それぞれのメソッドに応じたレスポンス型を定義します。
+export type ListResponse<T extends 'POST' | 'PUT' | 'DELETE'> = T extends 'POST'
+  ? {
+      id?: string;
+      category?: string;
+      number?: number;
+      error?: string;
+    }
+  : T extends 'PUT'
+    ? {
+        message?: string;
+        error?: string;
+      }
+    : T extends 'DELETE'
+      ? {
+          message?: string;
+          error?: string;
+        }
+      : never;
