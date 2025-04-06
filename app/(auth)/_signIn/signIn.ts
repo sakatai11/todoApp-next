@@ -103,5 +103,5 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
   // Cacheの再検証
   revalidatePath('/signin');
   // リダイレクト
-  redirect('/confirm');
+  redirect('/todo');
 }

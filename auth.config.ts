@@ -27,7 +27,7 @@ export const authConfig = {
       });
 
       // /todo配下のルートの保護
-      const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/confirm');
+      const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/todo');
       const isLoggedin = !!auth?.user?.customToken;
 
       const isOnSignInPage = nextUrl.pathname === '/signin';
@@ -39,7 +39,7 @@ export const authConfig = {
 
       // ログイン済みでサインインページにアクセス → ダッシュボードへリダイレクト
       if (isOnSignInPage && isLoggedin) {
-        return NextResponse.redirect(new URL('/confirm', nextUrl.origin));
+        return NextResponse.redirect(new URL('/todo', nextUrl.origin));
       }
       return true;
     },
