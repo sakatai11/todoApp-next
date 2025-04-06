@@ -5,7 +5,7 @@ export default async function middleware(request: NextRequest) {
   const session = await auth();
 
   // 保護ページの定義
-  const isProtectedPage = request.nextUrl.pathname.startsWith('/confirm');
+  const isProtectedPage = request.nextUrl.pathname.startsWith('/todo');
   const isAuthPage = request.nextUrl.pathname.startsWith('/signin');
 
   // 認証状態によるリダイレクト処理
@@ -14,7 +14,7 @@ export default async function middleware(request: NextRequest) {
   }
 
   if (isAuthPage && session?.user) {
-    return NextResponse.redirect(new URL('/confirm', request.url));
+    return NextResponse.redirect(new URL('/todo', request.url));
   }
 
   const response = NextResponse.next();
