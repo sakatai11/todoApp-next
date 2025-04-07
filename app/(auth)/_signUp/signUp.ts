@@ -5,11 +5,10 @@ import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { getServerApiRequest } from '@/app/libs/apis';
-import { db } from '@/app/libs/firebase';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { serverTimestamp } from 'firebase/firestore';
 import { handleError } from '@/app/utils/authUtils';
 import { getAuth } from 'firebase-admin/auth';
-// import { hashPassword } from '@/app/utils/auth-utils';
+import { getFirestore } from 'firebase-admin/firestore';
 // import { redirect } from 'next/navigation';
 // import { signIn } from '@/auth';
 // import { AuthError } from 'next-auth';
@@ -88,9 +87,6 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
       };
     }
 
-    // パスワードハッシュ化
-    // const hashedPassword = hashPassword(rawFormData.password);
-
     const auth = getAuth();
     const userRecord = await auth.createUser({
       email: rawFormData.email.toLowerCase(),
@@ -99,28 +95,16 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
       disabled: false,
     });
 
-    // ユーザーデータ保存
-    await setDoc(doc(db, 'users', userRecord.uid), {
+    console.log(`userRecord:${userRecord}`);
+
+    const adminDb = getFirestore();
+
+    // ユーザーデータ管理者権限を使って保存
+    await adminDb.collection('users').doc(userRecord.uid).set({
       email: rawFormData.email,
       role: 'USER',
       createdAt: serverTimestamp(),
     });
-    // // 自動ログイン処理
-    // const email = rawFormData.email;
-    // const password = rawFormData.password;
-
-    // const result = await signIn('credentials', {
-    //   email,
-    //   password,
-    //   redirect: false,
-    // });
-
-    // if (result?.error) {
-    //   throw new Error('自動ログインに失敗しました');
-    // }
-
-    // NEXT_REDIRECTが投げられ，catchでリダイレクトされる
-    // await signIn('credentials', rawFormData);
 
     // Cacheの再検証
     revalidatePath('/signup');

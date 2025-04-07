@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { AuthError } from 'next-auth';
-// import { hashPassword } from '@/app/utils/auth-utils';
 // import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
 import { redirect } from 'next/navigation';

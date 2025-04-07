@@ -2,8 +2,6 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { clientAuth } from '@/app/libs/firebase';
 import { CredentialsSchema } from '@/data/validatedData';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
@@ -38,24 +36,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         }
 
         try {
-          // Firebase Authentication でログイン（メール+パスワードを検証）
-          const userCredential = await signInWithEmailAndPassword(
-            clientAuth,
-            email,
-            password,
-          );
-          const idToken = await userCredential.user.getIdToken(); // IDトークンを取得
-
-          // ここでバックエンドにリクエストを送信してサーバートークンを取得
-          const url = process.env.NEXTAUTH_URL + '/api/auth/token';
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
+          const res = await fetch(
+            `${process.env.NEXTAUTH_URL}/api/auth/server-login`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password }),
             },
-            body: JSON.stringify({ idToken }),
-          });
+          );
 
           if (!res.ok) {
             throw new Error('ログインに失敗しました');
