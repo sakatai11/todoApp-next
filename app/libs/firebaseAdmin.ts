@@ -28,6 +28,13 @@ const firebaseAdminApp =
     ? getApps()[0]
     : initializeApp({ credential: cert(serviceAccount) });
 
+// 初期化の後に追加
+console.log(
+  'Firebase Admin initialized with project:',
+  serviceAccount.projectId,
+);
+console.log('Client email being used:', serviceAccount.clientEmail);
+console.log('Private key length:', serviceAccount.privateKey?.length || 0);
 const adminDB = getFirestore(firebaseAdminApp);
 // サーバー側の認証インスタンスを取得
 const adminAuth = getAuth(firebaseAdminApp);

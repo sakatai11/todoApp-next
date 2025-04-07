@@ -5,10 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { getServerApiRequest } from '@/app/libs/apis';
-import { serverTimestamp } from 'firebase/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { handleError } from '@/app/utils/authUtils';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { adminAuth, adminDB } from '@/app/libs/firebaseAdmin';
 // import { redirect } from 'next/navigation';
 // import { signIn } from '@/auth';
 // import { AuthError } from 'next-auth';
@@ -87,23 +86,20 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
       };
     }
 
-    const auth = getAuth();
-    const userRecord = await auth.createUser({
+    const userRecord = await adminAuth.createUser({
       email: rawFormData.email.toLowerCase(),
       password: rawFormData.password,
       emailVerified: false,
       disabled: false,
     });
 
-    console.log(`userRecord:${userRecord}`);
-
-    const adminDb = getFirestore();
+    console.log(`userRecord:${JSON.stringify(userRecord)}`);
 
     // ユーザーデータ管理者権限を使って保存
-    await adminDb.collection('users').doc(userRecord.uid).set({
+    await adminDB.collection('users').doc(userRecord.uid).set({
       email: rawFormData.email,
       role: 'USER',
-      createdAt: serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     });
 
     // Cacheの再検証
