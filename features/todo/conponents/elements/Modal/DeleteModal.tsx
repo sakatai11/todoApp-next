@@ -72,7 +72,6 @@ const DeleteModal = ({
                 variant="contained"
                 sx={{ maxWidth: '120px ', width: '100%' }}
                 onClick={() => {
-                  console.log('Delete button clicked'); // コンソールログを追加
                   onDelete();
                   if (setSelectModalIsOpen) {
                     setSelectModalIsOpen(false);
@@ -85,7 +84,6 @@ const DeleteModal = ({
                 variant="contained"
                 sx={{ maxWidth: '120px ', width: '100%' }}
                 onClick={() => {
-                  console.log('cancel button clicked'); // コンソールログを追加
                   setModalIsOpen(false);
                   if (setSelectModalIsOpen) {
                     setSelectModalIsOpen(false);

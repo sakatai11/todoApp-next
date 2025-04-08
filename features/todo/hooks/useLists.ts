@@ -58,7 +58,6 @@ export const useLists = (initialLists: StatusListProps[]) => {
         category: input.status,
         number: updatedLists.length + 1,
       };
-      console.log(newList.number);
 
       try {
         // server side
@@ -67,7 +66,6 @@ export const useLists = (initialLists: StatusListProps[]) => {
           'POST',
           newList,
         );
-        console.log(result);
 
         // client
         // 再計算されたリストと新しいリストを追加してセットする
@@ -106,8 +104,6 @@ export const useLists = (initialLists: StatusListProps[]) => {
       if (over && active.id !== over.id) {
         const oldIndex = lists.findIndex((list) => list.id === active.id);
         const newIndex = lists.findIndex((list) => list.id === over.id);
-        console.log(oldIndex + ':oldIndex');
-        console.log(newIndex + ':newIndex');
 
         try {
           const updatedLists = arrayMove(lists, oldIndex, newIndex); // 配列を新しい順序に並べ替える
@@ -123,15 +119,10 @@ export const useLists = (initialLists: StatusListProps[]) => {
           // server side
           const updateListsNumber = tempLists.map((list) => list.id); // 新しい順序の全ID配列
 
-          const result = await apiRequest<ListPayload<'PUT'>>(
-            '/api/lists',
-            'PUT',
-            {
-              type: 'reorder',
-              data: updateListsNumber,
-            },
-          );
-          console.log(result);
+          await apiRequest<ListPayload<'PUT'>>('/api/lists', 'PUT', {
+            type: 'reorder',
+            data: updateListsNumber,
+          });
         } catch (error) {
           console.error('Error dragEnd list:', error);
         }
@@ -145,7 +136,6 @@ export const useLists = (initialLists: StatusListProps[]) => {
     async (id: string, direction: 'right' | 'left') => {
       if (id) {
         const currentIndex = lists.findIndex((list) => list.id === id);
-        console.log(lists);
 
         try {
           // 移動先のインデックスを計算
@@ -172,15 +162,10 @@ export const useLists = (initialLists: StatusListProps[]) => {
           // servers side
           const updateListsNumber = tempLists.map((list) => list.id); // 新しい順序の全ID配列
 
-          const result = await apiRequest<ListPayload<'PUT'>>(
-            '/api/lists',
-            'PUT',
-            {
-              type: 'reorder',
-              data: updateListsNumber,
-            },
-          );
-          console.log(result);
+          await apiRequest<ListPayload<'PUT'>>('/api/lists', 'PUT', {
+            type: 'reorder',
+            data: updateListsNumber,
+          });
         } catch (error) {
           console.error('Error ButtonMove list:', error);
         }

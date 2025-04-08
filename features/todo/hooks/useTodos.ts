@@ -36,7 +36,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         bool: false,
         status: input.status,
       };
-      console.log(newTodo);
 
       try {
         // server side
@@ -45,7 +44,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
           'POST',
           newTodo,
         );
-        console.log(result);
+
         // client
         setTodos((prevTodos) => {
           const updatedTodos = [...prevTodos, result as TodoListProps];
@@ -65,15 +64,9 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
   // todo削除
   const deleteTodo = useCallback(async (id: string) => {
-    console.log(`Deleting todo with id: ${id}`);
     try {
       // server side
-      const result = await apiRequest<TodoPayload<'DELETE'>>(
-        '/api/todos',
-        'DELETE',
-        { id },
-      );
-      console.log(result);
+      await apiRequest<TodoPayload<'DELETE'>>('/api/todos', 'DELETE', { id });
       // client
       setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id)); // todo.id が id と一致しない todo だけを残す新しい配列を作成
     } catch (error) {
@@ -105,12 +98,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       if (todoToUpdate) {
         try {
           // server side
-          const result = await apiRequest<TodoPayload<'PUT'>>(
-            '/api/todos',
-            'PUT',
-            { id, bool: !todoToUpdate.bool },
-          );
-          console.log(result);
+          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
+            id,
+            bool: !todoToUpdate.bool,
+          });
           // client
           setTodos((prevTodos) =>
             prevTodos.map((todo) =>
@@ -136,7 +127,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
           todoToUpdate.text === input.text &&
           todoToUpdate.status === input.status
         ) {
-          console.log('No changes detected, skipping update.');
           // 不要な場合はtext,statusともに''に処理を終了する
           setInput({ text: '', status: '' });
           setEditId(null);
@@ -151,12 +141,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
         try {
           // server side
-          const result = await apiRequest<TodoPayload<'PUT'>>(
-            '/api/todos',
-            'PUT',
-            { id: editId, ...updateTodo },
-          );
-          console.log(result);
+          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
+            id: editId,
+            ...updateTodo,
+          });
 
           // client
           setTodos((prevTodos) => {

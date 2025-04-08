@@ -29,8 +29,7 @@ const PushContainer = () => {
       )}
       <Button
         variant="contained"
-        onClick={(e) => {
-          console.log(e);
+        onClick={() => {
           setModalIsOpen(true);
         }}
       >

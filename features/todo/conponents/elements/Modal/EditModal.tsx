@@ -13,7 +13,6 @@ const EditModal = React.memo(
     const { addTodo, setInput, setEditId, setError, saveTodo, error, input } =
       todoHooks;
 
-    console.log(id);
     const statusPull = listHooks.lists;
     const isPushContainer = id === 'pushContainer' ? true : false;
 

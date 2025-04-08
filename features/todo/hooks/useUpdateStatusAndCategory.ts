@@ -38,9 +38,6 @@ export const useUpdateStatusAndCategory = ({
       initialTitle: string,
     ) => {
       const finalCategory = newCategory || initialTitle;
-      console.log(finalCategory);
-      console.log(initialTitle);
-      console.log(oldCategory);
 
       if (isDuplicateCategory(lists, finalCategory, id)) {
         alert('リスト名が重複しています');
@@ -50,27 +47,17 @@ export const useUpdateStatusAndCategory = ({
       try {
         // server side
         // categoryの更新
-        const resultList = await apiRequest<ListPayload<'PUT'>>(
-          '/api/lists',
-          'PUT',
-          {
-            type: 'update',
-            id,
-            data: { category: finalCategory },
-          },
-        );
-        console.log(resultList);
+        await apiRequest<ListPayload<'PUT'>>('/api/lists', 'PUT', {
+          type: 'update',
+          id,
+          data: { category: finalCategory },
+        });
 
         // statusの更新
-        const resultTodo = await apiRequest<TodoPayload<'PUT'>>(
-          '/api/todos',
-          'PUT',
-          {
-            type: 'restatus',
-            data: { oldStatus: oldCategory, status: finalCategory },
-          },
-        );
-        console.log(resultTodo);
+        await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
+          type: 'restatus',
+          data: { oldStatus: oldCategory, status: finalCategory },
+        });
 
         // client
         updateListsAndTodos(setLists, setTodos, id, finalCategory, oldCategory);

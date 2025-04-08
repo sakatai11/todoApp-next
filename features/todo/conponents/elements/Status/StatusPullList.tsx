@@ -21,7 +21,6 @@ const StatusPullList = ({
         if (newValue) {
           setInput({ ...input, status: newValue.category });
           setLabel(newValue.category);
-          console.log(newValue.category);
         }
       }}
       renderInput={(options) => (

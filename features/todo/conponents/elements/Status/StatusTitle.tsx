@@ -50,7 +50,6 @@ const StatusTitle = React.memo(
         !modalRef.current.contains(target) &&
         !deleteModalRef.current
       ) {
-        console.log('Click detected outside, updating state...');
         setSelectModalIsOpen(false);
       }
     }, []);
@@ -68,9 +67,6 @@ const StatusTitle = React.memo(
     // useCallbackを使用
     const handleBlur = useCallback(async () => {
       const finalValue = inputValue.trim() || initialTitle;
-
-      console.log(finalValue);
-      console.log(initialTitle);
 
       // finalValue と initialTitle が同じ場合は関数を終了
       if (finalValue === initialTitle) {
@@ -165,7 +161,6 @@ const StatusTitle = React.memo(
             <DeleteModal
               title={title}
               onDelete={() => {
-                console.log('onDelete triggered'); // コンソールログを追加
                 if (id) {
                   deleteList(id, title);
                   setSelectModalIsOpen(false);

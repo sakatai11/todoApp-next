@@ -92,7 +92,6 @@ const SelectListModal = ({
         </Button>
         <Button
           onClick={() => {
-            console.log('rename');
             setSelectModalIsOpen!(false);
             setTextRename(true);
             setListEdit(id);

@@ -26,12 +26,7 @@ export const useDeleteList = ({
       try {
         // server side
         // リストを削除
-        const result = await apiRequest<ListPayload<'DELETE'>>(
-          '/api/lists',
-          'DELETE',
-          { id },
-        );
-        console.log(result);
+        await apiRequest<ListPayload<'DELETE'>>('/api/lists', 'DELETE', { id });
         // client
         setLists((prevLists) => {
           // todo.id が id と一致しない list だけを残す新しい配列を作成
@@ -49,20 +44,17 @@ export const useDeleteList = ({
         // server side
         // 該当するtodosを削除
         const todosToDelete = todos.filter((todo) => todo.status === title); // 該当する配列を作成
-        console.log(todosToDelete);
 
         // todosToDeleteに配列が存在している場合、todo削除
         if (todosToDelete.length > 0) {
           // 非同期削除処理を並列で実行し、すべての結果を待つ
-          const todoResult = await Promise.all(
+          await Promise.all(
             todosToDelete.map((todo) =>
               apiRequest<TodoPayload<'DELETE'>>('/api/todos', 'DELETE', {
                 id: todo.id,
               }),
             ),
           );
-
-          console.log(todoResult);
 
           // client
           setTodos((prevTodos) =>
