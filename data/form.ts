@@ -5,6 +5,7 @@ export const messageType = {
   mail: 'メールアドレスを確認して下さい',
   addressError: 'メールアドレスに問題があります',
   mailError: 'このメールアドレスは既に登録されています',
+  messagingError: '入力内容に問題があります',
 } as const;
 
 // Message 型定義
@@ -14,4 +15,5 @@ export type validationMessage =
   | typeof messageType.passwordError
   | typeof messageType.mail
   | typeof messageType.addressError
-  | typeof messageType.mailError;
+  | typeof messageType.mailError
+  | typeof messageType.messagingError;

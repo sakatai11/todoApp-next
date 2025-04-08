@@ -5,9 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { getServerApiRequest } from '@/app/libs/apis';
-import { FieldValue } from 'firebase-admin/firestore';
 import { handleError } from '@/app/utils/authUtils';
 import { adminAuth, adminDB } from '@/app/libs/firebaseAdmin';
+import * as admin from 'firebase-admin';
 // import { redirect } from 'next/navigation';
 // import { signIn } from '@/auth';
 // import { AuthError } from 'next-auth';
@@ -76,7 +76,29 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
   }
 
   try {
-    // メール重複チェック
+    // Firebase Authenticationを使ってメール重複チェック
+    const existingUser = await adminAuth.getUserByEmail(rawFormData.email);
+    if (existingUser) {
+      return {
+        success: false,
+        option: 'email',
+        message: messageType.mailError,
+      };
+    }
+  } catch (error: unknown) {
+    // getUserByEmailでエラーが出た場合（ユーザーが存在しない場合）
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code: string }).code !== 'auth/user-not-found'
+    ) {
+      return handleError(error);
+    }
+  }
+
+  try {
+    // firestore内のメール重複チェック
     const existingUser = await getServerApiRequest(rawFormData.email);
     if (existingUser) {
       return {
@@ -99,7 +121,7 @@ export async function signUpData(_prevState: PrevState, formData: FormData) {
     await adminDB.collection('users').doc(userRecord.uid).set({
       email: rawFormData.email,
       role: 'USER',
-      createdAt: FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     // Cacheの再検証

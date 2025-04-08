@@ -1,5 +1,3 @@
-import { db } from '@/app/libs/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
@@ -52,8 +50,10 @@ export const getApiRequest = async (
 export const getServerApiRequest = async (email: string) => {
   try {
     // Firestoreのusersコレクションからemailが一致するドキュメントを取得
-    const q = query(collection(db, 'users'), where('email', '==', email));
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await adminDB
+      .collection('users')
+      .where('email', '==', email)
+      .get();
 
     // もし1つでも一致するユーザーがいれば存在する
     return !querySnapshot.empty ? true : null;
