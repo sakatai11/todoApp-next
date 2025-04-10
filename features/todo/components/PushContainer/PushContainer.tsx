@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button, Box } from '@mui/material';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
-import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
+import EditModal from '@/features/todo/components/elements/Modal/EditModal';
 
 const PushContainer = () => {
   const { todoHooks } = useTodoContext();

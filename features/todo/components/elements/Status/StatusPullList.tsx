@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
-import { PullDownPropsType } from '@/types/conponents';
+import { PullDownPropsType } from '@/types/components';
 
 const StatusPullList = ({
   pullDownList,

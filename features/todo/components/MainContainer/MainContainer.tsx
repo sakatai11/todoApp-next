@@ -3,9 +3,9 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import SortableItem from '@/features/todo/dnd/SortableItem';
-import TodoList from '@/features/todo/conponents/TodoList/TodoList';
-import ListAdd from '@/features/todo/conponents/elements/List/ListAdd';
-import StatusTitle from '@/features/todo/conponents/elements/Status/StatusTitle';
+import TodoList from '@/features/todo/components/TodoList/TodoList';
+import ListAdd from '@/features/todo/components/elements/List/ListAdd';
+import StatusTitle from '@/features/todo/components/elements/Status/StatusTitle';
 
 const MainContainer = () => {
   const { todoHooks, listHooks } = useTodoContext();

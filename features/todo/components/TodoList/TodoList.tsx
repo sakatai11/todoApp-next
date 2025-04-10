@@ -2,16 +2,16 @@
 
 import React, { useMemo } from 'react';
 import { useState } from 'react';
-import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
+import DeleteModal from '@/features/todo/components/elements/Modal/DeleteModal';
 import { Box, Button } from '@mui/material';
 import { formatter } from '@/features/utils/textUtils';
 import ToggleButton from '@mui/material/ToggleButton';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditModal from '@/features/todo/conponents/elements/Modal/EditModal';
+import EditModal from '@/features/todo/components/elements/Modal/EditModal';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
-import { TodoPropsType } from '@/types/conponents';
+import { TodoPropsType } from '@/types/components';
 
 const TodoList = React.memo(({ todo }: TodoPropsType) => {
   const { todoHooks } = useTodoContext();

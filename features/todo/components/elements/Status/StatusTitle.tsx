@@ -4,10 +4,10 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSortable } from '@dnd-kit/sortable';
-import SelectListModal from '@/features/todo/conponents/elements/Modal/SelectListModal';
-import DeleteModal from '@/features/todo/conponents/elements/Modal/DeleteModal';
+import SelectListModal from '@/features/todo/components/elements/Modal/SelectListModal';
+import DeleteModal from '@/features/todo/components/elements/Modal/DeleteModal';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { StatusTitlePropType } from '@/types/conponents';
+import { StatusTitlePropType } from '@/types/components';
 
 const StatusTitle = React.memo(
   ({ id, title, listNumber }: StatusTitlePropType) => {

@@ -7,7 +7,7 @@ import { useTodos } from '@/features/todo/hooks/useTodos';
 import { useLists } from '@/features/todo/hooks/useLists';
 import { useUpdateStatusAndCategory } from '@/features/todo/hooks/useUpdateStatusAndCategory';
 import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
-import { TodoContextType } from '@/types/conponents';
+import { TodoContextType } from '@/types/components';
 
 const TodoContext = createContext<TodoContextType | null>(null);
 

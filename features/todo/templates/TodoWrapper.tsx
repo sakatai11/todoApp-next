@@ -3,8 +3,8 @@
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
-import PushContainer from '@/features/todo/conponents/PushContainer/PushContainer';
-import MainContainer from '@/features/todo/conponents/MainContainer/MainContainer';
+import PushContainer from '@/features/todo/components/PushContainer/PushContainer';
+import MainContainer from '@/features/todo/components/MainContainer/MainContainer';
 import { TodoProvider } from '@/features/todo/contexts/TodoContext';
 import useSWR from 'swr';
 

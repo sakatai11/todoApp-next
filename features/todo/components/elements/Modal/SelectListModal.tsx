@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Box from '@mui/material/Box';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
-import { HandleClickPropsType } from '@/types/conponents';
+import { HandleClickPropsType } from '@/types/components';
 
 const SelectListModal = ({
   id,

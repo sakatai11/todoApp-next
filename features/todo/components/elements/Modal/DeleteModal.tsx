@@ -1,7 +1,7 @@
 import { Button, Box, Typography } from '@mui/material';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
-import { DeletePropType } from '@/types/conponents';
+import { DeletePropType } from '@/types/components';
 
 const DeleteModal = ({
   title,

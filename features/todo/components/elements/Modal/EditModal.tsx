@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { Button, Box, Typography, TextField } from '@mui/material';
-import { ModalPropType } from '@/types/conponents';
+import { ModalPropType } from '@/types/components';
 import { jstFormattedDate } from '@/features/utils/dateUtils';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
-import StatusPullList from '@/features/todo/conponents/elements/Status/StatusPullList';
+import StatusPullList from '@/features/todo/components/elements/Status/StatusPullList';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 
 const EditModal = React.memo(
