@@ -40,7 +40,3 @@ TodoApp-Nextは、Next.jsをベースにしたタスク管理アプリケーシ�
    npm run dev
    ```
 4. ブラウザで `http://localhost:3000` を開きます。
-
-## デプロイ
-
-このアプリはVercelを使用してデプロイされています。`vercel.json`に設定が含まれています。
