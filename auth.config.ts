@@ -43,21 +43,16 @@ export const authConfig = {
       }
       return true;
     },
-    // JSON Web Token が作成されたとき（サインイン時など）や更新されたとき（クライアントでセッションにアクセスしたときなど）に呼び出される。
-    // ここで返されるものはすべて JWT に保存され，session callbackに転送される。そこで、クライアントに返すべきものを制御できる。それ以外のものは、フロントエンドからは秘匿される。
-    // JWTはAUTH_SECRET環境変数によってデフォルトで暗号化される。
-    // セッションに何を追加するかを決定するために使用される
-    // user は authorize() の結果として渡される。
-    // token に user の情報をコピー。
+    // JWT作成時や更新時に呼び出される
     async jwt({ token, user, session, trigger }) {
       // 初回ログイン時にユーザー情報をトークンにコピー
       if (user) {
-        token.sub ??= user.id; // `sub` が未定義の場合のみ `user.id` を設定
+        token.sub ??= user.id;
         token.email = user.email;
-        token.role = user.role; // ログイン時に role を保存
+        token.role = user.role;
         token.customToken = user.customToken;
-        token.tokenExpiry = user.tokenExpiry; // トークン有効期限を保存
-        token.tokenIssuedAt = Math.floor(Date.now() / 1000); // トークン発行時刻を保存
+        token.tokenExpiry = user.tokenExpiry;
+        token.tokenIssuedAt = Math.floor(Date.now() / 1000);
       }
 
       // トークンリフレッシュの処理
@@ -111,11 +106,7 @@ export const authConfig = {
 
       return token;
     },
-    //セッションがチェックされるたびに呼び出される（useSessionやgetSessionを使用して/api/sessionエンドポイントを呼び出した場合など）。
-    // 戻り値はクライアントに公開されるので、ここで返す値には注意が必要！
-    // jwt callbackを通してトークンに追加したものをクライアントが利用できるようにしたい場合，ここでも明示的に返す必要がある
-    // token引数はjwtセッションストラテジーを使用する場合にのみ利用可能で、user引数はデータベースセッションストラテジーを使用する場合にのみ利用可能
-    // JWTに保存されたデータのうち，クライアントに公開したいものを返す
+    // セッションに公開するデータを設定
     async session({ session, token }) {
       console.log('session', session, token);
       session.user = {
