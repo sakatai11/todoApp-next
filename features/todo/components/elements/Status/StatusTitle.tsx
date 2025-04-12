@@ -1,7 +1,7 @@
 'use client';
 import { Box, IconButton } from '@mui/material';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import SwipeOutlinedIcon from '@mui/icons-material/SwipeOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSortable } from '@dnd-kit/sortable';
 import SelectListModal from '@/features/todo/components/elements/Modal/SelectListModal';
@@ -90,8 +90,21 @@ const StatusTitle = React.memo(
       <Box
         component="div"
         sx={{
-          textAlign: 'center',
+          textAlign: 'left',
           position: 'relative',
+          paddingBottom: 2.5,
+          fontSize: '18px',
+          '&:after': {
+            content: '""',
+            display: 'block',
+            width: '88px',
+            height: '4px',
+            backgroundColor: '#99ccff', // 横棒の色
+            borderRadius: '4px',
+            position: 'absolute',
+            bottom: 0, // 横棒の位置調整
+            left: 0,
+          },
         }}
       >
         {isEditing && textRename ? (
@@ -104,7 +117,8 @@ const StatusTitle = React.memo(
               }}
               onBlur={handleBlur}
               style={{
-                textAlign: 'center',
+                textAlign: 'left',
+                width: '255px',
                 outline: 'none',
                 border: 'none',
                 fontSize: '16px',
@@ -122,15 +136,22 @@ const StatusTitle = React.memo(
           {...listeners}
           {...attributes}
           sx={{
-            p: 0,
+            p: '4px',
             position: 'absolute',
-            top: 0,
-            left: 10,
+            top: -34,
+            left: -30,
+            background: '#99ccff',
             cursor: 'grab',
             '&:active': { cursor: 'grabbing' },
+            '&:hover': { backgroundColor: '#dedede' },
           }}
         >
-          <DragIndicatorIcon />
+          <SwipeOutlinedIcon
+            sx={{
+              fontSize: 20,
+              color: '#fff',
+            }}
+          />
         </IconButton>
         <IconButton
           onClick={() => setSelectModalIsOpen(true)}
@@ -138,7 +159,7 @@ const StatusTitle = React.memo(
             p: 0,
             position: 'absolute',
             top: 0,
-            right: 10,
+            right: 0,
           }}
         >
           <MoreVertIcon />

@@ -37,6 +37,7 @@ const MainContainer = () => {
           <Box
             display="flex"
             justifyContent="flex-start"
+            gap={4}
             // flexWrap='wrap'
             mt={4}
             px={3}
@@ -63,6 +64,11 @@ const MainContainer = () => {
                     sx={{
                       minWidth: '320px',
                       width: 320,
+                      paddingX: '16px',
+                      paddingY: '20px',
+                      backgroundColor: '#fff',
+                      borderRadius: '8px',
+                      boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
                       '@media (max-width: 767px)': {
                         width: '50%',
                         minWidth: 'auto',
@@ -81,11 +87,11 @@ const MainContainer = () => {
                         flexDirection: 'column',
                         alignItems: 'center',
                         overflow: 'auto',
+                        paddingTop: 4,
                         '@media (max-width: 767px)': {
                           p: 1.2,
                         },
                       }}
-                      p={2}
                     >
                       {/* boolがtrueの場合 */}
                       <Box

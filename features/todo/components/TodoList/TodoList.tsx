@@ -53,7 +53,9 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
       width={1}
       boxSizing="border-box"
       sx={{
-        boxShadow: 3, // 影の強さを指定
+        borderColor: '#c9c9c9',
+        borderStyle: 'solid',
+        borderWidth: '1px',
         padding: '16px 16px 10px 16px', // パディングを追加
         marginBottom: 1, // マージンを追加
         borderRadius: 1, // 角を丸くする
@@ -75,7 +77,12 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
       >
         {formattedText}
       </Box>
-      <Box display="flex" alignItems="center" justifyContent="end" pt={1}>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="flex-start"
+        pt={1}
+      >
         <ToggleButton
           value="check"
           selected={todo.bool}
