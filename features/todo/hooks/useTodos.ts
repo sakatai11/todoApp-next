@@ -65,10 +65,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // todo削除
   const deleteTodo = useCallback(async (id: string) => {
     try {
-      // server side
-      await apiRequest<TodoPayload<'DELETE'>>('/api/todos', 'DELETE', { id });
       // client
       setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id)); // todo.id が id と一致しない todo だけを残す新しい配列を作成
+      // server side
+      await apiRequest<TodoPayload<'DELETE'>>('/api/todos', 'DELETE', { id });
     } catch (error) {
       console.error('Error deleting todo:', error);
     }
@@ -97,17 +97,17 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       const todoToUpdate = todos.find((todo) => todo.id === id);
       if (todoToUpdate) {
         try {
-          // server side
-          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
-            id,
-            bool: !todoToUpdate.bool,
-          });
           // client
           setTodos((prevTodos) =>
             prevTodos.map((todo) =>
               todo.id === id ? { ...todo, bool: !todo.bool } : todo,
             ),
           );
+          // server side
+          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
+            id,
+            bool: !todoToUpdate.bool,
+          });
         } catch (error) {
           console.error('Error puting toggle:', error);
         }
@@ -140,12 +140,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         };
 
         try {
-          // server side
-          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
-            id: editId,
-            ...updateTodo,
-          });
-
           // client
           setTodos((prevTodos) => {
             const updatedTodos = prevTodos.map((todo) =>
@@ -158,6 +152,12 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
             );
             return updatedTodos.sort((a, b) => b.createdTime - a.createdTime);
           });
+          // server side
+          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
+            id: editId,
+            ...updateTodo,
+          });
+
           setInput({ text: '', status: '' });
           setEditId(null);
           setError((prevError) => ({ ...prevError, listModalArea: false })); // エラーをリセット
