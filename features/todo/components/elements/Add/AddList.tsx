@@ -4,7 +4,7 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { Button, TextField, Box } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
-const ListAdd = () => {
+const AddList = () => {
   const { listHooks } = useTodoContext();
   const { input, error, addList, setInput, setError } = listHooks;
 
@@ -86,4 +86,4 @@ const ListAdd = () => {
   );
 };
 
-export default ListAdd;
+export default AddList;
