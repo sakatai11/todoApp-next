@@ -76,7 +76,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
           addListNull: false,
           addListSame: false,
         })); // エラーをリセット
-        return true;
+        return true; // 成功時に true を返す
       } catch (error) {
         console.error('Error adding todo:', error);
         setError((prevError) => ({

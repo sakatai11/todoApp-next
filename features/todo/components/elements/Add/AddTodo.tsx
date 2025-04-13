@@ -4,14 +4,18 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { Button, TextField, Box } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
-const AddList = () => {
-  const { listHooks } = useTodoContext();
-  const { input, error, addList, setInput, setError } = listHooks;
+type AddTodoProps = {
+  status: string;
+};
+
+const AddTodo = ({ status }: AddTodoProps) => {
+  const { todoHooks } = useTodoContext();
+  const { input, error, addTodo, setInput, setError } = todoHooks;
 
   const [addBtn, setAddBtn] = useState(false);
 
-  const handleAddList = async () => {
-    const errorFlag = await addList();
+  const handleAddTodo = async () => {
+    const errorFlag = await addTodo();
     if (errorFlag) {
       setAddBtn(false);
     } else {
@@ -20,28 +24,30 @@ const AddList = () => {
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        width: '100%',
+        marginTop: 4,
+      }}
+    >
       {addBtn ? (
         <>
           <TextField
             id="outlined-basic"
-            label="リスト名を入力"
+            label="TODOを入力"
             variant="outlined"
-            size="small"
+            multiline
+            rows={4}
             sx={{
               marginBottom: '10px',
               width: '100%',
             }}
-            value={input.status}
-            error={error.addListNull || error.addListSame}
-            helperText={
-              error.addListNull
-                ? 'リスト名を入力してください'
-                : error.addListSame
-                  ? '同じリスト名が存在します'
-                  : null
+            value={input.text}
+            error={error.listPushArea}
+            helperText={error.listPushArea && '入力してください'}
+            onChange={(e) =>
+              setInput({ ...input, text: e.target.value, status: status })
             }
-            onChange={(e) => setInput({ status: e.target.value })}
           />
           <Box
             sx={{
@@ -50,7 +56,7 @@ const AddList = () => {
               gap: '12px',
             }}
           >
-            <Button variant="outlined" fullWidth onClick={handleAddList}>
+            <Button variant="outlined" fullWidth onClick={handleAddTodo}>
               追加する
             </Button>
             <Button
@@ -62,8 +68,8 @@ const AddList = () => {
               }}
               onClick={() => {
                 setAddBtn(false);
-                setInput({ status: '' });
-                setError({ addListNull: false, addListSame: false });
+                setInput({ ...input, text: '', status: '' });
+                setError({ ...error, listPushArea: false });
               }}
             >
               戻る
@@ -72,19 +78,19 @@ const AddList = () => {
         </>
       ) : (
         <Button
-          variant="outlined"
+          variant="contained"
           fullWidth
-          endIcon={<AddBoxIcon color="primary" />}
+          endIcon={<AddBoxIcon />}
           onClick={() => {
             setAddBtn(true);
-            setError({ addListNull: false, addListSame: false });
+            setError({ ...error, listPushArea: false });
           }}
         >
-          リストを追加する
+          TODOを追加する
         </Button>
       )}
     </Box>
   );
 };
 
-export default AddList;
+export default AddTodo;

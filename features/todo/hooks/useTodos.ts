@@ -52,13 +52,15 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         });
         setInput({ text: '', status: '' });
         setError((prevError) => ({ ...prevError, listPushArea: false })); // エラーをリセット
+        return true; // 成功時に true を返す
       } catch (error) {
         console.error('Error adding todo:', error);
         setError((prevError) => ({ ...prevError, listPushArea: true })); // エラー表示
+        return false;
       }
     } else {
       setError((prevError) => ({ ...prevError, listPushArea: true })); // エラー表示
-      return;
+      return false;
     }
   }, [input.text, input.status]);
 

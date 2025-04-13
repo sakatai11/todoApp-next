@@ -5,6 +5,7 @@ import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import SortableItem from '@/features/todo/dnd/SortableItem';
 import TodoList from '@/features/todo/components/TodoList/TodoList';
 import AddList from '@/features/todo/components/elements/Add/AddList';
+import AddTodo from '@/features/todo/components/elements/Add/AddTodo';
 import StatusTitle from '@/features/todo/components/elements/Status/StatusTitle';
 
 const MainContainer = () => {
@@ -128,6 +129,10 @@ const MainContainer = () => {
                             <TodoList key={todo.id} todo={todo} />
                           ))}
                       </Box>
+                      <AddTodo
+                        key={`${statusPull.id}_todo`}
+                        status={statusPull.category}
+                      />
                     </Box>
                   </Box>
                 </SortableItem>

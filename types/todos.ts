@@ -34,7 +34,7 @@ export type TodoHookType<T extends EditDataProps> = T &
   > & {
     todos: TodoListProps[];
     setTodos: (todos: TodoListProps[]) => void;
-    addTodo: () => void;
+    addTodo: () => Promise<boolean>;
     deleteTodo: (id: string) => void;
     editTodo: (id: string) => void;
     saveTodo: () => void;
