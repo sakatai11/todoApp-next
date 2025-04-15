@@ -22,6 +22,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     listPushArea: false,
     listModalArea: false,
   });
+  // アクティブなAddTodoコンポーネントのステータスを保持
+  const [addTodoOpenStatus, setAddTodoOpenStatus] = useState<string | null>(
+    null,
+  );
 
   //
   // ***** actions ******
@@ -179,6 +183,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     input,
     editId,
     error,
+    addTodoOpenStatus,
     setTodos,
     setEditId,
     addTodo,
@@ -188,5 +193,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     toggleSelected,
     setInput,
     setError,
+    setAddTodoOpenStatus,
   };
 };

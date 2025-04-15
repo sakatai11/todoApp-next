@@ -33,12 +33,14 @@ export type TodoHookType<T extends EditDataProps> = T &
     { listPushArea: boolean; listModalArea: boolean }
   > & {
     todos: TodoListProps[];
+    addTodoOpenStatus: string | null;
     setTodos: (todos: TodoListProps[]) => void;
     addTodo: () => Promise<boolean>;
     deleteTodo: (id: string) => void;
     editTodo: (id: string) => void;
     saveTodo: () => void;
     toggleSelected: (id: string) => void;
+    setAddTodoOpenStatus: (status: string | null) => void;
   };
 
 // POST / PUT / DELETE、それぞれのメソッドに応じたレスポンス型を定義します。

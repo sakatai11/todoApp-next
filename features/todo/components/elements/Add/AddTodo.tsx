@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { Button, TextField, Box } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -10,17 +9,26 @@ type AddTodoProps = {
 
 const AddTodo = ({ status }: AddTodoProps) => {
   const { todoHooks } = useTodoContext();
-  const { input, error, addTodo, setInput, setError } = todoHooks;
+  const {
+    input,
+    error,
+    addTodoOpenStatus,
+    addTodo,
+    setInput,
+    setError,
+    setAddTodoOpenStatus,
+  } = todoHooks;
 
-  const [addBtn, setAddBtn] = useState(false);
+  // このAddTodoコンポーネントが開いているかどうかを判定
+  const isOpen = addTodoOpenStatus === status;
 
   const handleAddTodo = async () => {
     const errorFlag = await addTodo();
     if (errorFlag) {
-      setAddBtn(false);
-    } else {
-      setAddBtn(true);
+      // 成功した場合は閉じる
+      setAddTodoOpenStatus(null);
     }
+    // エラーの場合は開いたままにする
   };
 
   return (
@@ -30,7 +38,7 @@ const AddTodo = ({ status }: AddTodoProps) => {
         marginTop: 4,
       }}
     >
-      {addBtn ? (
+      {isOpen ? (
         <>
           <TextField
             id="outlined-basic"
@@ -67,7 +75,7 @@ const AddTodo = ({ status }: AddTodoProps) => {
                 color: '#8a8a8a',
               }}
               onClick={() => {
-                setAddBtn(false);
+                setAddTodoOpenStatus(null);
                 setInput({ ...input, text: '', status: '' });
                 setError({ ...error, listPushArea: false });
               }}
@@ -82,7 +90,9 @@ const AddTodo = ({ status }: AddTodoProps) => {
           fullWidth
           endIcon={<AddBoxIcon />}
           onClick={() => {
-            setAddBtn(true);
+            // 別のAddTodoを開く前に入力値をリセット
+            setInput({ ...input, text: '', status: '' });
+            setAddTodoOpenStatus(status);
             setError({ ...error, listPushArea: false });
           }}
         >
