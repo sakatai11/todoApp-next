@@ -24,7 +24,7 @@ TodoApp-Nextは、Next.jsをベースにしたタスク管理アプリケーシ�
 ## 使用技術
 
 - **フロントエンド**: Next.js React
-- **スタイリング**: Tailwind CSS, Material UI (MUI)
+- **スタイリング**: Tailwind CSS
 - **UIコンポーネント**: Material UI (MUI)
 - **バックエンド**: Firebase (Authentication, Firestore)
 - **認証**: NextAuth.js
