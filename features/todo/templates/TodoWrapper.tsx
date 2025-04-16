@@ -6,7 +6,10 @@ import { Box } from '@mui/material';
 import PushContainer from '@/features/todo/components/PushContainer/PushContainer';
 import MainContainer from '@/features/todo/components/MainContainer/MainContainer';
 import { TodoProvider } from '@/features/todo/contexts/TodoContext';
-import useSWR from 'swr';
+import useSWR, { SWRConfig, preload } from 'swr';
+import TodosLoading from '@/app/(dashboard)/loading';
+import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
+import { ErrorBoundary } from 'react-error-boundary';
 
 type DataProps = {
   todos: TodoListProps[];
@@ -19,23 +22,30 @@ const fetcher = async (url: string) => {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch');
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Unknown error');
   }
 
   return response.json();
 };
 
-const TodoWrapper = (): React.ReactElement => {
-  const { data, error } = useSWR<DataProps>('/api/info', fetcher, {
-    revalidateOnMount: true, // マウント時に一度だけ取得（デフォルトtrue）
-    revalidateOnFocus: false, // フォーカス時の再取得を無効化
-    revalidateOnReconnect: false, // 再接続時の再取得を無効化
+// APIを事前読み込み
+preload('/api/info', fetcher);
+
+// データを取得するためのコンポーネント
+const TodoContent = (): React.ReactElement => {
+  const { data, error, isLoading } = useSWR<DataProps>('/api/info', fetcher, {
+    revalidateOnMount: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    suspense: false,
   });
 
-  if (error) return <div>Error: {error.message}</div>;
-  if (!data) return <div>Loading...</div>;
+  if (isLoading) return <TodosLoading />;
+  if (error) return <ErrorDisplay message={error.message} />;
 
-  const { todos, lists } = data;
+  // suspense:trueの場合、dataはneverになるのでnullチェック不要
+  const { todos, lists } = data as DataProps;
 
   return (
     <TodoProvider initialTodos={todos} initialLists={lists}>
@@ -44,6 +54,22 @@ const TodoWrapper = (): React.ReactElement => {
         <MainContainer />
       </Box>
     </TodoProvider>
+  );
+};
+
+// エラー境界のためのコンポーネント
+const TodoErrorBoundary = ({ error }: { error: Error }) => {
+  return <ErrorDisplay message={error.message} />;
+};
+
+// メインラッパーコンポーネント
+const TodoWrapper = (): React.ReactElement => {
+  return (
+    <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
+      <ErrorBoundary FallbackComponent={TodoErrorBoundary}>
+        <TodoContent />
+      </ErrorBoundary>
+    </SWRConfig>
   );
 };
 

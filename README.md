@@ -56,7 +56,7 @@ TodoApp-Nextは、Next.jsをベースにしたタスク管理アプリケーシ�
 ```
 todoApp-next/
 ├── app/              # Next.jsのApp Routerベースのルート定義
-│   ├── (tasks)/      # タスク関連のルート（グループ化）
+│   ├── (dashboard)/      # タスク関連のルート（グループ化）
 │   ├── api/          # APIルート
 │   └── ...
 ├── features/         # 機能ごとのコンポーネントとロジック
