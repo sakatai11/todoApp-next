@@ -1,3 +1,3 @@
-import HeaderWrapper from './HeaderWrapper';
+import HeaderWrapper from '@/features/shared/templates/HeaderWrapper';
 
 export { HeaderWrapper };

@@ -1,3 +1,3 @@
-import TodoWrapper from './TodoWrapper';
+import TodoWrapper from '@/features/todo/templates/TodoWrapper';
 
 export { TodoWrapper };
