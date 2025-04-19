@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import ErrorIcon from '@mui/icons-material/Error';
+import { Box, Typography, Button, Paper } from '@mui/material';
 
 type ErrorDisplayProps = {
   message: string;
@@ -17,33 +19,40 @@ export default function ErrorDisplay({ message, onRetry }: ErrorDisplayProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 min-h-[50vh]">
-      <div className="w-16 h-16 flex items-center justify-center bg-red-100 rounded-full mb-4">
-        <svg
-          className="w-8 h-8 text-red-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      </div>
-      <h2 className="text-lg font-medium text-gray-900 mb-2">
-        エラーが発生しました
-      </h2>
-      <p className="text-gray-600 text-center mb-4">{message}</p>
-      <button
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-        onClick={handleRetry}
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      sx={{ p: 4, minHeight: '50vh' }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          bgcolor: 'error.light',
+          width: 64,
+          height: 64,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mb: 2,
+        }}
       >
+        <ErrorIcon sx={{ fontSize: 40, color: '#fff' }} />
+      </Paper>
+      <Typography variant="h6" sx={{ mb: 1, fontWeight: 'medium' }}>
+        エラーが発生しました
+      </Typography>
+      <Typography
+        variant="body1"
+        sx={{ mb: 3, color: 'text.secondary', textAlign: 'center' }}
+      >
+        {message}
+      </Typography>
+      <Button variant="contained" color="primary" onClick={handleRetry}>
         再読み込み
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }

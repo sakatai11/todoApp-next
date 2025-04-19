@@ -43,7 +43,7 @@ export const getApiRequest = async (
     return { todos: todosData, lists: listsData };
   } catch (error) {
     console.error('Error fetching data:', error);
-    return { todos: [], lists: [] };
+    throw error; // エラーハンドリング
   }
 };
 
