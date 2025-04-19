@@ -1,9 +1,9 @@
-import * as Top from '@/features/top/templates/index';
+import * as Todo from '@/features/todo/templates/index';
 import Template from '@/app/template';
 export default async function TodoPage() {
   return (
     <Template showHeader={true}>
-      <Top.TopWrapper />
+      <Todo.TodoWrapper />
     </Template>
   );
 }
