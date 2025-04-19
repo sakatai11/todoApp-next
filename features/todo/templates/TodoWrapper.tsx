@@ -28,8 +28,14 @@ const fetcher = async (url: string) => {
   return response.json();
 };
 
-// APIを事前読み込み
-preload('/api/info', fetcher);
+// URLを動的に構築
+const baseUrl = process.env.NEXTAUTH_URL;
+const apiUrl = `${baseUrl}/api/info`;
+
+// 安全な事前読み込み（クライアントのみで実行されることを保証）
+if (typeof window !== 'undefined') {
+  preload(apiUrl, fetcher);
+}
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
