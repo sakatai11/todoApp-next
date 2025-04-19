@@ -7,8 +7,6 @@ type TemplateProps = {
 };
 
 export default function Template({ children, showHeader }: TemplateProps) {
-  console.log(`${showHeader}:showHeader`);
-
   return (
     <>
       {showHeader && <Header.HeaderWrapper />}
