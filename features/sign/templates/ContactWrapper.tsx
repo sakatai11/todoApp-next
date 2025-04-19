@@ -1,6 +1,6 @@
 'use client';
 import { Box } from '@mui/material';
-import * as Field from './components/Index';
+import * as Field from '@/features/sign/components/index';
 import { signInData } from '@/app/(auth)/_signIn/signIn';
 import { signUpData } from '@/app/(auth)/_signUp/signUp';
 import { usePathname } from 'next/navigation';

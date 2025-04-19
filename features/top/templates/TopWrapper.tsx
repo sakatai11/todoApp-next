@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { pageLinks } from '@/data/links';
 
-const TopNav = () => {
+const TopWrapper = () => {
   return (
     <div>
       {pageLinks.map(({ name, href }) => (
@@ -13,4 +13,4 @@ const TopNav = () => {
   );
 };
 
-export default TopNav;
+export default TopWrapper;
