@@ -1,3 +1,3 @@
-import ContactWrapper from '@/features/sign//templates/ContactWrapper';
+import ContactWrapper from './ContactWrapper';
 
 export { ContactWrapper };

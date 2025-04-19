@@ -1,3 +1,3 @@
-import TopWrapper from '@/features/top/templates/TopWrapper';
+import TopWrapper from './TopWrapper';
 
 export { TopWrapper };
