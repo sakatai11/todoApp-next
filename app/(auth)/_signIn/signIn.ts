@@ -5,10 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { AuthError } from 'next-auth';
-// import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
 import { redirect } from 'next/navigation';
-// import { AuthError } from 'next-auth';
 // import { validatePassword } from 'firebase/auth';
 
 function validateEmail(email: string) {

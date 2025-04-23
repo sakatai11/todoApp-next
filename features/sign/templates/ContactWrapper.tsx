@@ -83,6 +83,7 @@ const ContactWrapper = () => {
           mx: 'auto',
           boxShadow: 3,
           borderRadius: 2,
+          backgroundColor: '#fff',
         }}
       >
         <form

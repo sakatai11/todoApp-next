@@ -27,6 +27,17 @@ export const getValidationStatus = ({
     option === 'email' ||
     option === 'default';
 
+  const isNoPasswordAndOrMailError =
+    (isError &&
+      (message === 'メールアドレスまたはパスワードが間違っています' ||
+        message ===
+          '登録処理中にエラーが発生しました。時間をおいて再度お試しください')) ||
+    option === '';
+
+  if (message && option === '') {
+    return isNoPasswordAndOrMailError;
+  }
+
   // フィールドタイプに応じたエラー状態を返す
   return fieldType === 'password' ? isPasswordError : isEmailError;
 };
