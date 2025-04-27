@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LinkSection } from '@/types/markdown/markdownData';
+import { Box, Typography, Link as MuiLink, Stack } from '@mui/material';
 
 type TopWrapperProps = {
   data: LinkSection[];
@@ -7,24 +8,35 @@ type TopWrapperProps = {
 
 const TopWrapper = ({ data }: TopWrapperProps) => {
   return (
-    <div>
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      minHeight="100vh"
+      p={2}
+    >
       {data.map((section, index) => (
-        <div key={index} className="mb-4">
-          <p className="text-lg font-bold mb-2">{section.title}</p>
-          <div className="flex gap-4">
+        <Box key={index} textAlign="center">
+          <Typography variant="h2" fontWeight="bold" fontSize={22} mb={2}>
+            {section.title}
+          </Typography>
+          <Stack direction="row" spacing={2} justifyContent="center">
             {section.links.map(({ name, href }) => (
-              <Link
+              <MuiLink
+                component={Link}
                 href={href}
                 key={name}
-                className="text-blue-500 hover:underline"
+                color="primary"
+                underline="hover"
               >
                 {name}
-              </Link>
+              </MuiLink>
             ))}
-          </div>
-        </div>
+          </Stack>
+        </Box>
       ))}
-    </div>
+    </Box>
   );
 };
 
