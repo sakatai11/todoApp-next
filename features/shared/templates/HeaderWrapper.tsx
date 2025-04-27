@@ -1,6 +1,8 @@
 import React from 'react';
 import { LinkSection } from '@/types/markdown/markdownData';
-import Link from 'next/link';
+import HeadingContents from '@/features/shared/components/elements/Heading/HeadingContents';
+import NavigationContents from '@/features/shared/components/elements/Navigation/NavigationContents';
+import IconContents from '@/features/shared/components/elements/Icon/IconContents';
 
 type HeaderWrapperProps = {
   data: LinkSection[];
@@ -10,38 +12,24 @@ export const HeaderWrapper: React.FC<HeaderWrapperProps> = ({ data }) => {
   // ヘッダーセクションとナビゲーションセクションを分離
   const headingSection = data.find(
     (section) => section.title === 'ヘッディング',
-  );
+  ) || { title: '', links: [] }; // デフォルト値を設定
+
   const navigationSection = data.find(
     (section) => section.title === 'ナビゲーション',
-  );
+  ) || { title: '', links: [] }; // デフォルト値を設定;
 
   return (
     <header className="bg-blue-600 text-white p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-xl font-bold">
-          {/* ヘッディングリンク */}
-          {headingSection?.links?.map((link, index) => (
-            <Link
-              key={`dashboard-${index}`}
-              href={link.href}
-              className="hover:underline"
-            >
-              {link.name}
-            </Link>
-          ))}
-        </h1>
-        <nav>
-          <ul className="flex space-x-4">
-            {/* ナビゲーションリンク */}
-            {navigationSection?.links?.map((link, index) => (
-              <li key={`nav-${index}`}>
-                <Link href={link.href} className="hover:underline">
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {/* ヘッディングリンク */}
+        <HeadingContents headingSection={headingSection} />
+
+        <div className="flex items-center space-x-4">
+          {/* ログインアイコン */}
+          <IconContents />
+          {/* ナビゲーションリンク */}
+          <NavigationContents navigationSection={navigationSection} />
+        </div>
       </div>
     </header>
   );
