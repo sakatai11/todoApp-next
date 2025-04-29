@@ -2,17 +2,28 @@ import { adminDB } from '@/app/libs/firebaseAdmin';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Session } from 'next-auth';
+import { UserData } from '@/types/auth/authData';
 
 export const getApiRequest = async (
   session: Session | null,
 ): Promise<{
-  todos: TodoListProps[];
-  lists: StatusListProps[];
+  user: UserData[]; // または単一オブジェクトの場合は UserData
+  contents: {
+    lists: StatusListProps[];
+    todos: TodoListProps[];
+  };
 }> => {
   const uid = session?.user?.id;
+  const email = session?.user?.email;
 
   try {
     // Firestoreクエリ
+    // Firestoreのusersコレクションからuidが一致するドキュメントを取得
+    const userSnapshot = await adminDB
+      .collection('users')
+      .where('email', '==', email)
+      .get();
+
     const todosSnapshot = await adminDB
       .collection(`users/${uid}/todos`)
       .orderBy('updateTime', 'desc') // 降順
@@ -23,7 +34,14 @@ export const getApiRequest = async (
       .orderBy('number', 'asc') // 昇順
       .get();
 
-    // データマッピング
+    // 各データマッピング
+    const userData: UserData[] = userSnapshot.docs.map((document) => ({
+      id: uid || document.id,
+      email: document.data().email,
+      role: document.data().role,
+      createdAt: document.data().createdAt,
+    }));
+
     const todosData: TodoListProps[] = todosSnapshot.docs.map((document) => ({
       id: document.id,
       updateTime: document.data().updateTime,
@@ -40,7 +58,13 @@ export const getApiRequest = async (
     }));
 
     // JSONレスポンスを返す
-    return { todos: todosData, lists: listsData };
+    return {
+      user: userData,
+      contents: {
+        lists: listsData,
+        todos: todosData,
+      },
+    };
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error; // エラーハンドリング

@@ -12,10 +12,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { contents } = await getApiRequest(session);
+    const { user } = await getApiRequest(session);
 
     // JSONレスポンスを返す
-    return NextResponse.json({ contents }, { status: 200 });
+    return NextResponse.json({ user }, { status: 200 });
   } catch (error) {
     console.error('Error fetching data:', error);
     return NextResponse.json(

@@ -49,7 +49,6 @@ export const authConfig = {
       if (user) {
         token.sub ??= user.id;
         token.email = user.email;
-        token.role = user.role;
         token.customToken = user.customToken;
         token.tokenExpiry = user.tokenExpiry;
         token.tokenIssuedAt = Math.floor(Date.now() / 1000);
@@ -112,7 +111,6 @@ export const authConfig = {
       session.user = {
         id: token.sub,
         email: token.email,
-        role: token.role,
         customToken: token.customToken,
       };
 

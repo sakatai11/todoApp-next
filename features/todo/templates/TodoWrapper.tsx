@@ -11,8 +11,10 @@ import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay
 import { ErrorBoundary } from 'react-error-boundary';
 
 type DataProps = {
-  todos: TodoListProps[];
-  lists: StatusListProps[];
+  contents: {
+    todos: TodoListProps[];
+    lists: StatusListProps[];
+  };
 };
 
 const fetcher = async (url: string) => {
@@ -50,7 +52,8 @@ const TodoContent = (): React.ReactElement => {
   if (error) return <ErrorDisplay message={error.message} />;
 
   // suspense:trueの場合、dataはneverになるのでnullチェック不要
-  const { todos, lists } = data as DataProps;
+  const { contents } = data as DataProps;
+  const { todos, lists } = contents;
 
   return (
     <TodoProvider initialTodos={todos} initialLists={lists}>

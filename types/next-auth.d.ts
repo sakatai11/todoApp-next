@@ -1,13 +1,11 @@
 import { Session as DefaultSession, User as DefaultUser } from 'next-auth';
 import { DefaultJWT } from 'next-auth/jwt';
-import { UserRole } from '@/types/auth/authData';
 declare module 'next-auth' {
   // ログインユーザーのセッション情報，auth(),useSession(),getServerSession()で使用可能
   interface Session extends DefaultSession {
     user?: {
       id?: string;
       email?: string;
-      role?: UserRole;
       customToken?: string;
     } & DefaultSession['user'];
     tokenExpiry?: number;
@@ -21,7 +19,7 @@ declare module 'next-auth' {
     tokenIssuedAt?: number;
     tokenExpiry?: number;
     customToken?: string;
-    role?: UserRole;
+    lastUpdated?: number;
   }
 }
 
@@ -32,8 +30,6 @@ declare module 'next-auth/jwt' {
     tokenIssuedAt?: number;
     tokenExpiry?: number;
     customToken?: string;
-    id?: string;
-    role?: UserRole;
     lastUpdated?: number;
   }
 }
