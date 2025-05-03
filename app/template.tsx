@@ -1,5 +1,7 @@
 import * as Header from '@/features/shared/templates/index';
 import { getLinks } from '@/app/libs/markdown';
+import { auth } from '@/auth';
+import { getApiRequest } from '@/app/libs/apis';
 
 type TemplateProps = {
   children: React.ReactNode;
@@ -11,11 +13,13 @@ export default async function Template({
   showHeader,
 }: TemplateProps) {
   const { headerLinks } = await getLinks();
-  console.log(headerLinks);
+
+  const session = await auth();
+  const { user } = await getApiRequest(session); // セッションを引数に渡す
 
   return (
     <>
-      {showHeader && <Header.HeaderWrapper data={headerLinks} />}
+      {showHeader && <Header.HeaderWrapper data={headerLinks} user={user} />}
       {children}
     </>
   );
