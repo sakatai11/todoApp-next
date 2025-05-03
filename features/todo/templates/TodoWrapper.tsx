@@ -31,7 +31,12 @@ const fetcher = async (url: string) => {
 };
 
 // URLを動的に構築
-const baseUrl = process.env.NEXTAUTH_URL;
+const baseUrl =
+  process.env.NODE_ENV === 'production'
+    ? process.env.NEXTAUTH_URL // サーバー環境
+    : ''; // クライアント環境
+
+// APIエンドポイントのURL
 const apiUrl = `${baseUrl}/api/info`;
 
 // 安全な事前読み込み（クライアントのみで実行されることを保証）
@@ -46,6 +51,7 @@ const TodoContent = (): React.ReactElement => {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     suspense: false,
+    shouldRetryOnError: false,
   });
 
   if (isLoading) return <TodosLoading />;
