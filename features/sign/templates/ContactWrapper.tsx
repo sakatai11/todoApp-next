@@ -106,7 +106,7 @@ const ContactWrapper = () => {
             success={formState.success}
             message={formState.message}
           />
-          <Field.SendButton isPending={isPending} />
+          <Field.SendButton isPending={isPending} pathname={pathname} />
         </form>
       </Box>
     </div>
