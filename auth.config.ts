@@ -8,6 +8,8 @@ export const authConfig = {
   },
   session: {
     strategy: 'jwt',
+    // セッション有効期限を 1 日 (24 hours) に設定（デフォルトは 30 日）
+    maxAge: 24 * 60 * 60,
   },
   callbacks: {
     // Middlewareでユーザーの認証を行うときに呼び出される
