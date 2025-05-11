@@ -15,19 +15,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 管理者権限チェック
-    const sessionUserDoc = await adminDB
-      .collection('users')
-      .doc(session.user.id)
-      .get();
-    if (!sessionUserDoc.exists) {
-      return NextResponse.json(
-        { error: 'Session user not found' },
-        { status: 404 }
-      );
-    }
-    const sessionUser = sessionUserDoc.data();
-    if (sessionUser?.role !== 'ADMIN') {
+    // 管理者権限チェック（セッションに role が設定されている前提）
+    if (session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

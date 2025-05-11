@@ -20,3 +20,9 @@ export type EnhancedUserData = UserData & {
   todos: TodoListProps[];
   lists: StatusListProps[];
 };
+
+// API returns createdAt as milliseconds since epoch
+export type AdminUser = Omit<UserData, 'createdAt' | 'updatedAt'> & {
+  createdAt: number;
+  updatedAt?: number;
+};

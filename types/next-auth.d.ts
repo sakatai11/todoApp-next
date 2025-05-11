@@ -7,6 +7,7 @@ declare module 'next-auth' {
       id?: string;
       email?: string;
       customToken?: string;
+      role?: string;
     } & DefaultSession['user'];
     tokenExpiry?: number;
     tokenIssuedAt?: number;

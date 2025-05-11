@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const authConfig = {
   pages: {
-    signIn: 'signin',
+    signIn: '/signin',
   },
   session: {
     strategy: 'jwt',
@@ -28,6 +28,11 @@ export const authConfig = {
         user: auth?.user,
       });
 
+      // 管理者ページ保護
+      const isOnAdminPage = nextUrl.pathname.startsWith('/admin');
+      if (isOnAdminPage && auth?.user?.role !== 'ADMIN') {
+        return false;
+      }
       // /todo配下のルートの保護
       const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/todo');
       const isLoggedin = !!auth?.user?.customToken;
@@ -54,6 +59,10 @@ export const authConfig = {
         token.customToken = user.customToken;
         token.tokenExpiry = user.tokenExpiry;
         token.tokenIssuedAt = Math.floor(Date.now() / 1000);
+        // ユーザーロールをトークンに保存
+        if ('role' in user && user.role) {
+          token.role = user.role;
+        }
       }
 
       // トークンリフレッシュの処理
@@ -114,6 +123,7 @@ export const authConfig = {
         id: token.sub,
         email: token.email,
         customToken: token.customToken,
+        role: token.role,
       };
 
       // トークンの有効期限情報をセッションに追加

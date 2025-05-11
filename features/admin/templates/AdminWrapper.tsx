@@ -8,19 +8,20 @@ import {
   TableCell,
   Typography,
 } from '@mui/material';
-import { UserData } from '@/types/auth/authData';
+import type { AdminUser } from '@/types/auth/authData';
 import Image from 'next/image';
 
 type AdminWrapperProps = {
-  users: UserData[];
+  users: AdminUser[];
 };
 
 const AdminWrapper = ({ users }: AdminWrapperProps) => {
   return (
     <Box p={2}>
-      <Box textAlign="center" mb={2}>
-        <Typography variant="h4">Admin Page</Typography>
-        <Typography>管理者用のページです。</Typography>
+      <Box textAlign="center" my={4}>
+        <Typography variant="h2" fontSize={24} fontWeight={'bold'}>
+          管理者用のページ
+        </Typography>
       </Box>
       <Table>
         <TableHead>
@@ -39,7 +40,7 @@ const AdminWrapper = ({ users }: AdminWrapperProps) => {
               <TableCell>{user.id}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.role}</TableCell>
-              <TableCell>{user.createdAt.toDate().toLocaleString()}</TableCell>
+              <TableCell>{new Date(user.createdAt).toLocaleString()}</TableCell>
               <TableCell>{user.name || '-'}</TableCell>
               <TableCell>
                 {user.image ? (

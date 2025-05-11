@@ -21,7 +21,7 @@ export default async function TopPage() {
   const { users } = await response.json();
 
   return (
-    <Template showHeader={false}>
+    <Template showHeader={true}>
       <Admin.AdminWrapper users={users} />
     </Template>
   );

@@ -4,9 +4,7 @@
 import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
-import { AuthError } from 'next-auth';
 import { signIn } from '@/auth';
-import { redirect } from 'next/navigation';
 // import { validatePassword } from 'firebase/auth';
 
 function validateEmail(email: string) {
@@ -71,34 +69,35 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
     };
   }
 
+  // 認証試行
   try {
-    await signIn('credentials', {
+    const result = await signIn('credentials', {
       email: rawFormData.email,
       password: rawFormData.password,
-      redirect: false, // 明示的に自動リダイレクトを無効化
+      redirect: false,
     });
-
-    throw new Error('NEXT_REDIRECT');
-  } catch (error) {
-    if (error instanceof AuthError) {
-      console.error('Signin error:', error);
-
-      switch (error.type) {
-        case 'CallbackRouteError':
-          return {
-            success: false,
-            message: 'メールアドレスまたはパスワードが間違っています',
-          };
-      }
+    // 認証失敗時は NextAuth の結果を参照
+    if (result?.error) {
       return {
         success: false,
-        message:
-          '登録処理中にエラーが発生しました。時間をおいて再度お試しください',
+        option: 'default',
+        message: 'メールアドレスまたはパスワードが間違っています',
       };
     }
+  } catch (error) {
+    console.error('Signin exception:', error);
+    return {
+      success: false,
+      option: 'default',
+      message: '認証中に予期せぬエラーが発生しました',
+    };
   }
-  // Cacheの再検証
+  // Cache の再検証
   revalidatePath('/signin');
-  // リダイレクト
-  redirect('/todo');
+  // 認証成功フラグを返却（リダイレクトは middleware にて制御）
+  return {
+    success: true,
+    option: '',
+    message: undefined,
+  };
 }

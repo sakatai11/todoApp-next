@@ -13,18 +13,8 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const sessionUserSnap = await adminDB
-      .collection('users')
-      .doc(session.user.id)
-      .get();
-    if (!sessionUserSnap.exists) {
-      return NextResponse.json(
-        { error: 'Session user not found' },
-        { status: 404 },
-      );
-    }
-    const sessionUserData = sessionUserSnap.data();
-    if (sessionUserData?.role !== 'ADMIN') {
+    // 管理者権限チェック
+    if (session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     const listsSnap = await adminDB

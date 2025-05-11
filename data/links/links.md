@@ -22,8 +22,8 @@
 
 ## ダッシュボートへのアクセスはこちら
 
-- [サインイン](/signin)
+- [サインイン](/signin?callbackUrl=/todo)
 
 ## 管理用ページ
 
-- [サインイン](/signin)
+- [サインイン](/signin?callbackUrl=/admin)
