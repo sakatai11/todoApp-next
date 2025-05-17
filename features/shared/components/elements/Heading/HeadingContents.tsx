@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { LinkSection } from '@/types/markdown/markdownData';
 import Link from 'next/link';
 
@@ -25,4 +25,4 @@ export const HeadingContents: React.FC<HeadingContentsProps> = ({
   );
 };
 
-export default HeadingContents;
+export default memo(HeadingContents);

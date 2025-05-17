@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import IconContents from '@/features/shared/components/elements/Icon/IconContents';
 import SignOutModal from '@/features/shared/components/elements/Modal/SignOutModal';
 import { NavigationContentsProps } from '@/types/components';
@@ -71,4 +71,4 @@ export const NavigationContents: React.FC<NavigationContentsProps> = ({
   );
 };
 
-export default NavigationContents;
+export default memo(NavigationContents);
