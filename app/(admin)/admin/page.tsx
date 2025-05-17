@@ -2,7 +2,7 @@ import * as Admin from '@/features/admin/templates/index';
 import Template from '@/app/template';
 import { headers } from 'next/headers';
 
-export default async function TopPage() {
+export default async function AdminPage() {
   const incomingHeaders = await headers();
   const cookieHeader = incomingHeaders.get('cookie') || '';
   const response = await fetch(`${process.env.NEXTAUTH_URL}/api/users`, {
