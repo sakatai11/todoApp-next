@@ -14,7 +14,7 @@ export const HeadingContents: React.FC<HeadingContentsProps> = ({
       {/* ヘッディングリンク */}
       {headingSection?.links?.map((link, index) => (
         <Link
-          key={`dashboard-${index}`}
+          key={`dashboards-${index}`}
           href={link.href}
           className="hover:underline"
         >
