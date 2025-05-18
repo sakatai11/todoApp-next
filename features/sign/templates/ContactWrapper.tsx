@@ -74,7 +74,7 @@ const ContactWrapper = () => {
   useEffect(() => {
     if (formState.success) {
       formRef.current?.reset();
-      router.push(`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      router.push(`/signin?callbackUrl=${callbackUrl}`);
     }
   }, [formState.success, callbackUrl, router]);
 
