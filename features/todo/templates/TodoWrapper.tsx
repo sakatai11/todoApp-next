@@ -6,7 +6,7 @@ import { Box } from '@mui/material';
 import { PushContainer, MainContainer } from '@/features/todo/components';
 import { TodoProvider } from '@/features/todo/contexts/TodoContext';
 import useSWR, { SWRConfig, preload } from 'swr';
-import TodosLoading from '@/app/(dashboard)/loading';
+import TodosLoading from '@/app/(dashboards)/loading';
 import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -37,7 +37,7 @@ const baseUrl =
     : ''; // クライアント環境
 
 // APIエンドポイントのURL
-const apiUrl = `${baseUrl}/api/info`;
+const apiUrl = `${baseUrl}/api/dashboards`;
 
 // 安全な事前読み込み（クライアントのみで実行されることを保証）
 if (typeof window !== 'undefined') {
@@ -46,13 +46,17 @@ if (typeof window !== 'undefined') {
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
-  const { data, error, isLoading } = useSWR<DataProps>('/api/info', fetcher, {
-    revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    suspense: false,
-    shouldRetryOnError: false,
-  });
+  const { data, error, isLoading } = useSWR<DataProps>(
+    '/api/dashboards',
+    fetcher,
+    {
+      revalidateOnMount: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      suspense: false,
+      shouldRetryOnError: false,
+    },
+  );
 
   if (isLoading) return <TodosLoading />;
   if (error) return <ErrorDisplay message={error.message} />;
