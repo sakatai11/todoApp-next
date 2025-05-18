@@ -11,7 +11,7 @@ import { StatusTitlePropType } from '@/types/components';
 
 const StatusTitle = React.memo(
   ({ id, title, listNumber }: StatusTitlePropType) => {
-    const [selectModalIsOpen, setSelectModalIsOpen] = useState(false);
+    const [selectModalIsOpen, setSelectModalIsOpen] = useState<boolean>(false);
     const { listHooks, deleteListHooks, updateStatusAndCategoryHooks } =
       useTodoContext();
     const { lists } = listHooks;
@@ -21,11 +21,11 @@ const StatusTitle = React.memo(
     const isEditing = id === listEdit; //true
     const { attributes, listeners } = useSortable({ id });
 
-    const [deleteIsModalOpen, setDeleteIsModalOpen] = useState(false);
-    const [textRename, setTextRename] = useState(false);
-    const [initialTitle, setInitialTitle] = useState(title); // 初期レンダリング実行時のtitleを保存
-    const [inputValue, setInputValue] = useState(title); // 入力フィールド内のリアルタイム値
-    const [isStatus, setIsStatus] = useState(true); // editListの返却値フラグ
+    const [deleteIsModalOpen, setDeleteIsModalOpen] = useState<boolean>(false);
+    const [textRename, setTextRename] = useState<boolean>(false);
+    const [initialTitle, setInitialTitle] = useState<string>(title); // 初期レンダリング実行時のtitleを保存
+    const [inputValue, setInputValue] = useState<string>(title); // 入力フィールド内のリアルタイム値
+    const [isStatus, setIsStatus] = useState<boolean>(true); // editListの返却値フラグ
 
     const modalRef = useRef<HTMLDivElement>(null);
     const deleteModalRef = useRef<HTMLDivElement>(null);

@@ -21,7 +21,7 @@ const TopWrapper = ({ data }: TopWrapperProps) => {
           <Typography variant="h2" fontWeight="bold" fontSize={22} mb={2}>
             {section.title}
           </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center">
+          <Stack direction="row" spacing={2} justifyContent="center" mb={2}>
             {section.links.map(({ name, href }) => (
               <MuiLink
                 component={Link}

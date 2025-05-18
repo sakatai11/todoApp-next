@@ -3,6 +3,7 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
 import { CredentialsSchema } from '@/data/validatedData';
+import { adminDB } from '@/app/libs/firebaseAdmin';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -50,12 +51,21 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           }
 
           const { customToken, decodedToken, tokenExpiry } = await res.json();
+          // Firestore から role を取得
+          let role: string | undefined = undefined;
+          try {
+            const userDoc = await adminDB.collection('users').doc(decodedToken.uid).get();
+            role = userDoc.data()?.role;
+          } catch (e) {
+            console.error('Error fetching user role in authorize:', e);
+          }
           console.log('token:', customToken);
           return {
             id: decodedToken.uid,
             email: decodedToken.email,
             customToken,
             tokenExpiry,
+            role,
           };
         } catch (error) {
           console.error('Error signing in with custom token:', error);

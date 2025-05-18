@@ -1,5 +1,7 @@
 import { TodoListProps, TodoHookType } from '@/types/todos';
 import { ListHookType } from '@/types/lists';
+import { UserData } from '@/types/auth/authData';
+
 import {
   UpdateStatusAndCategoryHooks,
   DeleteListHooks,
@@ -55,9 +57,21 @@ export type HandleClickPropsType = IsModalWithDeleteType &
     setTextRename: (textRename: boolean) => void;
   };
 
+// signOutModal
+export type SignOutPropType = IsModalBaseType & {
+  onSignOut: () => void;
+};
+
 // StatusTitle
 export type StatusTitlePropType = {
   id: string;
   title: string;
   listNumber: number;
+};
+
+// NavigationContents
+export type NavigationContentsProps = IsModalBaseType & {
+  user: UserData;
+  initial: string;
+  onCloseNav: () => void;
 };

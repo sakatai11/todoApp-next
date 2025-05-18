@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 // Props for the icon component: display the initial of the user
 type IconContentsProps = {
@@ -13,4 +13,4 @@ const IconContents: React.FC<IconContentsProps> = ({ initial }) => {
   );
 };
 
-export default IconContents;
+export default memo(IconContents);

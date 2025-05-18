@@ -1,45 +1,36 @@
-import { auth } from '@/auth';
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export default async function middleware(request: NextRequest) {
-  const session = await auth();
+export default async function middleware(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const path = req.nextUrl.pathname;
 
-  // 保護ページの定義
-  const isProtectedPage = request.nextUrl.pathname.startsWith('/todo');
-  const isAuthPage = request.nextUrl.pathname.startsWith('/signin');
-
-  // 認証状態によるリダイレクト処理
-  if (isProtectedPage && !session?.user) {
-    return NextResponse.redirect(new URL('/signin', request.url));
+  // Protect admin routes
+  if (path.startsWith('/admin')) {
+    // If not authenticated or not admin, redirect to sign-in with callbackUrl
+    if (!token || token.role !== 'ADMIN') {
+      const url = req.nextUrl.clone();
+      url.pathname = '/signin';
+      url.searchParams.set('callbackUrl', path);
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
+  // Protect todo routes for authenticated users
+  if (path.startsWith('/todo')) {
+    if (!token) {
+      const url = req.nextUrl.clone();
+      url.pathname = '/signin';
+      url.searchParams.set('callbackUrl', path);
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
   }
 
-  if (isAuthPage && session?.user) {
-    return NextResponse.redirect(new URL('/todo', request.url));
-  }
-
-  const response = NextResponse.next();
-  response.headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // MUI フォント用
-      "font-src 'self' https://fonts.gstatic.com data:", // MUI アイコン用
-      "img-src 'self' data:", // データURI画像許可
-      "connect-src 'self'", // API接続制限
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join('; '),
-  );
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  return response;
+  return NextResponse.next();
 }
 
-// matcherで特定のパスにのみミドルウェアを適用
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/admin/:path*', '/todo/:path*'],
 };

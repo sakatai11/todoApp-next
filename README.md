@@ -26,7 +26,7 @@ TodoApp-Nextは、Next.jsをベースにしたタスク管理アプリケーシ�
 - **フロントエンド**: Next.js React
 - **スタイリング**: Tailwind CSS
 - **UIコンポーネント**: Material UI (MUI)
-- **バックエンド**: Firebase (Authentication, Firestore)
+- **バックエンド**: Firebase Admin SDK (Authentication, Firestore)
 - **認証**: NextAuth.js
 - **データフェッチング**: SWR
 - **ドラッグ＆ドロップ**: @dnd-kit/core
@@ -55,15 +55,33 @@ TodoApp-Nextは、Next.jsをベースにしたタスク管理アプリケーシ�
 
 ```
 todoApp-next/
-├── app/              # Next.jsのApp Routerベースのルート定義
-│   ├── (dashboard)/      # タスク関連のルート（グループ化）
-│   ├── api/          # APIルート
-│   └── ...
-├── features/         # 機能ごとのコンポーネントとロジック
-│   ├── todo/         # Todo機能関連
-│   ├── top/          # トップページ関連
-│   └── ...
-├── data/             # 静的データとリンク定義
-├── public/           # 静的アセット
-└── types/            # TypeScript型定義
+├── app/                        # Next.jsのApp Routerベースのルート定義
+│   ├── (admin)/                # 管理者関連のルート（グループ化）
+│   ├── (auth)/                 # 認証機能関連のルート（グループ化）
+│   ├── (dashboard)/            # ダッシュボード関連のルート（グループ化）
+│   ├── api/                    # APIルート
+│   │   ├── (admin)/            # 管理者用API（グループ化）
+│   │   ├── (general)/          # 一般ユーザー用API（グループ化）
+│   │   ├── auth/               # 認証関連API
+│   ├── libs/                   # 共通ライブラリ
+│   ├── static/                 # 静的CSSファイル
+│   └── utils/                  # ユーティリティ関数
+├── features/                   # 機能ごとのコンポーネントとロジック
+│   ├── admin/                  # 管理者機能
+│   ├── libs/                   # 共通ライブラリ
+│   ├── shared/                 # 共通機能
+│   │   ├── components/         # 共通UIコンポーネント
+│   │   │   └── elements/       # 汎用UIパーツ
+│   │   └── templates/          # 共通テンプレート
+│   ├── todo/                   # タスク管理機能
+│   │   ├── components/         # タスク用UIコンポーネント
+│   │   │   └── elements/       # タスク用UIパーツ
+│   │   ├── contexts/           # タスク用コンテキスト
+│   │   ├── dnd/                # ドラッグ＆ドロップ関連
+│   │   ├── hooks/              # タスク用カスタムフック
+│   │   └── templates/          # タスク用テンプレート
+│   └── utils/                  # 機能共通ユーティリティ
+├── data/                       # 静的データとリンク定義
+├── public/                     # 静的アセット、画像関連
+└── types/                      # TypeScript型定義
 ```

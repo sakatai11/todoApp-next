@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import * as Field from '@/features/sign/components/index';
 import { signInData } from '@/app/(auth)/_signIn/signIn';
 import { signUpData } from '@/app/(auth)/_signUp/signUp';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useRef, useEffect, useActionState, startTransition } from 'react';
 import { PrevState } from '@/types/form/formData';
 import { validationMessage } from '@/data/form';
@@ -16,7 +16,10 @@ const initialState = {
 };
 
 const ContactWrapper = () => {
+  const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') ?? '/todo';
   const formActionHandler = pathname.includes('signup')
     ? signUpData
     : signInData;
@@ -67,12 +70,13 @@ const ContactWrapper = () => {
 
   const formRef = useRef<HTMLFormElement>(null);
 
-  // successがtrueになったらフォームをリセット
+  // successがtrueになったらフォームをリセットし、リダイレクト
   useEffect(() => {
     if (formState.success) {
       formRef.current?.reset();
+      router.push(`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
     }
-  }, [formState.success]);
+  }, [formState.success, callbackUrl, router]);
 
   return (
     <div className="min-h-screen flex flex-col justify-center ">
@@ -92,6 +96,7 @@ const ContactWrapper = () => {
           ref={formRef}
           className="p-5"
         >
+          <input type="hidden" name="callbackUrl" value={callbackUrl} />
           <Field.MailField
             success={formState.success}
             message={formState.message}
