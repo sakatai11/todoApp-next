@@ -1,7 +1,7 @@
 // _signIn/signIn.ts
 'use server';
 
-// import { revalidatePath } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { signIn } from '@/auth';
@@ -93,7 +93,8 @@ export async function signInData(_prevState: PrevState, formData: FormData) {
     };
   }
   // Cache の再検証
-  // revalidatePath('/signin');
+  revalidatePath('/signin');
+
   // 認証成功フラグを返却（リダイレクトは middleware にて制御）
   return {
     success: true,
