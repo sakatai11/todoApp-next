@@ -11,18 +11,19 @@ export default async function SignInPage(props: {
   const params = await props.searchParams;
   const raw = params.callbackUrl;
   const cb = Array.isArray(raw) ? raw[0] : raw;
+  const decodedCb = cb ? decodeURIComponent(cb) : undefined;
   if (session) {
     // non-admin users
     if (session.user.role !== 'ADMIN') {
       // attempted to access admin via callback
-      if (cb && cb.startsWith('/admin')) {
-        redirect('account/error');
+      if (decodedCb && decodedCb.startsWith('/admin')) {
+        redirect('/account/error');
       }
-      // otherwise, redirect to todo dashboard
+      // otherwise, redirect to todo dashboard or callback if valid todo
       redirect('/todo');
     }
-    // admin users: respect callbackUrl or default to /admin
-    redirect(cb ?? '/admin');
+    // admin users: respect decoded callbackUrl or default to /admin
+    redirect(decodedCb ?? '/admin');
   }
   return (
     <Template showHeader={false}>

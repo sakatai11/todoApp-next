@@ -19,9 +19,7 @@ const ContactWrapper = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const callbackUrl = decodeURIComponent(
-    searchParams.get('callbackUrl') ?? '/todo',
-  );
+  const callbackUrl = searchParams.get('callbackUrl') ?? '/todo';
   const formActionHandler = pathname.includes('signup')
     ? signUpData
     : signInData;
@@ -63,8 +61,7 @@ const ContactWrapper = () => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-
-    const formData = new FormData(event.target as HTMLFormElement);
+    const formData = new FormData(event.currentTarget as HTMLFormElement);
     startTransition(() => {
       formAction(formData);
     });
@@ -76,7 +73,7 @@ const ContactWrapper = () => {
   useEffect(() => {
     if (formState.success) {
       formRef.current?.reset();
-      router.push(callbackUrl);
+      router.push(`/signin?callbackUrl=${callbackUrl}`);
     }
   }, [formState.success, callbackUrl, router]);
 
