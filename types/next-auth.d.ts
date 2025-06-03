@@ -21,6 +21,7 @@ declare module 'next-auth' {
     tokenExpiry?: number;
     customToken?: string;
     lastUpdated?: number;
+    role?: string;
   }
 }
 
@@ -32,5 +33,6 @@ declare module 'next-auth/jwt' {
     tokenExpiry?: number;
     customToken?: string;
     lastUpdated?: number;
+    role?: string;
   }
 }

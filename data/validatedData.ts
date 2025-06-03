@@ -10,6 +10,7 @@ export const AuthResponseSchema = z.object({
   decodedToken: AuthDecodedTokenSchema,
   customToken: z.string(),
   tokenExpiry: z.number(),
+  userRole: z.string().optional(),
 });
 
 export const CredentialsSchema = z.object({
