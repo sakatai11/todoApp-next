@@ -5,7 +5,10 @@ export async function initMocks() {
     // Server-side - Only run in development
     if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') {
       const { server } = await import('./server');
-      server.listen();
+      server.listen({
+        onUnhandledRequest: 'bypass',
+      });
+      console.log('MSW: Server-side mocking enabled');
     }
   } else {
     // Client-side
@@ -14,6 +17,7 @@ export async function initMocks() {
       await worker.start({
         onUnhandledRequest: 'bypass', // Bypass unhandled requests
       });
+      console.log('MSW: Client-side mocking enabled');
     }
   }
 }
