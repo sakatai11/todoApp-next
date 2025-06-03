@@ -1,7 +1,15 @@
 // api/auth/token/route.ts
-import { adminAuth, adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { AuthResponseSchema } from '@/data/validatedData';
+
+// Dynamic imports to avoid client-side loading
+const getFirebaseAdmin = async () => {
+  if (process.env.NEXT_PUBLIC_API_MOCKING !== 'enabled') {
+    const { adminAuth, adminDB } = await import('@/app/libs/firebaseAdmin');
+    return { adminAuth, adminDB };
+  }
+  return null;
+};
 
 export async function POST(req: Request) {
   const { email, password } = await req.json();
@@ -14,6 +22,41 @@ export async function POST(req: Request) {
   }
 
   try {
+    // モック環境の場合
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') {
+      // モックユーザーの認証
+      const { mockUser } = await import('@/mocks/data/user');
+      const user = mockUser.find(u => u.email === email);
+      
+      if (!user || password !== 'password') { // モック環境では固定パスワード
+        return NextResponse.json({ error: '認証エラー' }, { status: 401 });
+      }
+
+      // モックレスポンスを生成
+      const mockDecodedToken = {
+        uid: user.id,
+        email: user.email,
+        exp: Math.floor(Date.now() / 1000) + 3600, // 1時間後
+      };
+
+      const response = {
+        decodedToken: mockDecodedToken,
+        customToken: `mock-custom-token-${user.id}`,
+        tokenExpiry: 3600,
+        userRole: user.role,
+      };
+
+      return NextResponse.json(response);
+    }
+
+    // 本番環境の場合（既存のコード）
+    const firebaseAdmin = await getFirebaseAdmin();
+    if (!firebaseAdmin) {
+      throw new Error('Firebase Admin SDK not available');
+    }
+    
+    const { adminAuth, adminDB } = firebaseAdmin;
+
     // Firebase Auth REST APIを使ってサーバー側で認証（パスワード検証）
     const firebaseApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
     const res = await fetch(
