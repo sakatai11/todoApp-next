@@ -23,7 +23,7 @@ export default async function Template({
     cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
-      'cookie': cookieHeader,
+      cookie: cookieHeader,
     },
   });
 
