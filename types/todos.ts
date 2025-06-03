@@ -1,10 +1,11 @@
 import { EditDataProps, BaseHookType } from '@/types/common';
+import { Timestamp } from 'firebase-admin/firestore';
 
 // todoデータの型
 export type TodoListProps = {
   id: string;
-  updateTime: number;
-  createdTime: number;
+  updateTime: Timestamp;
+  createdTime: Timestamp;
   text: string;
   status: string;
   bool: boolean;
@@ -50,8 +51,8 @@ export type TodoResponse<T extends 'POST' | 'PUT' | 'DELETE'> = T extends 'POST'
       text?: string;
       status?: string;
       bool?: boolean;
-      createdTime?: number;
-      updateTime?: number;
+      createdTime?: Timestamp;
+      updateTime?: Timestamp;
       error?: string;
     }
   : T extends 'PUT'

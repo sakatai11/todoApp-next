@@ -41,7 +41,7 @@ export async function GET(
     console.error('Error in GET /api/users/[userId]:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
