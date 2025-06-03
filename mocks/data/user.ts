@@ -1,12 +1,11 @@
 // mocks/data/users.ts
-import { UserData } from '@/types/auth/authData';
-import { Timestamp } from 'firebase-admin/firestore';
+import { MockUserData } from '@/types/auth/authData';
 
-export const mockUser: UserData[] = [
+export const mockUser: MockUserData[] = [
   {
     id: 'sWOLyYfI8RVRYxSywjbxXf6EFY33',
     email: '4244pretty@rowdydow.com',
-    createdAt: Timestamp.fromDate(new Date(1744749991599)),
+    createdAt: new Date(1744749991599).toISOString(),
     role: 'USER',
   },
 ];
