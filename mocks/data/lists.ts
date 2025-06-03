@@ -8,18 +8,13 @@ const mockTodos: StatusListProps[] = [
   },
   {
     id: 'list-2',
-    category: 'in-progress',
+    category: 'done',
     number: 2,
   },
   {
     id: 'list-3',
-    category: 'done',
-    number: 3,
-  },
-  {
-    id: 'list-4',
     category: 'todo',
-    number: 4,
+    number: 3,
   },
 ];
 
