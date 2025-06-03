@@ -49,3 +49,6 @@ firestore.indexes.json
 firestore.rules
 /docs
 /.clinerules.md
+
+# MSW generated file
+public/mockServiceWorker.js

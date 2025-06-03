@@ -1,5 +1,5 @@
 // api/auth/token/route.ts
-import { adminAuth } from '@/app/libs/firebaseAdmin';
+import { adminAuth, adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { AuthResponseSchema } from '@/data/validatedData';
 
@@ -45,7 +45,19 @@ export async function POST(req: Request) {
     // カスタムトークンを発行
     const customToken = await adminAuth.createCustomToken(uid);
 
-    const response = { decodedToken, customToken, tokenExpiry };
+    // Firestore から role を取得
+    let userRole: string | undefined = undefined;
+    try {
+      const userDoc = await adminDB
+        .collection('users')
+        .doc(uid)
+        .get();
+      userRole = userDoc.data()?.role;
+    } catch (e) {
+      console.error('Error fetching user role:', e);
+    }
+
+    const response = { decodedToken, customToken, tokenExpiry, userRole };
     // **Zod でバリデーション**
     const validatedData = AuthResponseSchema.parse(response);
 
