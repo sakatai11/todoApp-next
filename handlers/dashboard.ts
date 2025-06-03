@@ -5,6 +5,6 @@ import { contents } from '../data';
 export const dashboardHandlers = [
   // Get dashboard contents (todos and lists)
   http.get('/api/dashboards', () => {
-    return HttpResponse.json(contents);
+    return HttpResponse.json({ contents });
   }),
 ];
