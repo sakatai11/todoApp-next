@@ -1,6 +1,6 @@
 import * as Header from '@/features/shared/templates/index';
 import { getLinks } from '@/app/libs/markdown';
-import { headers } from 'next/headers';
+import { fetchUserForTemplate } from '@/app/libs/fetchUserForTemplate';
 
 type TemplateProps = {
   children: React.ReactNode;
@@ -15,24 +15,9 @@ export default async function Template({
     return <>{children}</>;
   }
   const { headerLinks } = await getLinks();
-  // Forward incoming cookies so that internal API can authenticate the user
-  // headers() may be async, so await its result before using .get()
-  const incomingHeaders = await headers();
-  const cookieHeader = incomingHeaders.get('cookie') || '';
-  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/user`, {
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-      cookie: cookieHeader,
-    },
-  });
 
-  if (!response.ok) {
-    console.error('Fetch error:', response.status, response.statusText);
-    throw new Error('Failed to fetch data');
-  }
-
-  const { user } = await response.json();
+  // モック環境対応のfetch関数を使用
+  const { user } = await fetchUserForTemplate();
 
   return (
     <>

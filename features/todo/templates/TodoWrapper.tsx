@@ -58,7 +58,7 @@ const TodoContent = (): React.ReactElement => {
     },
   );
 
-  if (isLoading) return <TodosLoading />;
+  if (isLoading || !data || !data.contents) return <TodosLoading />;
   if (error) return <ErrorDisplay message={error.message} />;
 
   // suspense:trueの場合、dataはneverになるのでnullチェック不要

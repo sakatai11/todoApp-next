@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './static/input.css';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { MSWProvider } from './providers/MSWProvider';
+import { MockIndicator } from '@/features/shared/components/elements/Mock/MockIndicator';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -28,7 +29,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-sky-100`}
       >
-        <MSWProvider>{children}</MSWProvider>
+        <MSWProvider>
+          {children}
+          <MockIndicator />
+        </MSWProvider>
       </body>
     </html>
   );
