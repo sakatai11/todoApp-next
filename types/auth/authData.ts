@@ -15,6 +15,11 @@ export type UserData = {
   updatedAt?: Timestamp;
 };
 
+// UserDataのAPIデータの型定義,mock用
+export type MockUserData = Omit<UserData, 'createdAt'> & {
+  createdAt: string;
+};
+
 // ユーザーデータの拡張型定義
 export type EnhancedUserData = UserData & {
   todos: TodoListProps[];

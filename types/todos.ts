@@ -11,18 +11,46 @@ export type TodoListProps = {
   bool: boolean;
 };
 
+// TodoのAPIデータの型定義,mock用
+export type MockTodoListProps = Omit<
+  TodoListProps,
+  'updateTime' | 'createdTime'
+> & {
+  updateTime: string;
+  createdTime: string;
+};
+
+// 共通：日付型の切り替え
+type DateType<IsMock extends boolean> = IsMock extends true
+  ? string
+  : Timestamp;
+
 // APIデータは動的に型定義
-export type TodoPayload<T extends 'POST' | 'DELETE' | 'PUT'> = T extends 'POST'
-  ? Omit<TodoListProps, 'id'> // POSTではidを省略
+export type TodoPayload<
+  T extends 'POST' | 'DELETE' | 'PUT',
+  IsMock extends boolean = false,
+> = T extends 'POST'
+  ? {
+      text: string;
+      status: string;
+      bool: boolean;
+      createdTime: DateType<IsMock>;
+      updateTime: DateType<IsMock>;
+    }
   : T extends 'DELETE'
-    ? Pick<TodoListProps, 'id'> // DELETEではidのみ必須
+    ? { id: string }
     : T extends 'PUT'
       ?
-          | Pick<TodoListProps, 'id' | 'bool'>
-          | Pick<TodoListProps, 'id' | 'updateTime' | 'text' | 'status'>
+          | { id: string; bool: boolean }
+          | {
+              id: string;
+              updateTime: DateType<IsMock>;
+              text: string;
+              status: string;
+            }
           | {
               type: 'restatus';
-              data: { oldStatus: string; status: string }; // リスト名を変更するときの型定義
+              data: { oldStatus: string; status: string };
             }
       : never;
 
