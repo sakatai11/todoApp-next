@@ -1,0 +1,1 @@
+// mocks/data/index.ts

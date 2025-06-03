@@ -1,0 +1,1 @@
+// mocks/browser.ts
