@@ -1,4 +1,4 @@
-// app/libs/mockDataFetcher.ts
+// app/libs/fetchUserForTemplate.ts
 import { user } from '@/mocks/data';
 
 export async function fetchUserForTemplate() {
