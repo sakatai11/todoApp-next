@@ -47,7 +47,6 @@ next-env.d.ts
 firebase.json
 firestore.indexes.json
 firestore.rules
-# /todoApp-submodule
 /.clinerules.md
 /CLAUDE.md
 

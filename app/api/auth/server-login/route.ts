@@ -23,12 +23,16 @@ export async function POST(req: Request) {
 
   try {
     // モック環境の場合
-    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') {
+    if (
+      process.env.NODE_ENV === 'development' &&
+      process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+    ) {
       // モックユーザーの認証
-      const { mockUser } = await import('@/mocks/data/user');
-      const user = mockUser.find(u => u.email === email);
-      
-      if (!user || password !== 'password') { // モック環境では固定パスワード
+      const { mockUser } = await import('@/todoApp-submodule/mocks/data/user');
+      const user = mockUser.find((u) => u.email === email);
+
+      if (!user || password !== 'password') {
+        // モック環境では固定パスワード
         return NextResponse.json({ error: '認証エラー' }, { status: 401 });
       }
 
@@ -54,7 +58,7 @@ export async function POST(req: Request) {
     if (!firebaseAdmin) {
       throw new Error('Firebase Admin SDK not available');
     }
-    
+
     const { adminAuth, adminDB } = firebaseAdmin;
 
     // Firebase Auth REST APIを使ってサーバー側で認証（パスワード検証）
@@ -91,10 +95,7 @@ export async function POST(req: Request) {
     // Firestore から role を取得
     let userRole: string | undefined = undefined;
     try {
-      const userDoc = await adminDB
-        .collection('users')
-        .doc(uid)
-        .get();
+      const userDoc = await adminDB.collection('users').doc(uid).get();
       userRole = userDoc.data()?.role;
     } catch (e) {
       console.error('Error fetching user role:', e);

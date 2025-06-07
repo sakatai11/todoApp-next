@@ -1,5 +1,5 @@
 // app/libs/fetchUserForTemplate.ts
-import { user } from '@/mocks/data';
+import { user } from '@/todoApp-submodule/mocks/data';
 
 export async function fetchUserForTemplate() {
   // モック環境の場合

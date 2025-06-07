@@ -17,7 +17,7 @@ export function MSWProvider({ children }: { children: React.ReactNode }) {
         process.env.NODE_ENV === 'development' &&
         process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
       ) {
-        const { initMocks } = await import('@/mocks/initMocks');
+        const { initMocks } = await import('@/todoApp-submodule/mocks/initMocks');
         await initMocks();
         setMockingEnabled(true);
       } else {
