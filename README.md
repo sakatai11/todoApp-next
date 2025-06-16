@@ -82,7 +82,6 @@ todoApp-next/
 │   │   └── templates/          # タスク用テンプレート
 │   └── utils/                  # 機能共通ユーティリティ
 ├── data/                       # 静的データとリンク定義
-├── mocks/                      # Mock Service Worker用のモックデータとハンドラー
 ├── public/                     # 静的アセット、画像関連
 └── types/                      # TypeScript型定義
 ```
