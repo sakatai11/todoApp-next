@@ -47,7 +47,7 @@ next-env.d.ts
 firebase.json
 firestore.indexes.json
 firestore.rules
-/.clinerules.md
+/.clinerules
 /CLAUDE.md
 
 # MSW generated file
