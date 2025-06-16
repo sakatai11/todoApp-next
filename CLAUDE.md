@@ -56,8 +56,13 @@ features/              # Feature-based components
 ├── shared/            # Shared components across features
 └── utils/             # Feature utilities
 
+todoApp-submodule/     # Submodule for mock API and documentation
+├── mocks/             # MSW handlers and mock data
+│   ├── data/          # Mock data definitions
+│   └── handlers/      # API handler definitions
+└── docs/              # Project documentation
+
 types/                 # TypeScript type definitions
-mocks/                 # MSW handlers and mock data
 ```
 
 ### Authentication Flow
@@ -132,4 +137,4 @@ mocks/                 # MSW handlers and mock data
 - **Run existing tests**: Always run tests before making changes
 - **MSW initialization**: Use `npm run msw:init` when setting up mocking
 - **Update MSW handlers**: Keep mock handlers in sync with actual API changes
-- **Maintain test data**: Update mock data in `mocks/data/` when schemas change
+- **Maintain test data**: Update mock data in `todoApp-submodule/mocks/data/` when schemas change

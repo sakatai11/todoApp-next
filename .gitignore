@@ -47,8 +47,7 @@ next-env.d.ts
 firebase.json
 firestore.indexes.json
 firestore.rules
-CLAUDE.local.md  # 個人設定ファイルは除外
-.claude/         # プロジェクト内個人設定ディレクトリは除外
+CLAUDE.local.md
 
 # MSW generated file
 public/mockServiceWorker.js
