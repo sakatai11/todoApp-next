@@ -1,9 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@/tests/test-utils';
+import { render, screen, mockTodos, mockLists } from '@/tests/test-utils';
 import MainContainer from '@/features/todo/components/MainContainer/MainContainer';
 import { TodoListProps } from '@/types/todos';
-import { StatusListProps } from '@/types/lists';
 import { Timestamp } from 'firebase-admin/firestore';
 
 // Mock DnD Kit
@@ -42,38 +41,7 @@ vi.mock('@/features/todo/dnd/SortableItem', () => ({
   ),
 }));
 
-const mockTodos: TodoListProps[] = [
-  {
-    id: 'todo-1',
-    text: 'Test Todo 1',
-    status: 'pending',
-    bool: false,
-    createdTime: Timestamp.fromDate(new Date()),
-    updateTime: Timestamp.fromDate(new Date()),
-  },
-  {
-    id: 'todo-2',
-    text: 'Test Todo 2',
-    status: 'pending',
-    bool: true,
-    createdTime: Timestamp.fromDate(new Date()),
-    updateTime: Timestamp.fromDate(new Date()),
-  },
-  {
-    id: 'todo-3',
-    text: 'Test Todo 3',
-    status: 'in_progress',
-    bool: false,
-    createdTime: Timestamp.fromDate(new Date()),
-    updateTime: Timestamp.fromDate(new Date()),
-  },
-];
-
-const mockLists: StatusListProps[] = [
-  { id: 'list-1', category: 'pending', number: 1 },
-  { id: 'list-2', category: 'in_progress', number: 2 },
-  { id: 'list-3', category: 'completed', number: 3 },
-];
+// サブモジュールのモックデータを使用（test-utilsからインポート済み）
 
 describe('MainContainer', () => {
   describe('レンダリング', () => {
@@ -106,10 +74,10 @@ describe('MainContainer', () => {
         initialLists: mockLists,
       });
 
-      // StatusTitleコンポーネントが各リストに表示されることを確認
-      expect(screen.getByText('pending')).toBeInTheDocument();
-      expect(screen.getByText('in_progress')).toBeInTheDocument();
-      expect(screen.getByText('completed')).toBeInTheDocument();
+      // サブモジュールのリストカテゴリに基づいて確認
+      expect(screen.getByText('in-progress')).toBeInTheDocument();
+      expect(screen.getByText('done')).toBeInTheDocument();
+      expect(screen.getByText('todo')).toBeInTheDocument();
     });
 
     it('AddListコンポーネントが表示される', () => {
@@ -132,12 +100,11 @@ describe('MainContainer', () => {
         initialLists: mockLists,
       });
 
-      // pending リストに 'Test Todo 1' と 'Test Todo 2' が表示される
-      expect(screen.getByText('Test Todo 1')).toBeInTheDocument();
-      expect(screen.getByText('Test Todo 2')).toBeInTheDocument();
-
-      // in_progress リストに 'Test Todo 3' が表示される
-      expect(screen.getByText('Test Todo 3')).toBeInTheDocument();
+      // サブモジュールのTodoデータに基づいて確認
+      expect(screen.getByText('Next.js App Routerの学習')).toBeInTheDocument();
+      expect(screen.getByText('Nuxt3の学習')).toBeInTheDocument();
+      expect(screen.getByText('MSWの実装')).toBeInTheDocument();
+      expect(screen.getByText('TypeScript最適化')).toBeInTheDocument();
     });
 
     it('bool値によってTodoが正しく分類される', () => {
@@ -146,10 +113,10 @@ describe('MainContainer', () => {
         initialLists: mockLists,
       });
 
-      // Todoアイテムが表示されることを確認（実際のdata-testidに基づいて調整）
-      expect(screen.getByText('Test Todo 1')).toBeInTheDocument();
-      expect(screen.getByText('Test Todo 2')).toBeInTheDocument();
-      expect(screen.getByText('Test Todo 3')).toBeInTheDocument();
+      // サブモジュールのTodoアイテムが表示されることを確認
+      expect(screen.getByText('Next.js App Routerの学習')).toBeInTheDocument();
+      expect(screen.getByText('Nuxt3の学習')).toBeInTheDocument();
+      expect(screen.getByText('TypeScript最適化')).toBeInTheDocument();
     });
 
     it('空のリストでも正常に表示される', () => {
@@ -159,9 +126,9 @@ describe('MainContainer', () => {
       });
 
       // リストは表示されるが、Todoは表示されない
-      expect(screen.getByText('pending')).toBeInTheDocument();
-      expect(screen.getByText('in_progress')).toBeInTheDocument();
-      expect(screen.getByText('completed')).toBeInTheDocument();
+      expect(screen.getByText('in-progress')).toBeInTheDocument();
+      expect(screen.getByText('done')).toBeInTheDocument();
+      expect(screen.getByText('todo')).toBeInTheDocument();
     });
   });
 

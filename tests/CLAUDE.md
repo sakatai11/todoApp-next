@@ -14,6 +14,7 @@
 - **成功率**: 100% (76/76 passing)
 - **カバレッジ**: 100% - 全コンポーネント・フック・コンテキストをカバー
 - **品質**: ESLint準拠、TypeScript型安全性確保、適切なエラーハンドリング
+- **データ統合**: 全テストファイルでサブモジュールモックデータを統一使用
 
 ### テスト実行コマンド
 
@@ -70,13 +71,30 @@ tests/
 
 ### サブモジュールデータの利用
 
+**全テストファイルで統一してサブモジュールデータを使用**
+
 ```typescript
 import { mockTodos, mockLists } from '@/tests/test-utils';
 
 // サブモジュールのモックデータを使用（Firebase Timestamp形式に自動変換済み）
-const todos = mockTodos;  // 4つのTodoアイテム
-const lists = mockLists;  // 3つのステータスリスト
+const todos = mockTodos;  // 5つのTodoアイテム
+const lists = mockLists;  // 3つのステータスリスト（'in-progress', 'done', 'todo'）
 ```
+
+**実際のサブモジュールデータ内容**:
+- **Todoデータ**: `todoApp-submodule/mocks/data/todos.ts`
+  - 'Next.js App Routerの学習' (status: 'in-progress', bool: true)
+  - 'Nuxt3の学習' (status: 'in-progress', bool: false)
+  - 'MSWの実装' (status: 'todo', bool: false)
+  - 'TypeScript最適化' (status: 'done', bool: true)
+  - 'Line 1\\nLine 2\\nLine 3' (status: 'todo', bool: false) - 改行テスト用
+
+- **リストデータ**: `todoApp-submodule/mocks/data/lists.ts`
+  - 'in-progress' (id: 'list-1', number: 1)
+  - 'done' (id: 'list-2', number: 2)
+  - 'todo' (id: 'list-3', number: 3)
+
+**重要**: 独自のモックデータではなく、必ずサブモジュールデータを使用してテストの一貫性を保つ
 
 ### カスタムテストデータの作成
 
@@ -200,6 +218,34 @@ consoleSpy.mockRestore();
 ```
 
 ## ベストプラクティス
+
+### データ一貫性の維持
+
+**サブモジュールデータの統一使用**:
+```typescript
+// ✅ 推奨: サブモジュールデータを使用
+import { mockTodos, mockLists } from '@/tests/test-utils';
+
+render(<Component />, {
+  initialTodos: mockTodos,
+  initialLists: mockLists,
+});
+
+// ❌ 非推奨: 独自モックデータの定義
+const customMockData = [
+  { id: 'test-1', text: 'Custom Todo' }
+];
+```
+
+**期待値の設定**:
+```typescript
+// サブモジュールの実際のデータに基づいた期待値を使用
+expect(screen.getByText('Next.js App Routerの学習')).toBeInTheDocument();
+expect(screen.getByText('in-progress')).toBeInTheDocument();
+
+// カスタムデータが必要な場合はcreateTestTodo/createTestListを使用
+const customTodo = createTestTodo({ text: '特殊ケーステスト' });
+```
 
 ### テストの構造化
 
