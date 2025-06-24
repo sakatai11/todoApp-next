@@ -194,8 +194,10 @@ describe('useTodos', () => {
       });
 
       expect(result.current.editId).toBe('todo-1');
-      expect(result.current.input.text).toBe('Next.js App Routerの学習');
-      expect(result.current.input.status).toBe('in-progress');
+      // サブモジュールデータから動的に期待値を取得
+      const firstTodo = mockInitialTodos.find(todo => todo.id === 'todo-1');
+      expect(result.current.input.text).toBe(firstTodo?.text);
+      expect(result.current.input.status).toBe(firstTodo?.status);
     });
 
     it('存在しないTodoの編集では何も変更されない', () => {
@@ -220,15 +222,19 @@ describe('useTodos', () => {
         await result.current.toggleSelected('todo-1');
       });
 
+      // サブモジュールデータから元の値を取得して反転値を期待
+      const originalTodo = mockInitialTodos.find(todo => todo.id === 'todo-1');
+      const expectedBool = !originalTodo?.bool;
+      
       expect(mockApiRequest).toHaveBeenCalledWith('/api/todos', 'PUT', {
         id: 'todo-1',
-        bool: false, // true から false に変更（サブモジュールデータではbool: trueが初期値）
+        bool: expectedBool,
       });
 
       const updatedTodo = result.current.todos.find(
         (todo) => todo.id === 'todo-1',
       );
-      expect(updatedTodo?.bool).toBe(false);
+      expect(updatedTodo?.bool).toBe(expectedBool);
     });
 
     it('存在しないTodoの切り替えでは何も変更されない', async () => {

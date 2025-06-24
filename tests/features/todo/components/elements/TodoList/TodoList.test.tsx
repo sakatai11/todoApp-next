@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@/tests/test-utils';
+import { render, screen, fireEvent, mockTodos, createTestTodo } from '@/tests/test-utils';
 import TodoList from '@/features/todo/components/elements/TodoList/TodoList';
-import { createTestTodo } from '@/tests/test-utils';
 
 // Mock the formatter function
 vi.mock('@/features/utils/textUtils', () => ({
@@ -28,17 +27,17 @@ vi.mock('@/features/utils/textUtils', () => ({
 describe('TodoList', () => {
   describe('レンダリング', () => {
     it('Todoのテキストが正しく表示される', () => {
-      const testTodo = createTestTodo({
-        text: 'Test Todo Text',
-      });
+      // サブモジュールの最初のTodoデータを使用
+      const testTodo = mockTodos[0];
 
       render(<TodoList todo={testTodo} />);
 
-      expect(screen.getByText('Test Todo Text')).toBeInTheDocument();
+      expect(screen.getByText('Next.js App Routerの学習')).toBeInTheDocument();
     });
 
     it('必要なボタンがすべて表示される', () => {
-      const testTodo = createTestTodo();
+      // サブモジュールの2番目のTodoデータを使用
+      const testTodo = mockTodos[1];
 
       render(<TodoList todo={testTodo} />);
 
@@ -49,8 +48,9 @@ describe('TodoList', () => {
     });
 
     it('ピンボタンの状態がbool値に応じて変化する', () => {
-      const pinnedTodo = createTestTodo({ bool: true });
-      const unpinnedTodo = createTestTodo({ bool: false });
+      // サブモジュールから bool: true と bool: false のTodoを取得
+      const pinnedTodo = mockTodos.find(todo => todo.bool === true) || mockTodos[0];
+      const unpinnedTodo = mockTodos.find(todo => todo.bool === false) || mockTodos[1];
 
       const { rerender } = render(<TodoList todo={pinnedTodo} />);
 
@@ -68,7 +68,8 @@ describe('TodoList', () => {
 
   describe('インタラクション', () => {
     it('ピンボタンクリックでtoggleSelectedが呼ばれる', () => {
-      const testTodo = createTestTodo({ id: 'test-todo-id' });
+      // サブモジュールの3番目のTodoデータを使用
+      const testTodo = mockTodos[2];
 
       render(<TodoList todo={testTodo} />);
 
@@ -80,7 +81,8 @@ describe('TodoList', () => {
     });
 
     it('編集ボタンクリックで編集モーダルが開く', () => {
-      const testTodo = createTestTodo({ id: 'test-todo-id' });
+      // サブモジュールの4番目のTodoデータを使用
+      const testTodo = mockTodos[3];
 
       render(<TodoList todo={testTodo} />);
 
@@ -92,7 +94,8 @@ describe('TodoList', () => {
     });
 
     it('削除ボタンクリックで削除モーダルが開く', () => {
-      const testTodo = createTestTodo();
+      // サブモジュールの最初のTodoデータを使用
+      const testTodo = mockTodos[0];
 
       render(<TodoList todo={testTodo} />);
 
@@ -117,10 +120,11 @@ describe('TodoList', () => {
     });
 
     it('改行を含むテキストが正しく処理される', () => {
-      const textWithNewlines = 'Line 1\nLine 2\nLine 3';
-      const testTodo = createTestTodo({ text: textWithNewlines });
+      // サブモジュールから改行を含むTodoを取得（'Line 1\nLine 2\nLine 3'）
+      const todoWithNewlines = mockTodos.find(todo => todo.text.includes('\n'));
+      expect(todoWithNewlines).toBeDefined(); // サブモジュールに改行Todoが存在することを確認
 
-      render(<TodoList todo={testTodo} />);
+      render(<TodoList todo={todoWithNewlines!} />);
 
       // 改行テキストが適切に処理され、<br>タグが含まれることを確認
       // css-cyxlmuクラスを持つテキストコンテナを特定
@@ -147,7 +151,8 @@ describe('TodoList', () => {
 
   describe('モーダル動作', () => {
     it('編集モーダルが条件付きで表示される', () => {
-      const testTodo = createTestTodo({ id: 'test-todo-id' });
+      // サブモジュールの2番目のTodoデータを使用
+      const testTodo = mockTodos[1];
 
       render(<TodoList todo={testTodo} />);
 
@@ -163,7 +168,8 @@ describe('TodoList', () => {
     });
 
     it('削除モーダルが正しく表示される', () => {
-      const testTodo = createTestTodo();
+      // サブモジュールの3番目のTodoデータを使用
+      const testTodo = mockTodos[2];
 
       render(<TodoList todo={testTodo} />);
 
@@ -180,7 +186,8 @@ describe('TodoList', () => {
 
   describe('スタイリング', () => {
     it('適切なMUIスタイルが適用される', () => {
-      const testTodo = createTestTodo();
+      // サブモジュールの最初のTodoデータを使用
+      const testTodo = mockTodos[0];
 
       render(<TodoList todo={testTodo} />);
 
@@ -190,7 +197,8 @@ describe('TodoList', () => {
     });
 
     it('ボタンのサイズとスタイルが正しく設定される', () => {
-      const testTodo = createTestTodo();
+      // サブモジュールの2番目のTodoデータを使用
+      const testTodo = mockTodos[1];
 
       render(<TodoList todo={testTodo} />);
 
@@ -208,7 +216,7 @@ describe('TodoList', () => {
     it('コンポーネントがReact.memoでメモ化されている', () => {
       // React.memoの効果は実際のレンダリング回数の測定で確認される
       // ここでは基本的な動作確認を行う
-      const testTodo = createTestTodo();
+      const testTodo = mockTodos[0];
 
       const { rerender } = render(<TodoList todo={testTodo} />);
 
@@ -219,17 +227,19 @@ describe('TodoList', () => {
     });
 
     it('テキストのメモ化が適切に動作する', () => {
-      const testTodo = createTestTodo({ text: 'Memoized Text' });
+      // サブモジュールの4番目のTodoデータを使用
+      const testTodo = mockTodos[3];
 
       render(<TodoList todo={testTodo} />);
 
-      expect(screen.getByText('Memoized Text')).toBeInTheDocument();
+      expect(screen.getByText(testTodo.text)).toBeInTheDocument();
     });
   });
 
   describe('エラーハンドリング', () => {
     it('不正なTodoオブジェクトでもクラッシュしない', () => {
-      const invalidTodo = createTestTodo({ id: '', text: '' });
+      // サブモジュールデータをベースに不正な値に変更
+      const invalidTodo = { ...mockTodos[0], id: '', text: '' };
 
       expect(() => {
         render(<TodoList todo={invalidTodo} />);
