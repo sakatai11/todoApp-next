@@ -2,6 +2,23 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, mockTodos, createTestTodo } from '@/tests/test-utils';
 import TodoList from '@/features/todo/components/elements/TodoList/TodoList';
 
+// EditModalのモック
+vi.mock('@/features/todo/components/elements/Modal/EditModal', () => ({
+  default: ({ setModalIsOpen, modalIsOpen }: { setModalIsOpen: (value: boolean) => void; modalIsOpen: boolean }) => {
+    return modalIsOpen ? (
+      <div data-testid="edit-modal">
+        <div>Edit Modal</div>
+        <button
+          onClick={() => setModalIsOpen(false)}
+          data-testid="edit-modal-close"
+        >
+          Close Edit Modal
+        </button>
+      </div>
+    ) : null;
+  },
+}));
+
 // Mock the formatter function
 vi.mock('@/features/utils/textUtils', () => ({
   formatter: vi.fn((text: string) => {
@@ -18,6 +35,10 @@ vi.mock('@/features/utils/textUtils', () => ({
         }
       });
       return result;
+    }
+    // URLを含む場合のlink処理を模倣
+    if (text.includes('http')) {
+      return [{ type: 'link', content: text, index: 'link-0' }];
     }
     // 通常のテキストの場合
     return [{ type: 'normal', content: text, index: 'normal-0' }];
@@ -138,14 +159,17 @@ describe('TodoList', () => {
     });
 
     it('URLを含むテキストが正しく処理される', () => {
-      // formatter関数がモックされているため、
-      // 実際のURL処理のテストは formatter 関数のテストで行う
-      const textWithUrl = 'Check this link: https://example.com';
+      const textWithUrl = 'https://example.com';
       const testTodo = createTestTodo({ text: textWithUrl });
 
       render(<TodoList todo={testTodo} />);
 
-      expect(screen.getByText(textWithUrl)).toBeInTheDocument();
+      // linkタイプとして処理され、<a>タグがレンダリングされることを確認
+      const linkElement = screen.getByRole('link');
+      expect(linkElement).toBeInTheDocument();
+      expect(linkElement).toHaveAttribute('href', textWithUrl);
+      expect(linkElement).toHaveAttribute('target', '_blank');
+      expect(linkElement).toHaveAttribute('rel', 'noopener noreferrer');
     });
   });
 
@@ -233,6 +257,99 @@ describe('TodoList', () => {
       render(<TodoList todo={testTodo} />);
 
       expect(screen.getByText(testTodo.text)).toBeInTheDocument();
+    });
+  });
+
+  describe('モーダル状態管理', () => {
+    it('編集モーダルの開閉状態が正しく管理される', () => {
+      const testTodo = mockTodos[0];
+
+      render(<TodoList todo={testTodo} />);
+
+      // 編集ボタンをクリックして編集モードに入る
+      const editButton = screen.getByTestId('ModeEditIcon').closest('button');
+      fireEvent.click(editButton!);
+
+      // EditModalが表示されることを確認
+      expect(screen.getByTestId('edit-modal')).toBeInTheDocument();
+      expect(screen.getByText('Edit Modal')).toBeInTheDocument();
+
+      // EditModalのClose ボタンをクリックしてsetModalIsOpen(false)を実行
+      const closeButton = screen.getByTestId('edit-modal-close');
+      fireEvent.click(closeButton);
+
+      // EditModalが閉じられることを確認
+      expect(screen.queryByTestId('edit-modal')).not.toBeInTheDocument();
+    });
+
+    it('削除モーダルの開閉状態が正しく管理される', () => {
+      const testTodo = mockTodos[0];
+
+      render(<TodoList todo={testTodo} />);
+
+      // 削除ボタンをクリック
+      const deleteButton = screen.getByTestId('DeleteIcon').closest('button');
+      fireEvent.click(deleteButton!);
+
+      // DeleteModalが表示される
+      expect(screen.getByText('削除しても問題ないですか？')).toBeInTheDocument();
+
+      // キャンセルボタンをクリックしてモーダルを閉じる
+      const cancelButton = screen.getByText('キャンセル');
+      fireEvent.click(cancelButton);
+
+      // DeleteModalが閉じられることを確認
+      expect(screen.queryByText('削除しても問題ないですか？')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('削除機能の詳細動作', () => {
+    it('削除確認後にonDelete関数が正しく実行される', () => {
+      const testTodo = mockTodos[0];
+
+      render(<TodoList todo={testTodo} />);
+
+      // 削除ボタンをクリック
+      const deleteButton = screen.getByTestId('DeleteIcon').closest('button');
+      fireEvent.click(deleteButton!);
+
+      // DeleteModalが表示される
+      expect(screen.getByText('削除しても問題ないですか？')).toBeInTheDocument();
+
+      // 削除実行ボタンをクリック（実際のボタンテキストは「OK」）
+      const confirmButton = screen.getByText('OK');
+      
+      // onDelete関数が実行されることを確認（エラーが発生しないことをテスト）
+      expect(() => {
+        fireEvent.click(confirmButton);
+      }).not.toThrow();
+
+      // onDelete関数内でdeleteTodo(todo.id)が呼ばれる処理がカバーされる
+    });
+
+    it('todo.idが空の場合でも適切にエラーハンドリングされる', () => {
+      const todoWithoutId = { ...mockTodos[0], id: '' };
+
+      expect(() => {
+        render(<TodoList todo={todoWithoutId} />);
+      }).not.toThrow();
+
+      // 編集ボタンをクリックしてもエラーが発生しないことを確認
+      const editButton = screen.getByTestId('ModeEditIcon').closest('button');
+      fireEvent.click(editButton!);
+
+      // 削除ボタンをクリック
+      const deleteButton = screen.getByTestId('DeleteIcon').closest('button');
+      fireEvent.click(deleteButton!);
+
+      // DeleteModalが表示される
+      expect(screen.getByText('削除しても問題ないですか？')).toBeInTheDocument();
+
+      // 削除実行ボタンをクリックしてもエラーが発生しないことを確認（実際のボタンテキストは「OK」）
+      const confirmButton = screen.getByText('OK');
+      expect(() => {
+        fireEvent.click(confirmButton);
+      }).not.toThrow();
     });
   });
 

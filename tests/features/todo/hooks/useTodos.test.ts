@@ -207,6 +207,29 @@ describe('useTodos', () => {
 
       expect(result.current.todos).toHaveLength(2);
     });
+
+    it('API呼び出しが失敗した場合でもクライアント側の削除は実行される', async () => {
+      // コンソールエラーを抑制
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      mockApiRequest.mockRejectedValueOnce(new Error('API Error'));
+
+      const { result } = renderHook(() => useTodos(mockInitialTodos));
+
+      await act(async () => {
+        await result.current.deleteTodo('todo-1');
+      });
+
+      // クライアント側では削除が実行される（楽観的更新）
+      expect(result.current.todos).toHaveLength(1);
+      expect(
+        result.current.todos.find((todo) => todo.id === 'todo-1'),
+      ).toBeUndefined();
+
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('Todo編集 (editTodo)', () => {
@@ -269,6 +292,33 @@ describe('useTodos', () => {
       });
 
       expect(mockApiRequest).not.toHaveBeenCalled();
+    });
+
+    it('API呼び出しが失敗した場合でもクライアント側の更新は実行される', async () => {
+      // コンソールエラーを抑制
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      mockApiRequest.mockRejectedValueOnce(new Error('API Error'));
+
+      const { result } = renderHook(() => useTodos(mockInitialTodos));
+
+      // 元の値を取得
+      const originalTodo = mockInitialTodos.find(todo => todo.id === 'todo-1');
+      const expectedBool = !originalTodo?.bool;
+
+      await act(async () => {
+        await result.current.toggleSelected('todo-1');
+      });
+
+      // クライアント側では更新が実行される（楽観的更新）
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'todo-1',
+      );
+      expect(updatedTodo?.bool).toBe(expectedBool);
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -339,6 +389,50 @@ describe('useTodos', () => {
 
       expect(mockApiRequest).not.toHaveBeenCalled();
       expect(result.current.error.listModalArea).toBe(true);
+    });
+
+    it('API呼び出しが失敗した場合はエラー状態になる', async () => {
+      // コンソールエラーを抑制
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      mockApiRequest.mockRejectedValueOnce(new Error('API Error'));
+
+      const { result } = renderHook(() => useTodos(mockInitialTodos));
+
+      // 編集モードに入り、変更を加える
+      act(() => {
+        result.current.editTodo('todo-1');
+        result.current.setInput({
+          text: 'Updated Todo',
+          status: 'in_progress',
+        });
+      });
+
+      await act(async () => {
+        await result.current.saveTodo();
+      });
+
+      // API呼び出しは実行されるが失敗する
+      expect(mockApiRequest).toHaveBeenCalledWith('/api/todos', 'PUT', {
+        id: 'todo-1',
+        text: 'Updated Todo',
+        status: 'in_progress',
+        updateTime: expect.any(Number),
+      });
+
+      // エラー状態になる
+      expect(result.current.error.listModalArea).toBe(true);
+
+      // クライアント側では楽観的更新が実行される
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'todo-1',
+      );
+      expect(updatedTodo?.text).toBe('Updated Todo');
+      expect(updatedTodo?.status).toBe('in_progress');
+
+      consoleSpy.mockRestore();
     });
   });
 });
