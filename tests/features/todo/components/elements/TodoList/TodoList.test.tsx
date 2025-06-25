@@ -1,10 +1,22 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, mockTodos, createTestTodo } from '@/tests/test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  render,
+  screen,
+  fireEvent,
+  mockTodos,
+  createTestTodo,
+} from '@/tests/test-utils';
 import TodoList from '@/features/todo/components/elements/TodoList/TodoList';
 
 // EditModalのモック
 vi.mock('@/features/todo/components/elements/Modal/EditModal', () => ({
-  default: ({ setModalIsOpen, modalIsOpen }: { setModalIsOpen: (value: boolean) => void; modalIsOpen: boolean }) => {
+  default: ({
+    setModalIsOpen,
+    modalIsOpen,
+  }: {
+    setModalIsOpen: (value: boolean) => void;
+    modalIsOpen: boolean;
+  }) => {
     return modalIsOpen ? (
       <div data-testid="edit-modal">
         <div>Edit Modal</div>
@@ -25,13 +37,22 @@ vi.mock('@/features/utils/textUtils', () => ({
     // 改行を含む場合は実際のformatter関数の挙動を模倣
     if (text.includes('\n')) {
       const parts = text.split('\n');
-      const result: Array<{ type: string; content: string; index: string }> = [];
+      const result: Array<{ type: string; content: string; index: string }> =
+        [];
       parts.forEach((part, index) => {
         if (part !== '') {
-          result.push({ type: 'normal', content: part, index: `normal-${index}` });
+          result.push({
+            type: 'normal',
+            content: part,
+            index: `normal-${index}`,
+          });
         }
         if (index < parts.length - 1) {
-          result.push({ type: 'linefeed', content: '\n', index: `linefeed-${index}` });
+          result.push({
+            type: 'linefeed',
+            content: '\n',
+            index: `linefeed-${index}`,
+          });
         }
       });
       return result;
@@ -45,7 +66,42 @@ vi.mock('@/features/utils/textUtils', () => ({
   }),
 }));
 
+// TodoContextのモック関数
+const mockToggleSelected = vi.fn();
+const mockDeleteTodo = vi.fn();
+const mockEditTodo = vi.fn();
+let mockEditId: string | null = null;
+
+vi.mock('@/features/todo/contexts/TodoContext', async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    useTodoContext: () => ({
+      todoHooks: {
+        get editId() { return mockEditId; },
+        deleteTodo: mockDeleteTodo,
+        editTodo: mockEditTodo,
+        toggleSelected: mockToggleSelected,
+      },
+      listHooks: {
+        lists: [],
+        addList: vi.fn(),
+        deleteList: vi.fn(),
+        updateListCategory: vi.fn(),
+      },
+      statusAndCategoryHooks: {
+        updateStatusAndCategory: vi.fn(),
+      },
+    }),
+  };
+});
+
 describe('TodoList', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockEditId = null;
+  });
+
   describe('レンダリング', () => {
     it('Todoのテキストが正しく表示される', () => {
       // サブモジュールの最初のTodoデータを使用
@@ -70,8 +126,10 @@ describe('TodoList', () => {
 
     it('ピンボタンの状態がbool値に応じて変化する', () => {
       // サブモジュールから bool: true と bool: false のTodoを取得
-      const pinnedTodo = mockTodos.find(todo => todo.bool === true) || mockTodos[0];
-      const unpinnedTodo = mockTodos.find(todo => todo.bool === false) || mockTodos[1];
+      const pinnedTodo =
+        mockTodos.find((todo) => todo.bool === true) || mockTodos[0];
+      const unpinnedTodo =
+        mockTodos.find((todo) => todo.bool === false) || mockTodos[1];
 
       const { rerender } = render(<TodoList todo={pinnedTodo} />);
 
@@ -97,11 +155,11 @@ describe('TodoList', () => {
       const toggleButton = screen.getByTestId('PushPinIcon').closest('button');
       fireEvent.click(toggleButton!);
 
-      // toggleSelectedが適切なIDで呼ばれることを期待
-      // 実際のテストは useContext のモックによる実装詳細に依存
+      // toggleSelectedが適切なIDで呼ばれることを確認
+      expect(mockToggleSelected).toHaveBeenCalledWith(testTodo.id);
     });
 
-    it('編集ボタンクリックで編集モーダルが開く', () => {
+    it('編集ボタンクリックでeditTodoが呼ばれる', () => {
       // サブモジュールの4番目のTodoデータを使用
       const testTodo = mockTodos[3];
 
@@ -110,8 +168,8 @@ describe('TodoList', () => {
       const editButton = screen.getByTestId('ModeEditIcon').closest('button');
       fireEvent.click(editButton!);
 
-      // EditModalが表示されることを確認
-      // 実際のモーダルの表示は条件付きレンダリングに依存
+      // editTodoが適切なIDで呼ばれることを確認
+      expect(mockEditTodo).toHaveBeenCalledWith(testTodo.id);
     });
 
     it('削除ボタンクリックで削除モーダルが開く', () => {
@@ -142,7 +200,9 @@ describe('TodoList', () => {
 
     it('改行を含むテキストが正しく処理される', () => {
       // サブモジュールから改行を含むTodoを取得（'Line 1\nLine 2\nLine 3'）
-      const todoWithNewlines = mockTodos.find(todo => todo.text.includes('\n'));
+      const todoWithNewlines = mockTodos.find((todo) =>
+        todo.text.includes('\n'),
+      );
       expect(todoWithNewlines).toBeDefined(); // サブモジュールに改行Todoが存在することを確認
 
       render(<TodoList todo={todoWithNewlines!} />);
@@ -152,7 +212,7 @@ describe('TodoList', () => {
       const textContainer = document.querySelector('.css-cyxlmu');
       expect(textContainer).toBeInTheDocument();
       expect(textContainer).toHaveTextContent('Line 1Line 2Line 3');
-      
+
       // <br>タグが存在することを確認
       const brTags = textContainer?.querySelectorAll('br');
       expect(brTags).toHaveLength(2);
@@ -178,17 +238,23 @@ describe('TodoList', () => {
       // サブモジュールの2番目のTodoデータを使用
       const testTodo = mockTodos[1];
 
-      render(<TodoList todo={testTodo} />);
+      const { rerender } = render(<TodoList todo={testTodo} />);
 
       // 初期状態では編集モーダルは表示されない
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('edit-modal')).not.toBeInTheDocument();
+
+      // editIdを設定してモーダルが表示される条件を作る
+      mockEditId = testTodo.id;
+
+      // 再レンダリング
+      rerender(<TodoList todo={testTodo} />);
 
       // 編集ボタンをクリック
       const editButton = screen.getByTestId('ModeEditIcon').closest('button');
       fireEvent.click(editButton!);
 
-      // EditModalの表示は isEditing 状態と modalIsOpen.edit に依存
-      // この条件は TodoContext の editId 状態によって決まる
+      // EditModalが表示されることを確認
+      expect(screen.getByTestId('edit-modal')).toBeInTheDocument();
     });
 
     it('削除モーダルが正しく表示される', () => {
@@ -250,7 +316,7 @@ describe('TodoList', () => {
       expect(screen.getByText(testTodo.text)).toBeInTheDocument();
     });
 
-    it('テキストのメモ化が適切に動作する', () => {
+    it('Todoデータが正しく表示される', () => {
       // サブモジュールの4番目のTodoデータを使用
       const testTodo = mockTodos[3];
 
@@ -263,6 +329,9 @@ describe('TodoList', () => {
   describe('モーダル状態管理', () => {
     it('編集モーダルの開閉状態が正しく管理される', () => {
       const testTodo = mockTodos[0];
+
+      // editIdを設定してモーダルが表示される条件を作る
+      mockEditId = testTodo.id;
 
       render(<TodoList todo={testTodo} />);
 
@@ -292,19 +361,23 @@ describe('TodoList', () => {
       fireEvent.click(deleteButton!);
 
       // DeleteModalが表示される
-      expect(screen.getByText('削除しても問題ないですか？')).toBeInTheDocument();
+      expect(
+        screen.getByText('削除しても問題ないですか？'),
+      ).toBeInTheDocument();
 
       // キャンセルボタンをクリックしてモーダルを閉じる
       const cancelButton = screen.getByText('キャンセル');
       fireEvent.click(cancelButton);
 
       // DeleteModalが閉じられることを確認
-      expect(screen.queryByText('削除しても問題ないですか？')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('削除しても問題ないですか？'),
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('削除機能の詳細動作', () => {
-    it('削除確認後にonDelete関数が正しく実行される', () => {
+    it('削除確認後にdeleteTodo関数が正しく実行される', () => {
       const testTodo = mockTodos[0];
 
       render(<TodoList todo={testTodo} />);
@@ -314,17 +387,16 @@ describe('TodoList', () => {
       fireEvent.click(deleteButton!);
 
       // DeleteModalが表示される
-      expect(screen.getByText('削除しても問題ないですか？')).toBeInTheDocument();
+      expect(
+        screen.getByText('削除しても問題ないですか？'),
+      ).toBeInTheDocument();
 
       // 削除実行ボタンをクリック（実際のボタンテキストは「OK」）
       const confirmButton = screen.getByText('OK');
-      
-      // onDelete関数が実行されることを確認（エラーが発生しないことをテスト）
-      expect(() => {
-        fireEvent.click(confirmButton);
-      }).not.toThrow();
+      fireEvent.click(confirmButton);
 
-      // onDelete関数内でdeleteTodo(todo.id)が呼ばれる処理がカバーされる
+      // deleteTodo関数が正しいIDで呼ばれることを確認
+      expect(mockDeleteTodo).toHaveBeenCalledWith(testTodo.id);
     });
 
     it('todo.idが空の場合でも適切にエラーハンドリングされる', () => {
@@ -343,7 +415,9 @@ describe('TodoList', () => {
       fireEvent.click(deleteButton!);
 
       // DeleteModalが表示される
-      expect(screen.getByText('削除しても問題ないですか？')).toBeInTheDocument();
+      expect(
+        screen.getByText('削除しても問題ないですか？'),
+      ).toBeInTheDocument();
 
       // 削除実行ボタンをクリックしてもエラーが発生しないことを確認（実際のボタンテキストは「OK」）
       const confirmButton = screen.getByText('OK');
@@ -374,7 +448,7 @@ describe('TodoList', () => {
       expect(() => {
         render(<TodoList todo={todoWithEmptyText} />);
       }).not.toThrow();
-      
+
       // 空文字列でも基本的なUIが表示されることを確認
       expect(screen.getByTestId('PushPinIcon')).toBeInTheDocument();
     });
