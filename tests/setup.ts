@@ -90,10 +90,20 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 // Mock window.DragEvent for DnD testing
 Object.defineProperty(window, 'DragEvent', {
   value: class DragEvent extends Event {
-    dataTransfer: DataTransfer | null = null;
+    dataTransfer: DataTransfer | null;
     constructor(type: string, eventInitDict?: DragEventInit) {
       super(type, eventInitDict);
-      this.dataTransfer = eventInitDict?.dataTransfer || null;
+      this.dataTransfer = eventInitDict?.dataTransfer ?? {
+        dropEffect: 'none' as DataTransfer['dropEffect'],
+        effectAllowed: 'all' as DataTransfer['effectAllowed'],
+        files: [] as unknown as FileList,
+        items: [] as unknown as DataTransferItemList,
+        types: [],
+        clearData: vi.fn(),
+        getData: vi.fn(),
+        setData: vi.fn(),
+        setDragImage: vi.fn(),
+      } as DataTransfer;
     }
   },
 });

@@ -95,8 +95,8 @@ describe('TodoContext', () => {
       const context = result.current;
       
       // 初期状態の確認（サブモジュールのモックデータを使用）
-      expect(context.todoHooks.todos.length).toBe(5);
-      expect(context.listHooks.lists.length).toBe(3);
+      expect(context.todoHooks.todos.length).toBe(5); // mockTodosの件数
+      expect(context.listHooks.lists.length).toBe(3); // mockListsの件数
     });
 
     it('updateStatusAndCategoryHooksが必要な依存関係を受け取っている', () => {

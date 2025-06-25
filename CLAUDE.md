@@ -140,4 +140,5 @@ types/                 # TypeScript type definitions
 #### Quick Reference
 - **Test Status**: ✅ 全テスト成功、100%カバレッジ達成
 - **Testing Framework**: Vitest + React Testing Library + MSW
+- **Test Commands**: `npm run test` (実行) / `npm run test:coverage` (カバレッジ) / `npm run test:ui` (UIモード)
 - **Detailed Guide**: `tests/CLAUDE.md`を参照（テスト結果詳細・設定・ガイドライン）

@@ -88,9 +88,11 @@ todoApp-next/
 │   ├── test-utils.tsx          # テストユーティリティ
 │   └── features/               # 機能別テストコード
 │       └── todo/               # タスク管理機能のテスト
-├── todoApp-submodule/          # サブモジュール（モック・ドキュメント）
-│   ├── docs/                   # プロジェクトドキュメント
-│   └── mocks/                  # MSWモックデータとハンドラー
+├── todoApp-submodule/          # サブモジュール（テスト用モックデータ・ドキュメント）
+│   ├── docs/                   # プロジェクト詳細ドキュメント
+│   └── mocks/                  # MSW用モックデータとAPIハンドラー
+│       ├── data/               # テスト用モックデータ定義
+│       └── handlers/           # API モックハンドラー定義
 ├── data/                       # 静的データとリンク定義
 ├── public/                     # 静的アセット、画像関連
 └── types/                      # TypeScript型定義
