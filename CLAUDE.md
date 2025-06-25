@@ -32,6 +32,7 @@ npm run msw:init        # Initialize Mock Service Worker
 - **State Management**: React Context + SWR for data fetching
 - **Drag & Drop**: @dnd-kit/core for task reordering
 - **Validation**: Zod schemas
+- **Testing**: Vitest + React Testing Library + MSW
 - **Mocking**: MSW (Mock Service Worker)
 
 ### Current Directory Structure
@@ -55,6 +56,15 @@ features/              # Feature-based components
 │   └── dnd/           # Drag & drop components
 ├── shared/            # Shared components across features
 └── utils/             # Feature utilities
+
+tests/                 # Test files and configuration
+├── setup.ts           # Global test environment setup
+├── test-utils.tsx     # Custom render functions and utilities
+└── features/          # Feature-based test structure
+    └── todo/          # Todo feature tests
+        ├── contexts/  # Context provider tests
+        ├── hooks/     # Custom hook tests
+        └── components/ # Component tests
 
 todoApp-submodule/     # Submodule for mock API and documentation
 ├── mocks/             # MSW handlers and mock data
@@ -127,14 +137,8 @@ types/                 # TypeScript type definitions
 
 ### Testing Guidelines
 
-#### Test Strategy
-- **Use project testing framework**: Follow the existing testing setup and patterns
-- **MSW for mocking**: Utilize Mock Service Worker for API mocking during development
-- **Component testing**: Test React components with existing testing utilities
-- **API testing**: Test API routes with appropriate mocking strategies
-
-#### Test Execution
-- **Run existing tests**: Always run tests before making changes
-- **MSW initialization**: Use `npm run msw:init` when setting up mocking
-- **Update MSW handlers**: Keep mock handlers in sync with actual API changes
-- **Maintain test data**: Update mock data in `todoApp-submodule/mocks/data/` when schemas change
+#### Quick Reference
+- **Test Status**: ✅ 全テスト成功、100%カバレッジ達成
+- **Testing Framework**: Vitest + React Testing Library + MSW
+- **Test Commands**: `npm run test` (実行) / `npm run test:coverage` (カバレッジ) / `npm run test:ui` (UIモード)
+- **Detailed Guide**: `tests/CLAUDE.md`を参照（テスト結果詳細・設定・ガイドライン）
