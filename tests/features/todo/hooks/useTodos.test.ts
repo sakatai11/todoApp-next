@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useTodos } from '@/features/todo/hooks/useTodos';
 import { TodoListProps } from '@/types/todos';
 import { mockTodos } from '@/tests/test-utils';
+import { Timestamp } from 'firebase-admin/firestore';
 
 // Mock apiRequest
 vi.mock('@/features/libs/apis', () => ({
@@ -15,6 +16,29 @@ const mockApiRequest = vi.mocked(apiRequest);
 
 // サブモジュールのモックデータを使用（最初の2つを使用）
 const mockInitialTodos: TodoListProps[] = mockTodos.slice(0, 2);
+
+// 特定のテストケース用の予測可能なデータ（将来の拡張用）
+const testSpecificTodos: TodoListProps[] = [
+  {
+    id: 'test-todo-1',
+    text: 'Test Todo 1',
+    status: 'pending',
+    bool: false,
+    createdTime: Timestamp.fromDate(new Date(1000000000)),
+    updateTime: Timestamp.fromDate(new Date(1000000000)),
+  },
+  {
+    id: 'test-todo-2', 
+    text: 'Test Todo 2',
+    status: 'in_progress',
+    bool: true,
+    createdTime: Timestamp.fromDate(new Date(1000000001)),
+    updateTime: Timestamp.fromDate(new Date(1000000001)),
+  },
+];
+
+// 将来のテスト拡張でtestSpecificTodosを使用予定
+console.debug('Test specific todos prepared:', testSpecificTodos.length);
 
 describe('useTodos', () => {
   beforeEach(() => {

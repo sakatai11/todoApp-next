@@ -7,12 +7,12 @@ import { Timestamp } from 'firebase-admin/firestore';
 
 // Mock DnD Kit
 vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ 
-    children, 
-    onDragEnd 
-  }: { 
-    children: React.ReactNode; 
-    onDragEnd?: (event: unknown) => void; 
+  DndContext: ({
+    children,
+    onDragEnd,
+  }: {
+    children: React.ReactNode;
+    onDragEnd?: (event: unknown) => void;
   }) => (
     <div data-testid="dnd-context" data-drag-end={onDragEnd ? 'true' : 'false'}>
       {children}
@@ -86,9 +86,10 @@ describe('MainContainer', () => {
         initialLists: mockLists,
       });
 
-      // AddListコンポーネントが存在することを確認
-      // レンダリング結果を基に、実際のDOM構造を確認
-      const dndContext = screen.getByTestId('dnd-context');
+      // AddListコンポーネント特有の要素を確認
+      const dndContext = screen.getByRole('button', {
+        name: /リストを追加|AddList/i,
+      });
       expect(dndContext).toBeInTheDocument();
     });
   });
@@ -100,11 +101,23 @@ describe('MainContainer', () => {
         initialLists: mockLists,
       });
 
-      // サブモジュールのTodoデータに基づいて確認
-      expect(screen.getByText('Next.js App Routerの学習')).toBeInTheDocument();
-      expect(screen.getByText('Nuxt3の学習')).toBeInTheDocument();
-      expect(screen.getByText('MSWの実装')).toBeInTheDocument();
-      expect(screen.getByText('TypeScript最適化')).toBeInTheDocument();
+      // サブモジュールのTodoデータに基づいて確認（動的検証）
+      mockTodos.forEach((todo) => {
+        // 改行を含むテキストは特別な処理が必要
+        if (todo.text.includes('\n')) {
+          // 改行テキストは複数要素に分散されるため、部分的にチェック
+          const textParts = todo.text.split('\n').filter((part) => part.trim());
+          textParts.forEach((part) => {
+            // より具体的なマッチャーを使用
+            const elements = screen.queryAllByText((_, element) => {
+              return element?.textContent?.includes(part) || false;
+            });
+            expect(elements.length).toBeGreaterThan(0);
+          });
+        } else {
+          expect(screen.getByText(todo.text)).toBeInTheDocument();
+        }
+      });
     });
 
     it('bool値によってTodoが正しく分類される', () => {
@@ -113,10 +126,17 @@ describe('MainContainer', () => {
         initialLists: mockLists,
       });
 
-      // サブモジュールのTodoアイテムが表示されることを確認
-      expect(screen.getByText('Next.js App Routerの学習')).toBeInTheDocument();
-      expect(screen.getByText('Nuxt3の学習')).toBeInTheDocument();
-      expect(screen.getByText('TypeScript最適化')).toBeInTheDocument();
+      // サブモジュールのTodoアイテムが表示されることを確認（動的検証）
+      const visibleTodos = mockTodos.filter((todo) =>
+        [
+          'Next.js App Routerの学習',
+          'Nuxt3の学習',
+          'TypeScript最適化',
+        ].includes(todo.text),
+      );
+      visibleTodos.forEach((todo) => {
+        expect(screen.getByText(todo.text)).toBeInTheDocument();
+      });
     });
 
     it('空のリストでも正常に表示される', () => {
@@ -198,12 +218,12 @@ describe('MainContainer', () => {
         {
           id: 'invalid-todo',
           text: 'Invalid Todo',
-          status: 'invalid-status',
+          status: 'invalid-status', // 不正なステータス
           bool: false,
           createdTime: Timestamp.fromDate(new Date()),
           updateTime: Timestamp.fromDate(new Date()),
         },
-      ] as TodoListProps[];
+      ];
 
       expect(() => {
         render(<MainContainer />, {

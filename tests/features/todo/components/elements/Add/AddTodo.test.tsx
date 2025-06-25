@@ -13,7 +13,9 @@ describe('AddTodo', () => {
       render(<AddTodo {...defaultProps} />);
 
       expect(screen.getByText('TODOを追加する')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /todoを追加する/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /todoを追加する/i }),
+      ).toBeInTheDocument();
     });
 
     it('ボタンにAddBoxIconが表示される', () => {
@@ -121,13 +123,13 @@ describe('AddTodo', () => {
       const submitButton = screen.getByText('追加する');
       await user.click(submitButton);
 
-      // addTodo関数が呼ばれることを確認
-      // 実際のテストはmocked functionの呼び出し確認で行う
+      // TodoContextのaddTodo関数が呼ばれることを確認するため、
+      // contextのモック化またはスパイ機能の実装が必要
     });
 
     it('成功時に入力モードが閉じる', async () => {
       const user = userEvent.setup();
-      
+
       render(<AddTodo {...defaultProps} />);
 
       // 入力モードを開く
@@ -148,7 +150,7 @@ describe('AddTodo', () => {
 
     it('失敗時に入力モードが維持される', async () => {
       const user = userEvent.setup();
-      
+
       render(<AddTodo {...defaultProps} />);
 
       // 入力モードを開く
@@ -185,7 +187,7 @@ describe('AddTodo', () => {
       fireEvent.click(addButton);
 
       const textField = screen.getByLabelText('TODOを入力');
-      
+
       // エラー状態の確認は実際のcontext stateに依存
       expect(textField).toBeInTheDocument();
     });
