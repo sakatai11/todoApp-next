@@ -1,144 +1,144 @@
-# Project Memory - Todo App Development Guidelines
+# プロジェクトメモリ - Todo アプリ開発ガイドライン
 
 **必ず日本語で回答してください**
 
-## Project Overview
+## プロジェクト概要
 
-This is a Next.js 15 todo application using App Router with feature-based architecture.
+これは、App Routerとフィーチャーベースアーキテクチャを使用したNext.js 15のtodoアプリケーションです。
 
-### Development Commands
+### 開発コマンド
 
 ```bash
-# Development
-npm run dev              # Start development server with Turbopack
-npm run build           # Clean build (.next removal + build)
-npm start               # Start production server
+# 開発
+npm run dev              # Turbopackで開発サーバーを起動
+npm run build           # クリーンビルド（.nextディレクトリ削除＋ビルド）
+npm start               # 本番サーバーを起動
 
-# Code Quality
-npm run lint            # Run ESLint with auto-fix
-npm run prettier        # Format code with Prettier
-npm run format          # Run both prettier and lint
+# コード品質
+npm run lint            # ESLintを自動修正で実行
+npm run prettier        # Prettierでコードをフォーマット
+npm run format          # prettierとlintの両方を実行
 
-# Testing & Mocking
-npm run msw:init        # Initialize Mock Service Worker
+# テスト・モック
+npm run msw:init        # Mock Service Workerを初期化
 ```
 
-### Current Tech Stack
+### 現在の技術スタック
 
-- **Framework**: Next.js 15 with App Router and Turbopack
-- **Authentication**: NextAuth.js v5 (beta) with custom credentials provider
-- **Backend**: Firebase Admin SDK (Firestore + Auth)
-- **UI**: Material-UI (MUI) + Tailwind CSS
-- **State Management**: React Context + SWR for data fetching
-- **Drag & Drop**: @dnd-kit/core for task reordering
-- **Validation**: Zod schemas
-- **Testing**: Vitest + React Testing Library + MSW
-- **Mocking**: MSW (Mock Service Worker)
+- **フレームワーク**: Next.js 15（App Router + Turbopack）
+- **認証**: NextAuth.js v5（beta）- カスタム認証プロバイダー
+- **バックエンド**: Firebase Admin SDK（Firestore + Auth）
+- **UI**: Material-UI（MUI）+ Tailwind CSS
+- **状態管理**: React Context + データ取得用SWR
+- **ドラッグ＆ドロップ**: @dnd-kit/core（タスクの並び替え用）
+- **バリデーション**: Zodスキーマ
+- **テスト**: Vitest + React Testing Library + MSW
+- **モック**: MSW（Mock Service Worker）
 
-### Current Directory Structure
+### 現在のディレクトリ構造
 
 ```
 app/                    # Next.js App Router
-├── (admin)/           # Admin routes (grouped)
-├── (auth)/            # Auth routes (grouped)
-├── (dashboards)/      # Dashboard routes (grouped)
-├── api/               # API routes
-│   ├── (admin)/       # Admin APIs (grouped)
-│   ├── (general)/     # General APIs (grouped)
-│   └── auth/          # Auth APIs
-└── libs/              # App-level utilities
+├── (admin)/           # 管理者ルート（グループ化）
+├── (auth)/            # 認証ルート（グループ化）
+├── (dashboards)/      # ダッシュボードルート（グループ化）
+├── api/               # APIルート
+│   ├── (admin)/       # 管理者API（グループ化）
+│   ├── (general)/     # 一般API（グループ化）
+│   └── auth/          # 認証API
+└── libs/              # アプリレベルのユーティリティ
 
-features/              # Feature-based components
-├── todo/              # Todo feature
-│   ├── contexts/      # TodoContext for state management
-│   ├── hooks/         # Custom hooks (useTodos, useLists, etc.)
-│   ├── components/    # Feature-specific components
-│   └── dnd/           # Drag & drop components
-├── shared/            # Shared components across features
-└── utils/             # Feature utilities
+features/              # フィーチャーベースコンポーネント
+├── todo/              # Todo機能
+│   ├── contexts/      # 状態管理用TodoContext
+│   ├── hooks/         # カスタムフック（useTodos、useListsなど）
+│   ├── components/    # 機能固有のコンポーネント
+│   └── dnd/           # ドラッグ＆ドロップコンポーネント
+├── shared/            # 機能間で共有されるコンポーネント
+└── utils/             # 機能ユーティリティ
 
-tests/                 # Test files and configuration
-├── setup.ts           # Global test environment setup
-├── test-utils.tsx     # Custom render functions and utilities
-└── features/          # Feature-based test structure
-    └── todo/          # Todo feature tests
-        ├── contexts/  # Context provider tests
-        ├── hooks/     # Custom hook tests
-        └── components/ # Component tests
+tests/                 # テストファイルと設定
+├── setup.ts           # グローバルテスト環境セットアップ
+├── test-utils.tsx     # カスタムレンダー関数とユーティリティ
+└── features/          # フィーチャーベースのテスト構造
+    └── todo/          # Todo機能のテスト
+        ├── contexts/  # Contextプロバイダーのテスト
+        ├── hooks/     # カスタムフックのテスト
+        └── components/ # コンポーネントのテスト
 
-todoApp-submodule/     # Submodule for mock API and documentation
-├── mocks/             # MSW handlers and mock data
-│   ├── data/          # Mock data definitions
-│   └── handlers/      # API handler definitions
-└── docs/              # Project documentation
+todoApp-submodule/     # モックAPIとドキュメント用のサブモジュール
+├── mocks/             # MSWハンドラーとモックデータ
+│   ├── data/          # モックデータ定義
+│   └── handlers/      # APIハンドラー定義
+└── docs/              # プロジェクトドキュメント
 
-types/                 # TypeScript type definitions
+types/                 # TypeScript型定義
 ```
 
-### Authentication Flow
+### 認証フロー
 
-- NextAuth.js with custom credentials provider
-- Firebase Admin SDK for server-side token verification
-- Custom token exchange via `/api/auth/server-login`
-- Role-based access control (admin/user roles)
+- カスタム認証プロバイダーを使用したNextAuth.js
+- サーバーサイドトークン検証用のFirebase Admin SDK
+- `/api/auth/server-login`経由でのカスタムトークン交換
+- ロールベースアクセス制御（admin/userロール）
 
-### Data Management
+### データ管理
 
-- React Context (`TodoContext`) for todo state management
-- SWR for server state management and caching
-- Firebase Firestore as the database
-- Optimistic updates for better UX
+- Todo状態管理用のReact Context（`TodoContext`）
+- サーバー状態管理とキャッシュ用のSWR
+- データベースとしてのFirebase Firestore
+- より良いUXのための楽観的更新
 
-### API Structure
+### API構造
 
-- Grouped routes using Next.js route groups `()`
-- Separate admin and general user APIs
-- Firebase Admin SDK for backend operations
-- Zod validation for request/response data
+- Next.jsルートグループ`()`を使用したグループ化されたルート
+- 管理者用と一般ユーザー用の分離されたAPI
+- バックエンド操作用のFirebase Admin SDK
+- リクエスト/レスポンスデータのZodバリデーション
 
-### Important Project Notes
+### 重要なプロジェクト注意事項
 
-- TypeScript build errors are ignored in production (`ignoreBuildErrors: true`)
-- Uses MSW for API mocking during development
-- Vercel deployment configuration with cache control headers
-- Feature-based architecture with clear separation of concerns
+- 本番環境ではTypeScriptビルドエラーを無視（`ignoreBuildErrors: true`）
+- 開発時のAPIモック用MSWを使用
+- キャッシュ制御ヘッダー付きのVercelデプロイ設定
+- 明確な関心の分離を持つフィーチャーベースアーキテクチャ
 
-## Project-Specific Guidelines
+## プロジェクト固有のガイドライン
 
-### Directory Structure Rules
-- **Follow feature-based architecture**: Each feature should be self-contained within the `features/` directory
-- **Use App Router conventions**: Group related routes using Next.js route groups `()` 
-- **Respect existing patterns**: Admin routes go in `(admin)/`, auth in `(auth)/`, dashboards in `(dashboards)/`
-- **API organization**: Group APIs by functionality - `(admin)/`, `(general)/`, and `auth/`
+### ディレクトリ構造ルール
+- **フィーチャーベースアーキテクチャに従う**: 各機能は`features/`ディレクトリ内で自己完結型にする
+- **App Routerの規約を使用**: Next.jsルートグループ`()`を使用して関連ルートをグループ化
+- **既存パターンを尊重**: 管理者ルートは`(admin)/`、認証は`(auth)/`、ダッシュボードは`(dashboards)/`に配置
+- **API組織**: 機能別にAPIをグループ化 -`(admin)/`、`(general)/`、`auth/`
 
-### Authentication Implementation
-- **Use NextAuth.js v5 patterns**: Follow the existing custom credentials provider setup
-- **Firebase integration**: Use Firebase Admin SDK for server-side operations
-- **Token handling**: Utilize the existing `/api/auth/server-login` endpoint for token exchange
-- **Role-based access**: Maintain the admin/user role distinction
+### 認証実装
+- **NextAuth.js v5パターンを使用**: 既存のカスタム認証プロバイダー設定に従う
+- **Firebase統合**: サーバーサイド操作にFirebase Admin SDKを使用
+- **トークン処理**: トークン交換に既存の`/api/auth/server-login`エンドポイントを活用
+- **ロールベースアクセス**: admin/userロールの区別を維持
 
-### State Management Patterns
-- **TodoContext**: Use the existing React Context for todo state management
-- **SWR integration**: Leverage SWR for server state management and caching
-- **Optimistic updates**: Implement optimistic UI updates for better user experience
-- **Error handling**: Follow existing error handling patterns in context providers
+### 状態管理パターン
+- **TodoContext**: Todo状態管理に既存のReact Contextを使用
+- **SWR統合**: サーバー状態管理とキャッシュにSWRを活用
+- **楽観的更新**: より良いユーザー体験のために楽観的UI更新を実装
+- **エラーハンドリング**: Contextプロバイダーの既存エラーハンドリングパターンに従う
 
-### Component Development
-- **Material-UI usage**: Follow existing MUI component patterns and theming
-- **Tailwind integration**: Use Tailwind for utility styling alongside MUI
-- **Drag & Drop**: Use @dnd-kit/core following existing implementation patterns
-- **Form validation**: Use Zod schemas for all form validation
+### コンポーネント開発
+- **Material-UI使用**: 既存のMUIコンポーネントパターンとテーマに従う
+- **Tailwind統合**: MUIと併用してユーティリティスタイリングにTailwindを使用
+- **ドラッグ＆ドロップ**: 既存の実装パターンに従って@dnd-kit/coreを使用
+- **フォームバリデーション**: 全てのフォームバリデーションにZodスキーマを使用
 
-### API Development
-- **Grouped routes**: Use Next.js route groups for organization
-- **Firebase operations**: Use Firebase Admin SDK for all backend operations
-- **Request validation**: Implement Zod validation for all API requests/responses
-- **Error responses**: Follow existing error response patterns
+### API開発
+- **グループ化されたルート**: 組織化にNext.jsルートグループを使用
+- **Firebase操作**: 全てのバックエンド操作にFirebase Admin SDKを使用
+- **リクエストバリデーション**: 全てのAPIリクエスト/レスポンスにZodバリデーションを実装
+- **エラーレスポンス**: 既存のエラーレスポンスパターンに従う
 
-### Testing Guidelines
+### テストガイドライン
 
-#### Quick Reference
-- **Test Status**: ✅ 全テスト成功、100%カバレッジ達成
-- **Testing Framework**: Vitest + React Testing Library + MSW
-- **Test Commands**: `npm run test` (実行) / `npm run test:coverage` (カバレッジ) / `npm run test:ui` (UIモード)
-- **Detailed Guide**: `tests/CLAUDE.md`を参照（テスト結果詳細・設定・ガイドライン）
+#### クイックリファレンス
+- **テスト状況**: ✅ 全テスト成功、100%カバレッジ達成
+- **テストフレームワーク**: Vitest + React Testing Library + MSW
+- **テストコマンド**: `npm run test`（実行）/ `npm run test:coverage`（カバレッジ）/ `npm run test:ui`（UIモード）
+- **詳細ガイド**: `tests/CLAUDE.md`を参照（テスト結果詳細・設定・ガイドライン）
