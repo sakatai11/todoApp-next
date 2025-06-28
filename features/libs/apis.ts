@@ -1,8 +1,8 @@
-export const apiRequest = async <T>(
+export const apiRequest = async <TRequest, TResponse = TRequest>(
   url: string, // エンドポイントURL
   method: 'POST' | 'PUT' | 'DELETE',
-  body?: T,
-): Promise<T> => {
+  body?: TRequest,
+): Promise<TResponse> => {
   try {
     const response = await fetch(url, {
       method,
