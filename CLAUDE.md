@@ -38,7 +38,7 @@ npm run msw:init        # Mock Service Workerを初期化
 ### 現在のディレクトリ構造
 
 ```
-app/                    # Next.js App Router
+app/                   # Next.js App Router
 ├── (admin)/           # 管理者ルート（グループ化）
 ├── (auth)/            # 認証ルート（グループ化）
 ├── (dashboards)/      # ダッシュボードルート（グループ化）
@@ -106,30 +106,35 @@ types/                 # TypeScript型定義
 ## プロジェクト固有のガイドライン
 
 ### ディレクトリ構造ルール
+
 - **フィーチャーベースアーキテクチャに従う**: 各機能は`features/`ディレクトリ内で自己完結型にする
 - **App Routerの規約を使用**: Next.jsルートグループ`()`を使用して関連ルートをグループ化
 - **既存パターンを尊重**: 管理者ルートは`(admin)/`、認証は`(auth)/`、ダッシュボードは`(dashboards)/`に配置
 - **API組織**: 機能別にAPIをグループ化 -`(admin)/`、`(general)/`、`auth/`
 
 ### 認証実装
+
 - **NextAuth.js v5パターンを使用**: 既存のカスタム認証プロバイダー設定に従う
 - **Firebase統合**: サーバーサイド操作にFirebase Admin SDKを使用
 - **トークン処理**: トークン交換に既存の`/api/auth/server-login`エンドポイントを活用
 - **ロールベースアクセス**: admin/userロールの区別を維持
 
 ### 状態管理パターン
+
 - **TodoContext**: Todo状態管理に既存のReact Contextを使用
 - **SWR統合**: サーバー状態管理とキャッシュにSWRを活用
 - **楽観的更新**: より良いユーザー体験のために楽観的UI更新を実装
 - **エラーハンドリング**: Contextプロバイダーの既存エラーハンドリングパターンに従う
 
 ### コンポーネント開発
+
 - **Material-UI使用**: 既存のMUIコンポーネントパターンとテーマに従う
 - **Tailwind統合**: MUIと併用してユーティリティスタイリングにTailwindを使用
 - **ドラッグ＆ドロップ**: 既存の実装パターンに従って@dnd-kit/coreを使用
 - **フォームバリデーション**: 全てのフォームバリデーションにZodスキーマを使用
 
 ### API開発
+
 - **グループ化されたルート**: 組織化にNext.jsルートグループを使用
 - **Firebase操作**: 全てのバックエンド操作にFirebase Admin SDKを使用
 - **リクエストバリデーション**: 全てのAPIリクエスト/レスポンスにZodバリデーションを実装
@@ -138,6 +143,7 @@ types/                 # TypeScript型定義
 ### テストガイドライン
 
 #### クイックリファレンス
+
 - **テスト状況**: ✅ 全テスト成功、100%カバレッジ達成
 - **テストフレームワーク**: Vitest + React Testing Library + MSW
 - **テストコマンド**: `npm run test`（実行）/ `npm run test:coverage`（カバレッジ）/ `npm run test:ui`（UIモード）
