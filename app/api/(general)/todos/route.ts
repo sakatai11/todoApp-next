@@ -3,6 +3,7 @@ import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { TodoResponse } from '@/types/todos';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
@@ -12,8 +13,8 @@ export async function POST(req: Request) {
 
       if (text && status) {
         const newTodo = {
-          updateTime,
-          createdTime,
+          updateTime: Timestamp.fromMillis(Number(updateTime)),
+          createdTime: Timestamp.fromMillis(Number(createdTime)),
           text,
           bool: false,
           status,
@@ -71,7 +72,11 @@ export async function PUT(req: Request) {
           'updateTime' in payload
         ) {
           const { id, updateTime, text, status } = payload;
-          await todosCollection.doc(id).update({ updateTime, text, status });
+          await todosCollection.doc(id).update({ 
+            updateTime: Timestamp.fromMillis(Number(updateTime)), 
+            text, 
+            status 
+          });
           return NextResponse.json(
             { message: 'Todo updated save' },
             { status: 200 },

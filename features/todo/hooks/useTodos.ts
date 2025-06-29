@@ -7,6 +7,21 @@ import { jstTime } from '@/features/utils/dateUtils';
 
 export const useTodos = (initialTodos: TodoListProps[]) => {
   //
+  // ***** helper functions ******
+  //
+  // タイムスタンプの取得処理（共通関数）
+  const getTime = (timestamp: unknown) => {
+    if (typeof timestamp === 'number') return timestamp;
+    if (
+      timestamp &&
+      typeof (timestamp as { toMillis?: () => number }).toMillis === 'function'
+    ) {
+      return (timestamp as { toMillis: () => number }).toMillis();
+    }
+    return parseInt(String(timestamp), 10) || 0;
+  };
+
+  //
   // ***** state ******
   //
   const [todos, setTodos] = useState<TodoListProps[]>(initialTodos);
@@ -33,9 +48,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // todo追加
   const addTodo = useCallback(async () => {
     if (input.text && input.status) {
+      const currentTime = jstTime().getTime();
       const newTodo = {
-        updateTime: jstTime().getTime().toString(),
-        createdTime: jstTime().getTime().toString(),
+        updateTime: currentTime.toString(),
+        createdTime: currentTime.toString(),
         text: input.text,
         bool: false,
         status: input.status,
@@ -52,17 +68,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         setTodos((prevTodos: TodoListProps[]) => {
           const updatedTodos = [...prevTodos, result as TodoListProps];
           return updatedTodos.sort((a, b) => {
-            const getTime = (timestamp: unknown) => {
-              if (typeof timestamp === 'number') return timestamp;
-              if (
-                timestamp &&
-                typeof (timestamp as { toMillis?: () => number }).toMillis ===
-                  'function'
-              ) {
-                return (timestamp as { toMillis: () => number }).toMillis();
-              }
-              return parseInt(String(timestamp)) || 0;
-            };
             return getTime(b.createdTime) - getTime(a.createdTime);
           });
         });
@@ -181,17 +186,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
                 : todo,
             );
             return updatedTodos.sort((a, b) => {
-              const getTime = (timestamp: unknown) => {
-                if (typeof timestamp === 'number') return timestamp;
-                if (
-                  timestamp &&
-                  typeof (timestamp as { toMillis?: () => number }).toMillis ===
-                    'function'
-                ) {
-                  return (timestamp as { toMillis: () => number }).toMillis();
-                }
-                return parseInt(String(timestamp)) || 0;
-              };
               return getTime(b.createdTime) - getTime(a.createdTime);
             });
           });
