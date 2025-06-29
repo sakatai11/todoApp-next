@@ -3,6 +3,7 @@ import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { TodoResponse } from '@/types/todos';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
@@ -11,9 +12,19 @@ export async function POST(req: Request) {
       const { text, status, updateTime, createdTime } = body;
 
       if (text && status) {
+        const validUpdateTime = Number(updateTime);
+        const validCreatedTime = Number(createdTime);
+        
+        if (isNaN(validUpdateTime) || isNaN(validCreatedTime)) {
+          return NextResponse.json(
+            { error: 'Invalid timestamp values' },
+            { status: 400 },
+          );
+        }
+        
         const newTodo = {
-          updateTime,
-          createdTime,
+          updateTime: Timestamp.fromMillis(validUpdateTime),
+          createdTime: Timestamp.fromMillis(validCreatedTime),
           text,
           bool: false,
           status,
@@ -71,7 +82,20 @@ export async function PUT(req: Request) {
           'updateTime' in payload
         ) {
           const { id, updateTime, text, status } = payload;
-          await todosCollection.doc(id).update({ updateTime, text, status });
+          const validUpdateTime = Number(updateTime);
+          
+          if (isNaN(validUpdateTime)) {
+            return NextResponse.json(
+              { error: 'Invalid updateTime value' },
+              { status: 400 },
+            );
+          }
+
+          await todosCollection.doc(id).update({
+            updateTime: Timestamp.fromMillis(validUpdateTime),
+            text,
+            status
+          });
           return NextResponse.json(
             { message: 'Todo updated save' },
             { status: 200 },

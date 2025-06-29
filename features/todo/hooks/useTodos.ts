@@ -1,11 +1,26 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { TodoListProps, TodoPayload } from '@/types/todos';
+import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
 import { apiRequest } from '@/features/libs/apis';
 import { jstTime } from '@/features/utils/dateUtils';
 
 export const useTodos = (initialTodos: TodoListProps[]) => {
+  //
+  // ***** helper functions ******
+  //
+  // タイムスタンプの取得処理（共通関数）
+  const getTime = (timestamp: unknown) => {
+    if (typeof timestamp === 'number') return timestamp;
+    if (
+      timestamp &&
+      typeof (timestamp as { toMillis?: () => number }).toMillis === 'function'
+    ) {
+      return (timestamp as { toMillis: () => number }).toMillis();
+    }
+    return parseInt(String(timestamp), 10) || 0;
+  };
+
   //
   // ***** state ******
   //
@@ -33,9 +48,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // todo追加
   const addTodo = useCallback(async () => {
     if (input.text && input.status) {
+      const currentTime = jstTime().getTime();
       const newTodo = {
-        updateTime: jstTime().getTime(),
-        createdTime: jstTime().getTime(),
+        updateTime: currentTime.toString(),
+        createdTime: currentTime.toString(),
         text: input.text,
         bool: false,
         status: input.status,
@@ -43,16 +59,17 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
       try {
         // server side
-        const result = await apiRequest<TodoPayload<'POST'>>(
-          '/api/todos',
-          'POST',
-          newTodo,
-        );
+        const result = await apiRequest<
+          TodoPayload<'POST', true>,
+          TodoResponse<'POST'>
+        >('/api/todos', 'POST', newTodo);
 
         // client
-        setTodos((prevTodos) => {
+        setTodos((prevTodos: TodoListProps[]) => {
           const updatedTodos = [...prevTodos, result as TodoListProps];
-          return updatedTodos.sort((a, b) => b.createdTime - a.createdTime);
+          return updatedTodos.sort((a, b) => {
+            return getTime(b.createdTime) - getTime(a.createdTime);
+          });
         });
         setInput({ text: '', status: '' });
         setError((prevError) => ({ ...prevError, listPushArea: false })); // エラーをリセット
@@ -72,9 +89,15 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   const deleteTodo = useCallback(async (id: string) => {
     try {
       // client
-      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id)); // todo.id が id と一致しない todo だけを残す新しい配列を作成
+      setTodos((prevTodos: TodoListProps[]) =>
+        prevTodos.filter((todo) => todo.id !== id),
+      ); // todo.id が id と一致しない todo だけを残す新しい配列を作成
       // server side
-      await apiRequest<TodoPayload<'DELETE'>>('/api/todos', 'DELETE', { id });
+      await apiRequest<TodoPayload<'DELETE', true>, TodoResponse<'DELETE'>>(
+        '/api/todos',
+        'DELETE',
+        { id },
+      );
     } catch (error) {
       console.error('Error deleting todo:', error);
     }
@@ -104,16 +127,20 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       if (todoToUpdate) {
         try {
           // client
-          setTodos((prevTodos) =>
+          setTodos((prevTodos: TodoListProps[]) =>
             prevTodos.map((todo) =>
               todo.id === id ? { ...todo, bool: !todo.bool } : todo,
             ),
           );
           // server side
-          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
-            id,
-            bool: !todoToUpdate.bool,
-          });
+          await apiRequest<TodoPayload<'PUT', true>, TodoResponse<'PUT'>>(
+            '/api/todos',
+            'PUT',
+            {
+              id,
+              bool: !todoToUpdate.bool,
+            },
+          );
         } catch (error) {
           console.error('Error puting toggle:', error);
         }
@@ -140,29 +167,37 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         }
 
         const updateTodo = {
-          updateTime: jstTime().getTime(),
+          updateTime: jstTime().getTime().toString(),
           text: input.text,
           status: input.status,
         };
 
         try {
           // client
-          setTodos((prevTodos) => {
+          setTodos((prevTodos: TodoListProps[]) => {
             const updatedTodos = prevTodos.map((todo) =>
               todo.id === editId
-                ? {
+                ? ({
                     ...todo,
-                    ...updateTodo,
-                  }
+                    text: updateTodo.text,
+                    status: updateTodo.status,
+                    updateTime: todo.updateTime, // 既存の型を保持
+                  } as TodoListProps)
                 : todo,
             );
-            return updatedTodos.sort((a, b) => b.createdTime - a.createdTime);
+            return updatedTodos.sort((a, b) => {
+              return getTime(b.createdTime) - getTime(a.createdTime);
+            });
           });
           // server side
-          await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
-            id: editId,
-            ...updateTodo,
-          });
+          await apiRequest<TodoPayload<'PUT', true>, TodoResponse<'PUT'>>(
+            '/api/todos',
+            'PUT',
+            {
+              id: editId,
+              ...updateTodo,
+            },
+          );
 
           setInput({ text: '', status: '' });
           setEditId(null);
