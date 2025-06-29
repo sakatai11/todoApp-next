@@ -3,7 +3,6 @@ import { renderHook, act } from '@testing-library/react';
 import { useTodos } from '@/features/todo/hooks/useTodos';
 import { TodoListProps } from '@/types/todos';
 import { mockTodos } from '@/tests/test-utils';
-import { Timestamp } from 'firebase-admin/firestore';
 
 // Mock apiRequest
 vi.mock('@/features/libs/apis', () => ({
@@ -16,29 +15,6 @@ const mockApiRequest = vi.mocked(apiRequest);
 
 // サブモジュールのモックデータを使用（最初の2つを使用）
 const mockInitialTodos: TodoListProps[] = mockTodos.slice(0, 2);
-
-// 特定のテストケース用の予測可能なデータ（将来の拡張用）
-const testSpecificTodos: TodoListProps[] = [
-  {
-    id: 'test-todo-1',
-    text: 'Test Todo 1',
-    status: 'pending',
-    bool: false,
-    createdTime: Timestamp.fromDate(new Date(1000000000)),
-    updateTime: Timestamp.fromDate(new Date(1000000000)),
-  },
-  {
-    id: 'test-todo-2', 
-    text: 'Test Todo 2',
-    status: 'in_progress',
-    bool: true,
-    createdTime: Timestamp.fromDate(new Date(1000000001)),
-    updateTime: Timestamp.fromDate(new Date(1000000001)),
-  },
-];
-
-// 将来のテスト拡張でtestSpecificTodosを使用予定
-console.debug('Test specific todos prepared:', testSpecificTodos.length);
 
 describe('useTodos', () => {
   beforeEach(() => {
@@ -61,7 +37,6 @@ describe('useTodos', () => {
 
     it('空の配列で初期化される', () => {
       const { result } = renderHook(() => useTodos([]));
-
       expect(result.current.todos).toEqual([]);
     });
   });
@@ -152,7 +127,6 @@ describe('useTodos', () => {
     });
 
     it('API呼び出しが失敗した場合はエラーになる', async () => {
-      // コンソールエラーを抑制
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -209,7 +183,6 @@ describe('useTodos', () => {
     });
 
     it('API呼び出しが失敗した場合でもクライアント側の削除は実行される', async () => {
-      // コンソールエラーを抑制
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -241,8 +214,7 @@ describe('useTodos', () => {
       });
 
       expect(result.current.editId).toBe('todo-1');
-      // サブモジュールデータから動的に期待値を取得
-      const firstTodo = mockInitialTodos.find(todo => todo.id === 'todo-1');
+      const firstTodo = mockInitialTodos.find((todo) => todo.id === 'todo-1');
       expect(result.current.input.text).toBe(firstTodo?.text);
       expect(result.current.input.status).toBe(firstTodo?.status);
     });
@@ -269,10 +241,11 @@ describe('useTodos', () => {
         await result.current.toggleSelected('todo-1');
       });
 
-      // サブモジュールデータから元の値を取得して反転値を期待
-      const originalTodo = mockInitialTodos.find(todo => todo.id === 'todo-1');
+      const originalTodo = mockInitialTodos.find(
+        (todo) => todo.id === 'todo-1',
+      );
       const expectedBool = !originalTodo?.bool;
-      
+
       expect(mockApiRequest).toHaveBeenCalledWith('/api/todos', 'PUT', {
         id: 'todo-1',
         bool: expectedBool,
@@ -295,7 +268,6 @@ describe('useTodos', () => {
     });
 
     it('API呼び出しが失敗した場合でもクライアント側の更新は実行される', async () => {
-      // コンソールエラーを抑制
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -304,15 +276,15 @@ describe('useTodos', () => {
 
       const { result } = renderHook(() => useTodos(mockInitialTodos));
 
-      // 元の値を取得
-      const originalTodo = mockInitialTodos.find(todo => todo.id === 'todo-1');
+      const originalTodo = mockInitialTodos.find(
+        (todo) => todo.id === 'todo-1',
+      );
       const expectedBool = !originalTodo?.bool;
 
       await act(async () => {
         await result.current.toggleSelected('todo-1');
       });
 
-      // クライアント側では更新が実行される（楽観的更新）
       const updatedTodo = result.current.todos.find(
         (todo) => todo.id === 'todo-1',
       );
@@ -328,7 +300,6 @@ describe('useTodos', () => {
 
       const { result } = renderHook(() => useTodos(mockInitialTodos));
 
-      // まず編集モードに入る
       act(() => {
         result.current.editTodo('todo-1');
         result.current.setInput({
@@ -345,7 +316,7 @@ describe('useTodos', () => {
         id: 'todo-1',
         text: 'Updated Todo',
         status: 'in_progress',
-        updateTime: expect.any(Number),
+        updateTime: expect.any(String),
       });
 
       const updatedTodo = result.current.todos.find(
@@ -360,7 +331,6 @@ describe('useTodos', () => {
     it('変更がない場合は保存されない', async () => {
       const { result } = renderHook(() => useTodos(mockInitialTodos));
 
-      // 編集モードに入るが、内容は変更しない
       act(() => {
         result.current.editTodo('todo-1');
       });
@@ -377,7 +347,6 @@ describe('useTodos', () => {
     it('入力が空の場合はエラーになる', async () => {
       const { result } = renderHook(() => useTodos(mockInitialTodos));
 
-      // 編集モードに入り、入力を空にする
       act(() => {
         result.current.setEditId('todo-1');
         result.current.setInput({ text: '', status: '' });
@@ -392,7 +361,6 @@ describe('useTodos', () => {
     });
 
     it('API呼び出しが失敗した場合はエラー状態になる', async () => {
-      // コンソールエラーを抑制
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -401,7 +369,6 @@ describe('useTodos', () => {
 
       const { result } = renderHook(() => useTodos(mockInitialTodos));
 
-      // 編集モードに入り、変更を加える
       act(() => {
         result.current.editTodo('todo-1');
         result.current.setInput({
@@ -414,18 +381,15 @@ describe('useTodos', () => {
         await result.current.saveTodo();
       });
 
-      // API呼び出しは実行されるが失敗する
       expect(mockApiRequest).toHaveBeenCalledWith('/api/todos', 'PUT', {
         id: 'todo-1',
         text: 'Updated Todo',
         status: 'in_progress',
-        updateTime: expect.any(Number),
+        updateTime: expect.any(String),
       });
 
-      // エラー状態になる
       expect(result.current.error.listModalArea).toBe(true);
 
-      // クライアント側では楽観的更新が実行される
       const updatedTodo = result.current.todos.find(
         (todo) => todo.id === 'todo-1',
       );
@@ -433,6 +397,308 @@ describe('useTodos', () => {
       expect(updatedTodo?.status).toBe('in_progress');
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('タイムスタンプソート処理エッジケース', () => {
+    it('number型createdTimeでソートが動作する（addTodo/saveTodo共通）', async () => {
+      // number型のcreatedTimeを持つ複数のTodoデータを作成
+      const todosWithNumberTime = [
+        {
+          id: 'number-time-todo-1',
+          text: 'Number Time Todo 1',
+          status: 'todo',
+          bool: false,
+          createdTime: 2222222222, // number型（新しい）
+          updateTime: 2222222222,
+        } as unknown as TodoListProps,
+        {
+          id: 'number-time-todo-2',
+          text: 'Number Time Todo 2',
+          status: 'todo',
+          bool: false,
+          createdTime: 1111111111, // number型（古い）
+          updateTime: 1111111111,
+        } as unknown as TodoListProps,
+      ];
+
+      const { result } = renderHook(() => useTodos(todosWithNumberTime));
+
+      // saveTodo内でnumber型分岐をテスト
+      act(() => {
+        result.current.editTodo('number-time-todo-2');
+        result.current.setInput({
+          text: 'Updated Number Todo',
+          status: 'done',
+        });
+      });
+
+      mockApiRequest.mockResolvedValueOnce({ success: true });
+
+      await act(async () => {
+        await result.current.saveTodo();
+      });
+
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'number-time-todo-2',
+      );
+      expect(updatedTodo?.text).toBe('Updated Number Todo');
+      expect(updatedTodo?.status).toBe('done');
+
+      // ソート順序確認（新しい方が先頭）
+      expect(result.current.todos[0].id).toBe('number-time-todo-1');
+      expect(result.current.todos[1].id).toBe('number-time-todo-2');
+    });
+
+    it('toMillisメソッドを持つオブジェクトでソートが動作する', async () => {
+      const todosWithToMillisTime = [
+        {
+          id: 'tomillis-time-todo',
+          text: 'ToMillis Time Todo',
+          status: 'todo',
+          bool: false,
+          createdTime: { toMillis: () => 5555555555 }, // toMillisメソッドを持つオブジェクト
+          updateTime: { toMillis: () => 5555555555 },
+        } as unknown as TodoListProps,
+      ];
+
+      const { result } = renderHook(() => useTodos(todosWithToMillisTime));
+
+      act(() => {
+        result.current.editTodo('tomillis-time-todo');
+        result.current.setInput({
+          text: 'Updated ToMillis Todo',
+          status: 'done',
+        });
+      });
+
+      mockApiRequest.mockResolvedValueOnce({ success: true });
+
+      await act(async () => {
+        await result.current.saveTodo();
+      });
+
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'tomillis-time-todo',
+      );
+      expect(updatedTodo?.text).toBe('Updated ToMillis Todo');
+      expect(updatedTodo?.status).toBe('done');
+    });
+
+    it('toMillisプロパティがfunctionでない場合フォールバックする', async () => {
+      const todosWithNonFunctionToMillis = [
+        {
+          id: 'non-function-tomillis-todo',
+          text: 'Non Function ToMillis Todo',
+          status: 'todo',
+          bool: false,
+          createdTime: { toMillis: 'not-a-function' }, // toMillisがfunctionでない
+          updateTime: { toMillis: 'not-a-function' },
+        } as unknown as TodoListProps,
+      ];
+
+      const { result } = renderHook(() =>
+        useTodos(todosWithNonFunctionToMillis),
+      );
+
+      act(() => {
+        result.current.editTodo('non-function-tomillis-todo');
+        result.current.setInput({
+          text: 'Updated Non Function Todo',
+          status: 'done',
+        });
+      });
+
+      mockApiRequest.mockResolvedValueOnce({ success: true });
+
+      await act(async () => {
+        await result.current.saveTodo();
+      });
+
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'non-function-tomillis-todo',
+      );
+      expect(updatedTodo?.text).toBe('Updated Non Function Todo');
+      expect(updatedTodo?.status).toBe('done');
+    });
+
+    it('falsyなtimestamp値でも動作する', async () => {
+      const todosWithFalsyTime = [
+        {
+          id: 'falsy-time-todo',
+          text: 'Falsy Time Todo',
+          status: 'todo',
+          bool: false,
+          createdTime: 0, // falsyな値
+          updateTime: 0,
+        } as unknown as TodoListProps,
+      ];
+
+      const { result } = renderHook(() => useTodos(todosWithFalsyTime));
+
+      act(() => {
+        result.current.editTodo('falsy-time-todo');
+        result.current.setInput({
+          text: 'Updated Falsy Todo',
+          status: 'done',
+        });
+      });
+
+      mockApiRequest.mockResolvedValueOnce({ success: true });
+
+      await act(async () => {
+        await result.current.saveTodo();
+      });
+
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'falsy-time-todo',
+      );
+      expect(updatedTodo?.text).toBe('Updated Falsy Todo');
+      expect(updatedTodo?.status).toBe('done');
+    });
+
+    it('parseIntがNaNの場合に0にフォールバックする', async () => {
+      const todosWithNaNTime = [
+        {
+          id: 'nan-time-todo',
+          text: 'NaN Time Todo',
+          status: 'todo',
+          bool: false,
+          createdTime: 'not-a-valid-number', // parseIntでNaNになる文字列
+          updateTime: 'not-a-valid-number',
+        } as unknown as TodoListProps,
+      ];
+
+      const { result } = renderHook(() => useTodos(todosWithNaNTime));
+
+      act(() => {
+        result.current.editTodo('nan-time-todo');
+        result.current.setInput({
+          text: 'Updated NaN Todo',
+          status: 'done',
+        });
+      });
+
+      mockApiRequest.mockResolvedValueOnce({ success: true });
+
+      await act(async () => {
+        await result.current.saveTodo();
+      });
+
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'nan-time-todo',
+      );
+      expect(updatedTodo?.text).toBe('Updated NaN Todo');
+      expect(updatedTodo?.status).toBe('done');
+    });
+
+    it('saveTodo内でtoMillisプロパティがない場合にparseIntフォールバックする', async () => {
+      const todosWithMixedTimestamps = [
+        {
+          id: 'saveTodo-no-tomillis',
+          text: 'SaveTodo No ToMillis',
+          status: 'todo',
+          bool: false,
+          createdTime: 'string-timestamp-123', // toMillisプロパティがない文字列
+          updateTime: 'string-timestamp-456',
+        } as unknown as TodoListProps,
+        {
+          id: 'normal-todo',
+          text: 'Normal Todo',
+          status: 'todo',
+          bool: false,
+          createdTime: 1234567890, // number型
+          updateTime: 1234567890,
+        } as unknown as TodoListProps,
+      ];
+
+      const { result } = renderHook(() => useTodos(todosWithMixedTimestamps));
+
+      act(() => {
+        result.current.editTodo('saveTodo-no-tomillis');
+        result.current.setInput({
+          text: 'Updated SaveTodo No ToMillis',
+          status: 'done',
+        });
+      });
+
+      mockApiRequest.mockResolvedValueOnce({ success: true });
+
+      await act(async () => {
+        await result.current.saveTodo();
+      });
+
+      const updatedTodo = result.current.todos.find(
+        (todo) => todo.id === 'saveTodo-no-tomillis',
+      );
+      expect(updatedTodo?.text).toBe('Updated SaveTodo No ToMillis');
+      expect(updatedTodo?.status).toBe('done');
+    });
+
+    it('異常なcreatedTime値でもソートが動作する（addTodo）', async () => {
+      const abnormalTodo = {
+        id: 'abnormal-todo',
+        text: 'Abnormal Todo',
+        status: 'todo',
+        bool: false,
+        createdTime: 'invalid-timestamp', // 文字列の異常値
+        updateTime: 'invalid-timestamp',
+      };
+
+      mockApiRequest.mockResolvedValueOnce(abnormalTodo);
+
+      const { result } = renderHook(() => useTodos(mockTodos));
+
+      act(() => {
+        result.current.setInput({
+          text: 'Abnormal Todo',
+          status: 'todo',
+        });
+      });
+
+      await act(async () => {
+        await result.current.addTodo();
+      });
+
+      expect(result.current.todos).toHaveLength(mockTodos.length + 1);
+      const addedTodo = result.current.todos.find(
+        (todo) => todo.id === 'abnormal-todo',
+      );
+      expect(addedTodo).toBeDefined();
+      expect(addedTodo?.text).toBe('Abnormal Todo');
+    });
+
+    it('null値のタイムスタンプでも動作する（addTodo）', async () => {
+      const nullTimestampTodo = {
+        id: 'null-todo',
+        text: 'Null Timestamp Todo',
+        status: 'todo',
+        bool: false,
+        createdTime: null,
+        updateTime: null,
+      };
+
+      mockApiRequest.mockResolvedValueOnce(nullTimestampTodo);
+
+      const { result } = renderHook(() => useTodos(mockTodos));
+
+      act(() => {
+        result.current.setInput({
+          text: 'Null Timestamp Todo',
+          status: 'todo',
+        });
+      });
+
+      await act(async () => {
+        await result.current.addTodo();
+      });
+
+      expect(result.current.todos).toHaveLength(mockTodos.length + 1);
+      const addedTodo = result.current.todos.find(
+        (todo) => todo.id === 'null-todo',
+      );
+      expect(addedTodo).toBeDefined();
+      expect(addedTodo?.text).toBe('Null Timestamp Todo');
     });
   });
 });
