@@ -9,10 +9,13 @@
 
 **詳細仕様**: 実装の詳細仕様は以下のドキュメントを参照してください：
 
-- `@todoApp-submodule/docs/features/todo/TodoContext.md` - Context仕様
-- `@todoApp-submodule/docs/features/todo/useTodos.md` - useTodosフック仕様
-- `@todoApp-submodule/docs/features/todo/useLists.md` - useListsフック仕様
+- `@todoApp-submodule/docs/features/todo/contexts/TodoContext.md` - Context仕様
+- `@todoApp-submodule/docs/features/todo/hooks/useTodos.md` - useTodosフック仕様
+- `@todoApp-submodule/docs/features/todo/hooks/useLists.md` - useListsフック仕様
+- `@todoApp-submodule/docs/features/todo/hooks/useDeleteList.md` - useDeleteListフック仕様
+- `@todoApp-submodule/docs/features/todo/hooks/useUpdateStatusAndCategory.md` - useUpdateStatusAndCategoryフック仕様
 - `@todoApp-submodule/docs/features/todo/components/components-spec.md` - 全コンポーネント仕様
+- `@todoApp-submodule/docs/features/todo/templates/TodoWrapper.md` - TodoWrapperテンプレート仕様
 
 ## 機能構造
 
@@ -72,118 +75,73 @@ const { todoHooks, listHooks, deleteListHooks } = useTodoContext();
 - サーバー同期必須
 
 ### 実際のデータ更新パターン
+
 ```typescript
 // useStateベースの楽観的更新（useTodos.ts）
-const addTodo = async () => {
-  // 1. API呼び出し
-  const result = await apiRequest('/api/todos', 'POST', newTodo);
-  // 2. ローカル状態更新
-  setTodos((prevTodos) => [...prevTodos, result]);
-}
+const addTodo = async (newTodo: Omit<TodoListProps, 'id'>) => {
+  try {
+    // 1. API呼び出し
+    const result = await apiRequest('/api/todos', 'POST', newTodo);
+    // 2. 成功時のローカル状態更新
+    setTodos((prevTodos) => [...prevTodos, result]);
+  } catch (error) {
+    // エラーハンドリング
+    setError(error.message);
+    throw error;
+  }
+};
 
-// 削除時の即座更新
+// 削除時の楽観的更新
 const deleteTodo = async (id: string) => {
-  // 1. 即座にUI更新
-  setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
-  // 2. API呼び出し
-  await apiRequest('/api/todos', 'DELETE', { id });
-}
+  // 削除対象を保存（ロールバック用）
+  const todoToDelete = todos.find(todo => todo.id === id);
+  
+  try {
+    // 1. 即座にUI更新（楽観的更新）
+    setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+    // 2. API呼び出し
+    await apiRequest('/api/todos', 'DELETE', { id });
+  } catch (error) {
+    // 3. エラー時はロールバック
+    if (todoToDelete) {
+      setTodos((prevTodos) => [...prevTodos, todoToDelete]);
+    }
+    setError(error.message);
+    throw error;
+  }
+};
 ```
 
 ### useSWR使用箇所
+
 ```typescript
 // TodoWrapper.tsx - 初期データ取得のみ
-const { data, error, isLoading } = useSWR('/api/dashboards', fetcher);
-// TodoProviderに初期データを渡す
+const { data, error, isLoading } = useSWR<DataProps>(
+  '/api/dashboards',
+  fetcher,
+  {
+    revalidateOnMount: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    suspense: false,
+    shouldRetryOnError: false,
+  },
+);
+
+// データ取得完了後、TodoProviderに初期データを渡す
+if (isLoading || !data || !data.contents) return <TodosLoading />;
+if (error) return <ErrorDisplay message={error.message} />;
+
+const { contents } = data;
+const { todos, lists } = contents;
+
 <TodoProvider initialTodos={todos} initialLists={lists}>
+  <Box>
+    <PushContainer />
+    <MainContainer />
+  </Box>
+</TodoProvider>
 ```
-
-### mutate使用パターン（将来の改良案）
-
-#### 基本的なmutate使用方法
-```typescript
-import useSWR, { mutate } from 'swr'
-
-const { data, mutate: boundMutate } = useSWR('/api/dashboards', fetcher)
-
-// 楽観的更新パターン
-const addTodoWithMutate = async (newTodo) => {
-  const currentData = data?.contents || { todos: [], lists: [] }
-  const optimisticData = {
-    contents: {
-      ...currentData,
-      todos: [...currentData.todos, { ...newTodo, id: 'temp-id' }]
-    }
-  }
-  
-  try {
-    // 1. 即座にUI更新（再検証なし）
-    await boundMutate(optimisticData, false)
-    
-    // 2. API呼び出し
-    const result = await apiRequest('/api/todos', 'POST', newTodo)
-    
-    // 3. 成功時：正しいデータで更新
-    const finalData = {
-      contents: {
-        ...currentData,
-        todos: [...currentData.todos, result]
-      }
-    }
-    await boundMutate(finalData, false)
-    
-  } catch (error) {
-    // 4. エラー時：元のデータに復元
-    boundMutate(data, false)
-    throw error
-  }
-}
-```
-
-#### 現在の実装 vs mutate実装の比較
-
-| 項目 | 現在の実装 | mutate使用時 |
-|------|------------|--------------|
-| 状態管理 | useState | SWRキャッシュ + useState |
-| データ同期 | 手動 | 自動（mutate） |
-| 複数コンポーネント | Context経由 | SWRキャッシュ共有 |
-| エラー処理 | 手動ロールバック | mutateでロールバック |
-| 再検証 | なし | 自動・手動選択可能 |
-
-#### mutate導入時の改良案
-```typescript
-// TodoWrapper.tsx改良案
-const { data, error, isLoading, mutate } = useSWR('/api/dashboards', fetcher)
-
-<TodoProvider 
-  initialTodos={todos} 
-  initialLists={lists}
-  swrMutate={mutate} // mutate関数を渡す
->
-
-// useTodos.ts改良案
-export const useTodos = (initialTodos, swrMutate) => {
-  const addTodo = async () => {
-    // SWRキャッシュも楽観的更新
-    if (swrMutate) {
-      await swrMutate(optimisticData, false)
-    }
-    
-    // 既存の処理 + SWRキャッシュ更新
-    const result = await apiRequest('/api/todos', 'POST', newTodo)
-    setTodos(prev => [...prev, result])
-    
-    if (swrMutate) {
-      swrMutate(finalData, false)
-    }
-  }
-}
-```
-
-#### 使い分けガイドライン
-- **現在の実装で十分**: 単一ページアプリ、シンプルな状態管理
-- **mutate推奨**: 複数ページでのデータ共有、複雑な楽観的更新
-- **移行時期**: パフォーマンス問題やデータ同期の複雑さが増した時
 
 ## テスト要件
 
