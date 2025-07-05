@@ -9,6 +9,7 @@ import { StatusListProps } from '@/types/lists';
 import { Timestamp } from 'firebase-admin/firestore';
 import { todos as submoduleTodos } from '@/todoApp-submodule/mocks/data/todos';
 import { lists as submoduleLists } from '@/todoApp-submodule/mocks/data/lists';
+import { mockUser as submoduleMockUser } from '@/todoApp-submodule/mocks/data/user';
 
 // Mock missing hooks
 import { vi } from 'vitest';
@@ -47,7 +48,7 @@ const mockSession = {
 
 // Convert submodule mock data to Firebase Timestamp format
 const convertMockTodosToTimestamp = (): TodoListProps[] => {
-  return submoduleTodos.map(todo => ({
+  return submoduleTodos.map((todo) => ({
     ...todo,
     createdTime: Timestamp.fromDate(new Date(todo.createdTime)),
     updateTime: Timestamp.fromDate(new Date(todo.updateTime)),
@@ -60,12 +61,29 @@ export const mockTodos: TodoListProps[] = convertMockTodosToTimestamp();
 // Use submodule list data directly
 export const mockLists: StatusListProps[] = submoduleLists;
 
+// Convert submodule mock user to UserData format
+const convertMockUserToUserData = () => {
+  const userData = submoduleMockUser[0]; // 最初のユーザーデータを使用
+  return {
+    id: userData.id,
+    email: userData.email,
+    role: userData.role,
+    createdAt: Timestamp.fromDate(new Date(userData.createdAt)),
+    name: 'Test User', // デフォルト名
+    image: 'https://example.com/avatar.jpg', // デフォルト画像
+  };
+};
+
+// Use submodule user data
+export const mockUser = convertMockUserToUserData();
+
 // Custom render function with providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   withTodoProvider?: boolean;
   withSession?: boolean;
   initialTodos?: TodoListProps[];
   initialLists?: StatusListProps[];
+  todoContextOverrides?: Record<string, unknown>;
 }
 
 const customRender = (
@@ -76,7 +94,7 @@ const customRender = (
     initialTodos = mockTodos,
     initialLists = mockLists,
     ...renderOptions
-  }: CustomRenderOptions = {}
+  }: CustomRenderOptions = {},
 ) => {
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     let component = (
@@ -88,9 +106,7 @@ const customRender = (
 
     if (withSession) {
       component = (
-        <SessionProvider session={mockSession}>
-          {component}
-        </SessionProvider>
+        <SessionProvider session={mockSession}>{component}</SessionProvider>
       );
     }
 
@@ -113,7 +129,9 @@ export * from '@testing-library/react';
 export { customRender as render };
 
 // Helper function to create test props
-export const createTestTodo = (overrides: Partial<TodoListProps> = {}): TodoListProps => ({
+export const createTestTodo = (
+  overrides: Partial<TodoListProps> = {},
+): TodoListProps => ({
   id: 'test-todo-id',
   text: 'Test Todo',
   status: 'pending',
@@ -123,7 +141,9 @@ export const createTestTodo = (overrides: Partial<TodoListProps> = {}): TodoList
   ...overrides,
 });
 
-export const createTestList = (overrides: Partial<StatusListProps> = {}): StatusListProps => ({
+export const createTestList = (
+  overrides: Partial<StatusListProps> = {},
+): StatusListProps => ({
   id: 'test-list-id',
   category: 'pending',
   number: 1,
