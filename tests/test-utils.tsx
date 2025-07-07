@@ -19,7 +19,6 @@ vi.mock('@/features/todo/hooks/useUpdateStatusAndCategory', () => ({
     editId: null,
     editList: vi.fn(),
     setEditId: vi.fn(),
-    updateStatusAndCategory: vi.fn(),
   }),
 }));
 
@@ -83,7 +82,6 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   withSession?: boolean;
   initialTodos?: TodoListProps[];
   initialLists?: StatusListProps[];
-  todoContextOverrides?: Record<string, unknown>;
 }
 
 const customRender = (

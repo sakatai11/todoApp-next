@@ -390,7 +390,7 @@ describe('apiRequest', () => {
       expect(result).toEqual(responseData);
     });
 
-    it('nullやundefinedのbodyでも適切に処理される', async () => {
+    it('nullやundefinedのbodyでも正常に処理される', async () => {
       global.fetch = vi
         .fn()
         .mockResolvedValue(createMockResponse({ success: true }));

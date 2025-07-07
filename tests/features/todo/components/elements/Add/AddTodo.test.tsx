@@ -252,7 +252,7 @@ describe('AddTodo', () => {
   });
 
   describe('プロパティ', () => {
-    it('異なるstatusプロパティで正しく動作する', () => {
+    it('異なるstatusプロパティで正常に動作する', () => {
       const { rerender } = render(<AddTodo status="pending" />);
       expect(screen.getByText('TODOを追加する')).toBeInTheDocument();
 

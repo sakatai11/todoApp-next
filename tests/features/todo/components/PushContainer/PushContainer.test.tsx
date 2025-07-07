@@ -107,7 +107,7 @@ describe('PushContainer', () => {
       );
     });
 
-    it('複数回クリックしてもモーダルが正しく動作する', () => {
+    it('複数回クリックしてもモーダルが正常に動作する', () => {
       render(<PushContainer />, {
         withTodoProvider: true,
         initialTodos: mockTodos,

@@ -4,6 +4,7 @@ import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { mockTodos, mockLists } from '@/tests/test-utils';
+import { Timestamp } from 'firebase-admin/firestore';
 
 // Mock apiRequest
 vi.mock('@/features/libs/apis', () => ({
@@ -83,7 +84,7 @@ describe('useDeleteList', () => {
         await result.current.deleteList('list-2', 'done');
       });
 
-      // setListsが呼び出され、更新関数が正しく動作することを確認
+      // setListsが呼び出され、更新関数が正常に動作することを確認
       expect(mockSetLists).toHaveBeenCalledWith(expect.any(Function));
 
       // 更新関数の動作を確認するため、実際に関数を呼び出す
@@ -92,7 +93,9 @@ describe('useDeleteList', () => {
 
       // list-2が削除され、番号が再計算されることを確認
       expect(updatedLists).toHaveLength(2);
-      expect(updatedLists.find((list) => list.id === 'list-2')).toBeUndefined();
+      expect(
+        updatedLists.find((list: StatusListProps) => list.id === 'list-2'),
+      ).toBeUndefined();
       expect(updatedLists[0].number).toBe(1);
       expect(updatedLists[1].number).toBe(2);
     });
@@ -134,6 +137,44 @@ describe('useDeleteList', () => {
         // setTodosが呼び出されることを確認
         expect(mockSetTodos).toHaveBeenCalledWith(expect.any(Function));
       }
+    });
+
+    it('67行目のsetTodos処理をテスト（指定ステータスのtodo削除）', async () => {
+      mockApiRequest.mockResolvedValue({});
+
+      const { result } = renderHook(() =>
+        useDeleteList({
+          todos: mockInitialTodos,
+          setTodos: mockSetTodos,
+          setLists: mockSetLists,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.deleteList('list-1', 'in-progress');
+      });
+
+      // setTodosが呼び出されることを確認
+      expect(mockSetTodos).toHaveBeenCalledWith(expect.any(Function));
+
+      // 67行目の実際の動作を確認 - setTodosの更新関数をテスト
+      const updateTodosFunction = mockSetTodos.mock.calls[0][0];
+      const updatedTodos = updateTodosFunction(mockInitialTodos);
+
+      // 'in-progress'ステータスのTodoが削除されることを確認
+      const remainingTodos = updatedTodos.filter(
+        (todo: TodoListProps) => todo.status === 'in-progress',
+      );
+      expect(remainingTodos).toHaveLength(0);
+
+      // 他のステータスのTodoは残ることを確認
+      const otherStatusTodos = updatedTodos.filter(
+        (todo: TodoListProps) => todo.status !== 'in-progress',
+      );
+      const originalOtherStatusTodos = mockInitialTodos.filter(
+        (todo: TodoListProps) => todo.status !== 'in-progress',
+      );
+      expect(otherStatusTodos).toHaveLength(originalOtherStatusTodos.length);
     });
 
     it('関連するTodoが存在しない場合、Todo削除は行われない', async () => {
@@ -241,15 +282,15 @@ describe('useDeleteList', () => {
       const initialDeleteList = result.current.deleteList;
 
       // 新しいtodos配列で再レンダリング
-      const newTodos = [
+      const newTodos: TodoListProps[] = [
         ...mockInitialTodos,
         {
           id: 'new-todo',
           text: 'New Todo',
           status: 'todo',
           bool: false,
-          createdTime: Date.now(),
-          updateTime: Date.now(),
+          createdTime: Timestamp.fromMillis(Date.now()),
+          updateTime: Timestamp.fromMillis(Date.now()),
         },
       ];
 

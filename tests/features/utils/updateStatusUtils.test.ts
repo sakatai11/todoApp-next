@@ -45,7 +45,7 @@ describe('updateStatusUtils', () => {
       expect(result).toBe(false);
     });
 
-    it('カテゴリ名が空文字列の場合でも正しく動作する', () => {
+    it('カテゴリ名が空文字列の場合でも正常に動作する', () => {
       const listsWithEmptyCategory = [
         { id: 'empty-1', category: '', number: 1 },
         { id: 'empty-2', category: 'normal', number: 2 },
@@ -68,7 +68,7 @@ describe('updateStatusUtils', () => {
       expect(result).toBe(false);
     });
 
-    it('スペースを含むカテゴリ名でも正しく動作する', () => {
+    it('スペースを含むカテゴリ名でも正常に動作する', () => {
       const listsWithSpaces = [
         { id: 'space-1', category: 'with space', number: 1 },
         { id: 'space-2', category: 'normal', number: 2 },
@@ -82,7 +82,7 @@ describe('updateStatusUtils', () => {
       expect(result).toBe(true);
     });
 
-    it('特殊文字を含むカテゴリ名でも正しく動作する', () => {
+    it('特殊文字を含むカテゴリ名でも正常に動作する', () => {
       const listsWithSpecialChars = [
         { id: 'special-1', category: 'test@#$%', number: 1 },
         { id: 'special-2', category: 'normal', number: 2 },
@@ -96,7 +96,7 @@ describe('updateStatusUtils', () => {
       expect(result).toBe(true);
     });
 
-    it('nullやundefinedのIDでも正しく動作する', () => {
+    it('nullやundefinedのIDでも正常に動作する', () => {
       const result = isDuplicateCategory(
         mockInitialLists,
         'in-progress',
@@ -105,7 +105,7 @@ describe('updateStatusUtils', () => {
       expect(result).toBe(true);
     });
 
-    it('数値のカテゴリ名でも正しく動作する', () => {
+    it('数値のカテゴリ名でも正常に動作する', () => {
       const listsWithNumbers = [
         { id: 'num-1', category: '123', number: 1 },
         { id: 'num-2', category: 'normal', number: 2 },
@@ -197,7 +197,7 @@ describe('updateStatusUtils', () => {
       expect(mockSetTodos).toHaveBeenCalledWith(expect.any(Function));
     });
 
-    it('Todo更新関数が正しく動作する', () => {
+    it('Todo更新関数が正常に動作する', () => {
       updateListsAndTodos(
         mockSetLists,
         mockSetTodos,
