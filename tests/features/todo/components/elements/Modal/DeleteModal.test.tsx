@@ -126,7 +126,7 @@ describe('DeleteModal', () => {
       expect(mockSetModalIsOpen).toHaveBeenCalledWith(false);
     });
 
-    it('モーダル背景クリック時にsetModalIsOpenが呼ばれる', () => {
+    it('ESCキー押下時にsetModalIsOpenが呼ばれる', () => {
       const mockSetModalIsOpen = vi.fn();
       render(
         <DeleteModal {...defaultProps} setModalIsOpen={mockSetModalIsOpen} />,
@@ -135,6 +135,24 @@ describe('DeleteModal', () => {
       // MUIモーダルのonCloseイベントをシミュレート
       const modal = screen.getByRole('presentation');
       fireEvent.keyDown(modal, { key: 'Escape' });
+
+      expect(mockSetModalIsOpen).toHaveBeenCalledWith(false);
+    });
+
+    it('モーダル背景クリック時にsetModalIsOpenが呼ばれる', () => {
+      const mockSetModalIsOpen = vi.fn();
+      render(
+        <DeleteModal {...defaultProps} setModalIsOpen={mockSetModalIsOpen} />,
+      );
+
+      // MUIモーダルの背景クリックをシミュレートするため、
+      // モーダルの外側のBox要素（背景部分）をクリック
+      const modal = screen.getByRole('presentation');
+      const outerBox = modal.firstChild;
+
+      if (outerBox) {
+        fireEvent.click(outerBox);
+      }
 
       expect(mockSetModalIsOpen).toHaveBeenCalledWith(false);
     });

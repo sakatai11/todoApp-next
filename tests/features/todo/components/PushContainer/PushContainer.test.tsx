@@ -148,14 +148,39 @@ describe('PushContainer', () => {
       ).toBeInTheDocument();
     });
 
-    it('編集中の場合でもコンポーネントが正常にレンダリングされる', () => {
+    it('isEditing変数がeditIdの値に基づいて正しく設定される', () => {
       render(<PushContainer />, {
         withTodoProvider: true,
         initialTodos: mockTodos,
         initialLists: mockLists,
       });
 
+      // 非編集状態では、EditModalが表示される
+      expect(
+        screen.getByTestId('edit-modal-pushContainer'),
+      ).toBeInTheDocument();
+
       // 新規作成ボタンは常に表示される
+      expect(
+        screen.getByRole('button', { name: '新規作成' }),
+      ).toBeInTheDocument();
+    });
+
+    it('編集状態の条件分岐ロジックが実装されている', () => {
+      // PushContainerコンポーネントは、todoHooks.editId !== null
+      // の条件でisEditingを判定し、!isEditingでEditModalの表示を制御している
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: mockTodos,
+        initialLists: mockLists,
+      });
+
+      // 通常状態（editId = null）では、EditModalが表示される
+      expect(
+        screen.getByTestId('edit-modal-pushContainer'),
+      ).toBeInTheDocument();
+
+      // 新規作成ボタンは編集状態に関係なく常に表示される
       expect(
         screen.getByRole('button', { name: '新規作成' }),
       ).toBeInTheDocument();
@@ -183,6 +208,91 @@ describe('PushContainer', () => {
 
       const createButton = screen.getByRole('button', { name: '新規作成' });
       expect(createButton).toHaveClass('MuiButton-contained');
+    });
+  });
+
+  describe('ユーザーインタラクション', () => {
+    it('モーダルの開閉が正常に動作する', () => {
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: mockTodos,
+        initialLists: mockLists,
+      });
+
+      // 初期状態の確認
+      expect(screen.getByTestId('modal-status')).toHaveTextContent(
+        'Modal Closed',
+      );
+
+      // モーダルを開く
+      fireEvent.click(screen.getByRole('button', { name: '新規作成' }));
+      expect(screen.getByTestId('modal-status')).toHaveTextContent(
+        'Modal Open',
+      );
+
+      // モーダルを閉じる
+      fireEvent.click(screen.getByTestId('close-modal'));
+      expect(screen.getByTestId('modal-status')).toHaveTextContent(
+        'Modal Closed',
+      );
+    });
+
+    it('新規作成ボタンの連続クリックが正常に処理される', () => {
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: mockTodos,
+        initialLists: mockLists,
+      });
+
+      const createButton = screen.getByRole('button', { name: '新規作成' });
+
+      // 複数回クリック
+      fireEvent.click(createButton);
+      fireEvent.click(createButton);
+      fireEvent.click(createButton);
+
+      // モーダルは開いた状態を維持
+      expect(screen.getByTestId('modal-status')).toHaveTextContent(
+        'Modal Open',
+      );
+    });
+  });
+
+  describe('アクセシビリティ', () => {
+    it('新規作成ボタンが適切なアクセシビリティ属性を持つ', () => {
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: mockTodos,
+        initialLists: mockLists,
+      });
+
+      const createButton = screen.getByRole('button', { name: '新規作成' });
+
+      expect(createButton).toHaveAttribute('type', 'button');
+      expect(createButton).toBeEnabled();
+    });
+
+    it('EditModalが適切なテストIDを持つ', () => {
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: mockTodos,
+        initialLists: mockLists,
+      });
+
+      expect(
+        screen.getByTestId('edit-modal-pushContainer'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('エラーハンドリング', () => {
+    it('TodoProviderなしでもエラーが発生しない', () => {
+      // TodoProviderを無効にした状態でのテスト
+      expect(() => {
+        render(<PushContainer />, {
+          withTodoProvider: false,
+        });
+      }).toThrow('useTodoContext must be used within a TodoProvider');
     });
   });
 

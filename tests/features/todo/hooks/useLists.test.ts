@@ -28,6 +28,16 @@ const mockArrayMove = vi.mocked(arrayMove);
 // サブモジュールのモックデータを使用
 const mockInitialLists: StatusListProps[] = mockLists;
 
+// ヘルパー関数: モックドラッグイベントを作成
+const createMockDragEvent = (activeId: string, overId: string | null) =>
+  ({
+    active: { id: activeId },
+    over: overId ? { id: overId } : null,
+    activatorEvent: new Event('pointerdown'),
+    collisions: [],
+    delta: { x: 0, y: 0 },
+  }) as unknown as import('@dnd-kit/core').DragEndEvent;
+
 describe('useLists', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -241,15 +251,6 @@ describe('useLists', () => {
   });
 
   describe('ドラッグ&ドロップ (handleDragEnd)', () => {
-    const createMockDragEvent = (activeId: string, overId: string | null) =>
-      ({
-        active: { id: activeId },
-        over: overId ? { id: overId } : null,
-        activatorEvent: new Event('pointerdown'),
-        collisions: [],
-        delta: { x: 0, y: 0 },
-      }) as unknown as import('@dnd-kit/core').DragEndEvent;
-
     it('正常にリストが並び替えられる', async () => {
       mockApiRequest.mockResolvedValueOnce({});
 
@@ -403,9 +404,8 @@ describe('useLists', () => {
         await result.current.handleButtonMove('non-existent-id', 'right');
       });
 
-      // 存在しないIDの場合、findIndexは-1を返すが、Math.max(0, -1 - 1)で0になり、arrayMoveが呼ばれる
-      expect(mockArrayMove).toHaveBeenCalledWith(mockInitialLists, -1, 0);
-      expect(mockApiRequest).toHaveBeenCalled();
+      expect(mockArrayMove).not.toHaveBeenCalled();
+      expect(mockApiRequest).not.toHaveBeenCalled();
     });
 
     it('空のIDでは何もしない', async () => {
@@ -439,15 +439,6 @@ describe('useLists', () => {
   });
 
   describe('番号の再計算', () => {
-    const createMockDragEvent = (activeId: string, overId: string | null) =>
-      ({
-        active: { id: activeId },
-        over: overId ? { id: overId } : null,
-        activatorEvent: new Event('pointerdown'),
-        collisions: [],
-        delta: { x: 0, y: 0 },
-      }) as unknown as import('@dnd-kit/core').DragEndEvent;
-
     it('ドラッグ&ドロップ後に番号が正しく再計算される', async () => {
       mockApiRequest.mockResolvedValueOnce({});
 
