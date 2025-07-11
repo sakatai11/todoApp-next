@@ -39,7 +39,10 @@ export default function ErrorDisplay({ message, onRetry }: ErrorDisplayProps) {
           mb: 2,
         }}
       >
-        <ErrorIcon sx={{ fontSize: 40, color: '#fff' }} />
+        <ErrorIcon
+          aria-label="errorIcon"
+          sx={{ fontSize: 40, color: '#fff' }}
+        />
       </Paper>
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 'medium' }}>
         エラーが発生しました

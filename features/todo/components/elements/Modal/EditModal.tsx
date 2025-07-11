@@ -62,7 +62,7 @@ const EditModal = React.memo(
                 paddingBottom="8px"
                 display="block"
               >
-                編集日時：{jstFormattedDate(todo.updateTime)}
+                編集日時：{jstFormattedDate(todo.updateTime.toMillis())}
               </Typography>
             )}
             <TextField
