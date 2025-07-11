@@ -148,10 +148,11 @@ describe('DeleteModal', () => {
       // MUIモーダルの背景クリックをシミュレートするため、
       // モーダルの外側のBox要素（背景部分）をクリック
       const modal = screen.getByRole('presentation');
-      const outerBox = modal.firstChild;
+      // バックドロップ要素を特定してクリック
+      const backdrop = modal.querySelector('.MuiBackdrop-root');
 
-      if (outerBox) {
-        fireEvent.click(outerBox);
+      if (backdrop) {
+        fireEvent.click(backdrop);
       }
 
       expect(mockSetModalIsOpen).toHaveBeenCalledWith(false);
