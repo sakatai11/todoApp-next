@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { StatusListProps } from '@/types/lists';
-import { ListPayload } from '@/types/lists';
+import { StatusListProps, ListPayload, ListResponse } from '@/types/lists';
 import { apiRequest } from '@/features/libs/apis';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -61,11 +60,10 @@ export const useLists = (initialLists: StatusListProps[]) => {
 
       try {
         // server side
-        const result = await apiRequest<ListPayload<'POST'>>(
-          '/api/lists',
-          'POST',
-          newList,
-        );
+        const result = await apiRequest<
+          ListPayload<'POST'>,
+          ListResponse<'POST'>
+        >('/api/lists', 'POST', newList);
 
         // client
         // 再計算されたリストと新しいリストを追加してセットする
@@ -119,10 +117,14 @@ export const useLists = (initialLists: StatusListProps[]) => {
           // server side
           const updateListsNumber = tempLists.map((list) => list.id); // 新しい順序の全ID配列
 
-          await apiRequest<ListPayload<'PUT'>>('/api/lists', 'PUT', {
-            type: 'reorder',
-            data: updateListsNumber,
-          });
+          await apiRequest<ListPayload<'PUT'>, ListResponse<'PUT'>>(
+            '/api/lists',
+            'PUT',
+            {
+              type: 'reorder',
+              data: updateListsNumber,
+            },
+          );
         } catch (error) {
           console.error('Error dragEnd list:', error);
         }
@@ -134,41 +136,46 @@ export const useLists = (initialLists: StatusListProps[]) => {
   // クリックでの移動のリストとしてlistsを更新
   const handleButtonMove = useCallback(
     async (id: string, direction: 'right' | 'left') => {
-      if (id) {
-        const currentIndex = lists.findIndex((list) => list.id === id);
+      if (!id) return lists;
 
-        try {
-          // 移動先のインデックスを計算
-          const newIndex =
-            direction === 'right'
-              ? Math.min(lists.length - 1, currentIndex + 1)
-              : Math.max(0, currentIndex - 1);
+      const currentIndex = lists.findIndex((list) => list.id === id);
+      if (currentIndex === -1) return;
 
-          // インデックスが変わらない場合、元のリストを返す
-          if (currentIndex === newIndex) return lists;
+      try {
+        // 移動先のインデックスを計算
+        const newIndex =
+          direction === 'right'
+            ? Math.min(lists.length - 1, currentIndex + 1)
+            : Math.max(0, currentIndex - 1);
 
-          // 配列を新しい順序に並べ替える
-          const updatedLists = arrayMove(lists, currentIndex, newIndex);
+        // インデックスが変わらない場合、元のリストを返す
+        if (currentIndex === newIndex) return lists;
 
-          // インデックスに基づいて番号を再設定してリストを更新
-          const tempLists = updatedLists.map((list, index) => ({
-            ...list,
-            number: index + 1,
-          }));
+        // 配列を新しい順序に並べ替える
+        const updatedLists = arrayMove(lists, currentIndex, newIndex);
 
-          // client
-          setLists(tempLists);
+        // インデックスに基づいて番号を再設定してリストを更新
+        const tempLists = updatedLists.map((list, index) => ({
+          ...list,
+          number: index + 1,
+        }));
 
-          // servers side
-          const updateListsNumber = tempLists.map((list) => list.id); // 新しい順序の全ID配列
+        // client
+        setLists(tempLists);
 
-          await apiRequest<ListPayload<'PUT'>>('/api/lists', 'PUT', {
+        // servers side
+        const updateListsNumber = tempLists.map((list) => list.id); // 新しい順序の全ID配列
+
+        await apiRequest<ListPayload<'PUT'>, ListResponse<'PUT'>>(
+          '/api/lists',
+          'PUT',
+          {
             type: 'reorder',
             data: updateListsNumber,
-          });
-        } catch (error) {
-          console.error('Error ButtonMove list:', error);
-        }
+          },
+        );
+      } catch (error) {
+        console.error('Error ButtonMove list:', error);
       }
     },
     [lists],

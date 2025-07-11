@@ -8,12 +8,12 @@
 
 ### テスト結果ステータス
 
-✅ **全テスト成功** - 100%カバレッジ達成
-- **テストファイル数**: 5ファイル（TodoContext、useTodos、MainContainer、TodoList、AddTodo）
-- **総テスト数**: 76テスト
-- **成功率**: 100% (76/76 passing)
-- **カバレッジ**: 100% - 全コンポーネント・フック・コンテキストをカバー
-- **品質**: ESLint準拠、TypeScript型安全性確保、適切なエラーハンドリング
+✅ **全テスト成功** - 高品質テストコードベース達成
+- **テストファイル数**: 22ファイル（全機能網羅）
+- **総テスト数**: 413テスト
+- **成功率**: 100% (413/413 passing)
+- **カバレッジ**: 高カバレッジ - 全主要コンポーネント・フック・コンテキストをカバー
+- **品質**: ESLint準拠、TypeScript型安全性確保、表記統一ルール適用
 - **データ統合**: 全テストファイルでサブモジュールモックデータを統一使用
 
 ### テスト実行コマンド
@@ -28,21 +28,10 @@ npm run test:coverage     # カバレッジレポート付きでテスト実行
 
 ## ディレクトリ構造
 
-```
-tests/
-├── CLAUDE.md             # このファイル（テスト固有のガイドライン）
-├── setup.ts              # グローバルテスト環境設定
-├── test-utils.tsx        # カスタムレンダー関数とユーティリティ
-└── features/             # 機能別テストファイル
-    └── todo/             # Todo機能のテスト
-        ├── contexts/     # Context関連テスト
-        │   └── TodoContext.test.tsx
-        ├── hooks/        # カスタムフック関連テスト
-        │   └── useTodos.test.ts
-        └── components/   # コンポーネント関連テスト
-            ├── MainContainer/
-            └── elements/
-```
+詳細なディレクトリ構造については、実際のファイル構成を参照してください。
+主要な構成:
+- **tests/**: テスト環境設定とユーティリティ
+- **tests/features/**: 機能別テストファイル（22ファイル）
 
 ## 設定ファイル詳細
 
@@ -81,18 +70,9 @@ const todos = mockTodos;  // 5つのTodoアイテム
 const lists = mockLists;  // 3つのステータスリスト（'in-progress', 'done', 'todo'）
 ```
 
-**実際のサブモジュールデータ内容**:
-- **Todoデータ**: `todoApp-submodule/mocks/data/todos.ts`
-  - 'Next.js App Routerの学習' (status: 'in-progress', bool: true)
-  - 'Nuxt3の学習' (status: 'in-progress', bool: false)
-  - 'MSWの実装' (status: 'todo', bool: false)
-  - 'TypeScript最適化' (status: 'done', bool: true)
-  - 'Line 1\\nLine 2\\nLine 3' (status: 'todo', bool: false) - 改行テスト用
-
-- **リストデータ**: `todoApp-submodule/mocks/data/lists.ts`
-  - 'in-progress' (id: 'list-1', number: 1)
-  - 'done' (id: 'list-2', number: 2)
-  - 'todo' (id: 'list-3', number: 3)
+**実際のサブモジュールデータ**:
+- **Todoデータ**: `todoApp-submodule/mocks/data/todos.ts` - 5つのTodoアイテム
+- **リストデータ**: `todoApp-submodule/mocks/data/lists.ts` - 3つのステータスリスト
 
 **重要**: 独自のモックデータではなく、必ずサブモジュールデータを使用してテストの一貫性を保つ
 
@@ -120,53 +100,12 @@ const customList = createTestList({
 
 ## よく使用するテストパターン
 
-### 1. React Contextのテスト
+詳細なテストパターンについては `todoApp-submodule/docs/TEST.md` を参照してください。
 
-```typescript
-import { renderHook } from '@testing-library/react';
-import { useTodoContext } from '@/features/todo/contexts/TodoContext';
-
-const createWrapper = (initialTodos = [], initialLists = []) => {
-  const TestWrapper = ({ children }) => (
-    <TodoProvider initialTodos={initialTodos} initialLists={initialLists}>
-      {children}
-    </TodoProvider>
-  );
-  return TestWrapper;
-};
-
-const { result } = renderHook(() => useTodoContext(), {
-  wrapper: createWrapper(),
-});
-```
-
-### 2. カスタムフックのテスト
-
-```typescript
-import { renderHook, act } from '@testing-library/react';
-import { useTodos } from '@/features/todo/hooks/useTodos';
-
-const { result } = renderHook(() => useTodos(mockTodos));
-
-await act(async () => {
-  await result.current.addTodo();
-});
-```
-
-### 3. UIコンポーネントのテスト
-
-```typescript
-import { render, screen, fireEvent } from '@/tests/test-utils';
-import Component from '@/path/to/Component';
-
-render(<Component />, {
-  withTodoProvider: true,
-  withSession: true,
-  initialTodos: mockTodos,
-});
-
-expect(screen.getByText('期待するテキスト')).toBeInTheDocument();
-```
+**基本的な使用例**:
+- **Context**: `renderHook`でプロバイダー付きテスト
+- **フック**: `act`で非同期処理をテスト
+- **コンポーネント**: カスタムレンダー関数でプロバイダー設定
 
 ## モック設定
 
@@ -258,17 +197,45 @@ describe('ComponentName', () => {
   });
 
   describe('インタラクション', () => {
-    it('ユーザー操作が正しく動作する', () => {
+    it('ユーザー操作が正常に動作する', () => {
       // テストコード
     });
   });
 
   describe('エラーハンドリング', () => {
-    it('エラー時に適切に処理される', () => {
+    it('エラー時に正常に処理される', () => {
       // テストコード
     });
   });
 });
+```
+
+### テスト説明文の表記統一
+
+**統一ルール**: テスト説明文（it文）で一貫した表記を使用
+
+#### 基本パターン
+- **システム動作**: 「正常に動作する」
+- **データ処理**: 「正常に処理される」
+- **UI表示**: 「正常に表示される」
+- **UI描画**: 「正常にレンダリングされる」
+
+#### 使い分けガイドライン
+- **「正常に」**: 基本動作・システム処理（推奨）
+- **「適切に」**: 期待通りの結果（特別な条件下）
+- **「正しく」**: 結果の妥当性確認（非推奨→「正常に」に統一）
+
+#### 統一例
+```typescript
+// ✅ 推奨パターン
+it('コンポーネントが正常にレンダリングされる', () => {});
+it('ボタンクリック時に正常に動作する', () => {});
+it('入力値が正常に処理される', () => {});
+it('エラー状態で正常に表示される', () => {});
+
+// ❌ 非推奨パターン（表記揺れ）
+it('コンポーネントが正しく表示される', () => {}); // → 「正常に表示される」
+it('ボタンクリック時に適切に動作する', () => {}); // → 「正常に動作する」
 ```
 
 ### 型安全性の維持
@@ -279,7 +246,6 @@ describe('ComponentName', () => {
 
 ## 参考資料
 
-- プロジェクト全体のテスト情報: `todoApp-submodule/docs/TEST.md`
-- メインプロジェクトのガイドライン: ルートディレクトリの`CLAUDE.md`
 - Vitest公式ドキュメント: https://vitest.dev/
 - React Testing Library: https://testing-library.com/
+- MSW Documentation: https://mswjs.io/

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ListPayload, StatusListProps } from '@/types/lists';
-import { TodoListProps, TodoPayload } from '@/types/todos';
+import { ListPayload, StatusListProps, ListResponse } from '@/types/lists';
+import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
 import {
   isDuplicateCategory,
   updateListsAndTodos,
@@ -47,17 +47,25 @@ export const useUpdateStatusAndCategory = ({
       try {
         // server side
         // categoryの更新
-        await apiRequest<ListPayload<'PUT'>>('/api/lists', 'PUT', {
-          type: 'update',
-          id,
-          data: { category: finalCategory },
-        });
+        await apiRequest<ListPayload<'PUT'>, ListResponse<'PUT'>>(
+          '/api/lists',
+          'PUT',
+          {
+            type: 'update',
+            id,
+            data: { category: finalCategory },
+          },
+        );
 
         // statusの更新
-        await apiRequest<TodoPayload<'PUT'>>('/api/todos', 'PUT', {
-          type: 'restatus',
-          data: { oldStatus: oldCategory, status: finalCategory },
-        });
+        await apiRequest<TodoPayload<'PUT', true>, TodoResponse<'PUT'>>(
+          '/api/todos',
+          'PUT',
+          {
+            type: 'restatus',
+            data: { oldStatus: oldCategory, status: finalCategory },
+          },
+        );
 
         // client
         updateListsAndTodos(setLists, setTodos, id, finalCategory, oldCategory);

@@ -1,10 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
-import { TodoListProps } from '@/types/todos';
-import { StatusListProps } from '@/types/lists';
-import { ListPayload } from '@/types/lists';
-import { TodoPayload } from '@/types/todos';
+import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
+import { StatusListProps, ListPayload, ListResponse } from '@/types/lists';
 import { apiRequest } from '@/features/libs/apis';
 
 type DeleteListProps = {
@@ -26,7 +24,11 @@ export const useDeleteList = ({
       try {
         // server side
         // リストを削除
-        await apiRequest<ListPayload<'DELETE'>>('/api/lists', 'DELETE', { id });
+        await apiRequest<ListPayload<'DELETE'>, ListResponse<'DELETE'>>(
+          '/api/lists',
+          'DELETE',
+          { id },
+        );
         // client
         setLists((prevLists) => {
           // todo.id が id と一致しない list だけを残す新しい配列を作成
@@ -50,9 +52,13 @@ export const useDeleteList = ({
           // 非同期削除処理を並列で実行し、すべての結果を待つ
           await Promise.all(
             todosToDelete.map((todo) =>
-              apiRequest<TodoPayload<'DELETE'>>('/api/todos', 'DELETE', {
-                id: todo.id,
-              }),
+              apiRequest<TodoPayload<'DELETE', true>, TodoResponse<'DELETE'>>(
+                '/api/todos',
+                'DELETE',
+                {
+                  id: todo.id,
+                },
+              ),
             ),
           );
 
