@@ -1,35 +1,35 @@
 # Todo機能ガイドライン
 
+**必ず日本語で回答してください**
+
 ## 全体情報参照
 
-**重要**: プロジェクト全体の方針は `CLAUDE.md`（プロジェクトルート）を参照してください。
+**重要**: プロジェクト全体の方針は [`@CLAUDE.md`](../../CLAUDE.md)（プロジェクトルート）を参照してください。
 このファイルはTodo機能固有の技術的詳細に特化しています。
 
 ## 仕様書参照
 
 **詳細仕様**: 実装の詳細仕様は以下のドキュメントを参照してください：
 
-- `@todoApp-submodule/docs/features/todo/contexts/TodoContext.md` - Context仕様
-- `@todoApp-submodule/docs/features/todo/hooks/useTodos.md` - useTodosフック仕様
-- `@todoApp-submodule/docs/features/todo/hooks/useLists.md` - useListsフック仕様
-- `@todoApp-submodule/docs/features/todo/hooks/useDeleteList.md` - useDeleteListフック仕様
-- `@todoApp-submodule/docs/features/todo/hooks/useUpdateStatusAndCategory.md` - useUpdateStatusAndCategoryフック仕様
-- `@todoApp-submodule/docs/features/todo/components/components-spec.md` - 全コンポーネント仕様
-- `@todoApp-submodule/docs/features/todo/templates/TodoWrapper.md` - TodoWrapperテンプレート仕様
+- [@todoApp-submodule/docs/features/todo/contexts/TodoContext.md](../../todoApp-submodule/docs/features/todo/contexts/TodoContext.md) - Context仕様
+- [@todoApp-submodule/docs/features/todo/hooks/useTodos.md](../../todoApp-submodule/docs/features/todo/hooks/useTodos.md) - useTodosフック仕様
+- [@todoApp-submodule/docs/features/todo/hooks/useLists.md](../../todoApp-submodule/docs/features/todo/hooks/useLists.md) - useListsフック仕様
+- [@todoApp-submodule/docs/features/todo/hooks/useDeleteList.md](../../todoApp-submodule/docs/features/todo/hooks/useDeleteList.md) - useDeleteListフック仕様
+- [@todoApp-submodule/docs/features/todo/hooks/useUpdateStatusAndCategory.md](../../todoApp-submodule/docs/features/todo/hooks/useUpdateStatusAndCategory.md) - useUpdateStatusAndCategoryフック仕様
+- [@todoApp-submodule/docs/features/todo/components/components-spec.md](../../todoApp-submodule/docs/features/todo/components/components-spec.md) - 全コンポーネント仕様
+- [@todoApp-submodule/docs/features/todo/templates/TodoWrapper.md](../../todoApp-submodule/docs/features/todo/templates/TodoWrapper.md) - TodoWrapperテンプレート仕様
 
 ## 機能構造
 
-```
-features/todo/
-├── contexts/TodoContext.tsx     # 状態管理
-├── hooks/                       # 4つのカスタムフック
-├── components/                  # UI コンポーネント
-│   ├── MainContainer/          # メインレイアウト
-│   ├── PushContainer/          # 新規追加ボタン
-│   └── elements/               # 11個のUI要素
-├── dnd/SortableItem.tsx        # ドラッグ&ドロップ
-└── templates/TodoWrapper.tsx    # ページテンプレート
-```
+詳細なプロジェクト構造については、[@todoApp-submodule/docs/PRODUCTS.md](../../todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)を参照してください。
+
+Todo機能の主要構成:
+
+- **contexts/**: TodoContext（状態管理）
+- **hooks/**: 4つのカスタムフック
+- **components/**: UIコンポーネント（MainContainer, PushContainer, elements）
+- **dnd/**: ドラッグ&ドロップ機能
+- **templates/**: TodoWrapperテンプレート
 
 ## 開発原則
 
@@ -48,7 +48,7 @@ features/todo/
 
 ### API連携
 
-- **エンドポイント**: `/api/(general)/todos/` と `/api/(general)/lists/`
+- **エンドポイント**: [@app/api/(general)/todos/](<../../app/api/(general)/todos/>) と [@app/api/(general)/lists/](<../../app/api/(general)/lists/>)
 - **初期データ**: useSWRで初期データ取得（TodoWrapper）
 - **バリデーション**: Zodスキーマで全リクエスト/レスポンス検証
 - **認証**: NextAuth.jsトークンで認証
@@ -94,8 +94,8 @@ const addTodo = async (newTodo: Omit<TodoListProps, 'id'>) => {
 // 削除時の楽観的更新
 const deleteTodo = async (id: string) => {
   // 削除対象を保存（ロールバック用）
-  const todoToDelete = todos.find(todo => todo.id === id);
-  
+  const todoToDelete = todos.find((todo) => todo.id === id);
+
   try {
     // 1. 即座にUI更新（楽観的更新）
     setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));

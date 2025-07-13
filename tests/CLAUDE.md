@@ -2,6 +2,11 @@
 
 **必ず日本語で回答してください**
 
+## 全体情報参照
+
+**重要**: プロジェクト全体の方針は [`@CLAUDE.md`](../CLAUDE.md)（プロジェクトルート）を参照してください。
+このファイルはTest機能固有の技術的詳細に特化しています。
+
 ## テスト環境概要
 
 このディレクトリにはVitestベースのテスト環境が構築されています。
@@ -9,6 +14,7 @@
 ### テスト結果ステータス
 
 ✅ **全テスト成功** - 高品質テストコードベース達成
+
 - **テストファイル数**: 22ファイル（全機能網羅）
 - **総テスト数**: 413テスト
 - **成功率**: 100% (413/413 passing)
@@ -28,30 +34,37 @@ npm run test:coverage     # カバレッジレポート付きでテスト実行
 
 ## ディレクトリ構造
 
-詳細なディレクトリ構造については、実際のファイル構成を参照してください。
-主要な構成:
+詳細なプロジェクト構造については、[@todoApp-submodule/docs/PRODUCTS.md](../todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)を参照してください。
+
+主要なテスト構成:
+
 - **tests/**: テスト環境設定とユーティリティ
 - **tests/features/**: 機能別テストファイル（22ファイル）
 
 ## 設定ファイル詳細
 
 ### vitest.config.ts（ルートディレクトリ）
+
 - Vitestのメイン設定ファイル
 - jsdom環境、プラグイン設定、パスエイリアス定義
 
 ### tests/setup.ts
+
 **役割**: グローバルテスト環境の初期化
 
 **含まれる設定**:
+
 - MSW serverの初期化（API モック）
 - Next.js関連のモック（next/navigation, next-auth/react）
 - Firebase Admin SDKのモック
 - ブラウザAPIのモック（matchMedia, ResizeObserver, DragEvent）
 
 ### tests/test-utils.tsx
+
 **役割**: テスト用のヘルパー関数とユーティリティ
 
 **提供機能**:
+
 - カスタムレンダー関数（プロバイダー付き）
 - サブモジュールモックデータの型変換
 - テストデータ作成ヘルパー
@@ -66,13 +79,14 @@ npm run test:coverage     # カバレッジレポート付きでテスト実行
 import { mockTodos, mockLists } from '@/tests/test-utils';
 
 // サブモジュールのモックデータを使用（Firebase Timestamp形式に自動変換済み）
-const todos = mockTodos;  // 5つのTodoアイテム
-const lists = mockLists;  // 3つのステータスリスト（'in-progress', 'done', 'todo'）
+const todos = mockTodos; // 5つのTodoアイテム
+const lists = mockLists; // 3つのステータスリスト（'in-progress', 'done', 'todo'）
 ```
 
 **実際のサブモジュールデータ**:
-- **Todoデータ**: `todoApp-submodule/mocks/data/todos.ts` - 5つのTodoアイテム
-- **リストデータ**: `todoApp-submodule/mocks/data/lists.ts` - 3つのステータスリスト
+
+- **Todoデータ**: [@/todoApp-submodule/mocks/data/todos.ts](../todoApp-submodule/mocks/data/todos.ts) - 5つのTodoアイテム
+- **リストデータ**: [@/todoApp-submodule/mocks/data/lists.ts](../todoApp-submodule/mocks/data/lists.ts) - 3つのステータスリスト
 
 **重要**: 独自のモックデータではなく、必ずサブモジュールデータを使用してテストの一貫性を保つ
 
@@ -81,14 +95,14 @@ const lists = mockLists;  // 3つのステータスリスト（'in-progress', 'd
 ```typescript
 import { createTestTodo, createTestList } from '@/tests/test-utils';
 
-const customTodo = createTestTodo({ 
+const customTodo = createTestTodo({
   text: 'カスタムTodo',
-  status: 'pending' 
+  status: 'pending',
 });
 
-const customList = createTestList({ 
+const customList = createTestList({
   category: 'custom',
-  number: 4 
+  number: 4,
 });
 ```
 
@@ -100,9 +114,10 @@ const customList = createTestList({
 
 ## よく使用するテストパターン
 
-詳細なテストパターンについては `todoApp-submodule/docs/TEST.md` を参照してください。
+詳細なテストパターンについては [@todoApp-submodule/docs/TEST.md](../todoApp-submodule/docs/TEST.md) を参照してください。
 
 **基本的な使用例**:
+
 - **Context**: `renderHook`でプロバイダー付きテスト
 - **フック**: `act`で非同期処理をテスト
 - **コンポーネント**: カスタムレンダー関数でプロバイダー設定
@@ -112,6 +127,7 @@ const customList = createTestList({
 ### 外部ライブラリのモック
 
 **@dnd-kit関連**:
+
 ```typescript
 vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children, onDragEnd }) => (
@@ -122,6 +138,7 @@ vi.mock('@dnd-kit/core', () => ({
 ```
 
 **API関数のモック**:
+
 ```typescript
 vi.mock('@/features/libs/apis', () => ({
   apiRequest: vi.fn(),
@@ -161,6 +178,7 @@ consoleSpy.mockRestore();
 ### データ一貫性の維持
 
 **サブモジュールデータの統一使用**:
+
 ```typescript
 // ✅ 推奨: サブモジュールデータを使用
 import { mockTodos, mockLists } from '@/tests/test-utils';
@@ -177,6 +195,7 @@ const customMockData = [
 ```
 
 **期待値の設定**:
+
 ```typescript
 // サブモジュールの実際のデータに基づいた期待値を使用
 expect(screen.getByText('Next.js App Routerの学習')).toBeInTheDocument();
@@ -215,17 +234,20 @@ describe('ComponentName', () => {
 **統一ルール**: テスト説明文（it文）で一貫した表記を使用
 
 #### 基本パターン
+
 - **システム動作**: 「正常に動作する」
 - **データ処理**: 「正常に処理される」
 - **UI表示**: 「正常に表示される」
 - **UI描画**: 「正常にレンダリングされる」
 
 #### 使い分けガイドライン
+
 - **「正常に」**: 基本動作・システム処理（推奨）
 - **「適切に」**: 期待通りの結果（特別な条件下）
 - **「正しく」**: 結果の妥当性確認（非推奨→「正常に」に統一）
 
 #### 統一例
+
 ```typescript
 // ✅ 推奨パターン
 it('コンポーネントが正常にレンダリングされる', () => {});
