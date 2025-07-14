@@ -37,49 +37,13 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ### 現在のディレクトリ構造
 
-```
-app/                   # Next.js App Router
-├── (admin)/           # 管理者ルート（グループ化）
-├── (auth)/            # 認証ルート（グループ化）
-├── (dashboards)/      # ダッシュボードルート（グループ化）
-├── api/               # APIルート
-│   ├── (admin)/       # 管理者API（グループ化）
-│   ├── (general)/     # 一般API（グループ化）
-│   └── auth/          # 認証API
-└── libs/              # アプリレベルのユーティリティ
-
-features/              # フィーチャーベースコンポーネント
-├── todo/              # Todo機能
-│   ├── contexts/      # 状態管理用TodoContext
-│   ├── hooks/         # カスタムフック（useTodos、useListsなど）
-│   ├── components/    # 機能固有のコンポーネント
-│   └── dnd/           # ドラッグ＆ドロップコンポーネント
-├── shared/            # 機能間で共有されるコンポーネント
-└── utils/             # 機能ユーティリティ
-
-tests/                 # テストファイルと設定
-├── setup.ts           # グローバルテスト環境セットアップ
-├── test-utils.tsx     # カスタムレンダー関数とユーティリティ
-└── features/          # フィーチャーベースのテスト構造
-    └── todo/          # Todo機能のテスト
-        ├── contexts/  # Contextプロバイダーのテスト
-        ├── hooks/     # カスタムフックのテスト
-        └── components/ # コンポーネントのテスト
-
-todoApp-submodule/     # モックAPIとドキュメント用のサブモジュール
-├── mocks/             # MSWハンドラーとモックデータ
-│   ├── data/          # モックデータ定義
-│   └── handlers/      # APIハンドラー定義
-└── docs/              # プロジェクトドキュメント
-
-types/                 # TypeScript型定義
-```
+詳細なプロジェクト構造については、[@todoApp-submodule/docs/PRODUCTS.md](todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)を参照してください。
 
 ### 認証フロー
 
 - カスタム認証プロバイダーを使用したNextAuth.js
 - サーバーサイドトークン検証用のFirebase Admin SDK
-- `/api/auth/server-login`経由でのカスタムトークン交換
+- [@app/api/auth/server-login](/app/api/auth/server-login)経由でのカスタムトークン交換
 - ロールベースアクセス制御（admin/userロール）
 
 ### データ管理
@@ -107,16 +71,16 @@ types/                 # TypeScript型定義
 
 ### ディレクトリ構造ルール
 
-- **フィーチャーベースアーキテクチャに従う**: 各機能は`features/`ディレクトリ内で自己完結型にする
+- **フィーチャーベースアーキテクチャに従う**: 各機能は[@features/](/features/)ディレクトリ内で自己完結型にする
 - **App Routerの規約を使用**: Next.jsルートグループ`()`を使用して関連ルートをグループ化
-- **既存パターンを尊重**: 管理者ルートは`(admin)/`、認証は`(auth)/`、ダッシュボードは`(dashboards)/`に配置
+- **既存パターンを尊重**: 管理者ルートは[@app/(admin)/admin](</app/(admin)/admin>)、認証は[@app/(auth)](</app/(auth)>)、ダッシュボードは[@app/(dashboards)](</app/(dashboards)>)に配置
 - **API組織**: 機能別にAPIをグループ化 -`(admin)/`、`(general)/`、`auth/`
 
 ### 認証実装
 
 - **NextAuth.js v5パターンを使用**: 既存のカスタム認証プロバイダー設定に従う
 - **Firebase統合**: サーバーサイド操作にFirebase Admin SDKを使用
-- **トークン処理**: トークン交換に既存の`/api/auth/server-login`エンドポイントを活用
+- **トークン処理**: トークン交換に既存の [@app/api/auth/server-login](/app/api/auth/server-login)エンドポイントを活用
 - **ロールベースアクセス**: admin/userロールの区別を維持
 
 ### 状態管理パターン
