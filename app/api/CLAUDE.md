@@ -2,7 +2,9 @@
 
 ## 全体情報参照
 
-**重要**: プロジェクト全体の方針は `CLAUDE.md`（プロジェクトルート）を参照してください。
+**必ず日本語で回答してください**
+
+**重要**: プロジェクト全体の方針は [`@CLAUDE.md`](../../CLAUDE.md)（プロジェクトルート）を参照してください。
 このファイルはAPI開発固有の技術的詳細に特化しています。
 
 ## 仕様書参照
@@ -11,37 +13,38 @@
 
 ### Admin APIs
 
-- `@todoApp-submodule/docs/app/api/admin/usersAPI.md` - ユーザー管理API
-- `@todoApp-submodule/docs/app/api/admin/userListsAPI.md` - ユーザーリスト管理API
-- `@todoApp-submodule/docs/app/api/admin/userTodosAPI.md` - ユーザーTodo管理API
-- `@todoApp-submodule/docs/app/api/admin/userDetailAPI.md` - ユーザー詳細API
+- [@usersAPI.md](../../todoApp-submodule/docs/app/api/admin/usersAPI.md) - ユーザー管理API
+- [@userListsAPI.md](../../todoApp-submodule/docs/app/api/admin/userListsAPI.md) - ユーザーリスト管理API
+- [@userTodosAPI.md](../../todoApp-submodule/docs/app/api/admin/userTodosAPI.md) - ユーザーTodo管理API
+- [@userDetailAPI.md](../../todoApp-submodule/docs/app/api/admin/userDetailAPI.md) - ユーザー詳細API
 
 ### General APIs
 
-- `@todoApp-submodule/docs/app/api/general/todosAPI.md` - Todo操作API
-- `@todoApp-submodule/docs/app/api/general/listsAPI.md` - リスト操作API
-- `@todoApp-submodule/docs/app/api/general/dashboardsAPI.md` - ダッシュボードAPI
-- `@todoApp-submodule/docs/app/api/general/userAPI.md` - ユーザー情報API
+- [@todosAPI.md](../../todoApp-submodule/docs/app/api/general/todosAPI.md) - Todo操作API
+- [@listsAPI.md](../../todoApp-submodule/docs/app/api/general/listsAPI.md) - リスト操作API
+- [@dashboardsAPI.md](../../todoApp-submodule/docs/app/api/general/dashboardsAPI.md) - ダッシュボードAPI
+- [@userAPI.md](../../todoApp-submodule/docs/app/api/general/userAPI.md) - ユーザー情報API
 
 ### Auth APIs
 
-- `@todoApp-submodule/docs/app/api/auth/server-loginAPI.md` - サーバーログインAPI
-- `@todoApp-submodule/docs/app/api/auth/refreshAPI.md` - トークンリフレッシュAPI
+- [@server-loginAPI.md](../../todoApp-submodule/docs/app/api/auth/server-loginAPI.md) - サーバーログインAPI
+- [@refreshAPI.md](../../todoApp-submodule/docs/app/api/auth/refreshAPI.md) - トークンリフレッシュAPI
 
 ### Libs
 
-- `@todoApp-submodule/docs/app/libs/firebaseAdmin.md` - Firebase Admin SDK
-- `@todoApp-submodule/docs/app/libs/withAuth.md` - 認証ミドルウェア
-- `@todoApp-submodule/docs/app/libs/apis.md` - API共通処理
+- [@firebaseAdmin.md](../../todoApp-submodule/docs/app/libs/firebaseAdmin.md) - Firebase Admin SDK
+- [@withAuth.md](../../todoApp-submodule/docs/app/libs/withAuth.md) - 認証ミドルウェア
+- [@apis.md](../../todoApp-submodule/docs/app/libs/apis.md) - API共通処理
 
 ## API構造
 
-```
-api/
-├── (admin)/          # 管理者専用API
-├── (general)/        # 一般ユーザーAPI
-└── auth/            # 認証API
-```
+詳細なプロジェクト構造については、[../../todoApp-submodule/docs/PRODUCTS.md](../../todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)を参照してください。
+
+API の主要構成:
+
+- **(admin)/**: 管理者専用API
+- **(general)/**: 一般ユーザーAPI
+- **auth/**: 認証API
 
 ## 開発原則
 
