@@ -296,7 +296,16 @@ describe('useTodos', () => {
 
   describe('Todo保存 (saveTodo)', () => {
     it('正常にTodoが保存される', async () => {
-      mockApiRequest.mockResolvedValueOnce({});
+      const updatedTodoResponse = {
+        id: 'todo-1',
+        text: 'Updated Todo',
+        status: 'in_progress',
+        bool: false,
+        createdTime: mockInitialTodos[0].createdTime,
+        updateTime: mockInitialTodos[0].updateTime,
+      };
+
+      mockApiRequest.mockResolvedValueOnce(updatedTodoResponse);
 
       const { result } = renderHook(() => useTodos(mockInitialTodos));
 
@@ -316,7 +325,6 @@ describe('useTodos', () => {
         id: 'todo-1',
         text: 'Updated Todo',
         status: 'in_progress',
-        updateTime: expect.any(String),
       });
 
       const updatedTodo = result.current.todos.find(
@@ -385,7 +393,6 @@ describe('useTodos', () => {
         id: 'todo-1',
         text: 'Updated Todo',
         status: 'in_progress',
-        updateTime: expect.any(String),
       });
 
       expect(result.current.error.listModalArea).toBe(true);
@@ -393,8 +400,9 @@ describe('useTodos', () => {
       const updatedTodo = result.current.todos.find(
         (todo) => todo.id === 'todo-1',
       );
-      expect(updatedTodo?.text).toBe('Updated Todo');
-      expect(updatedTodo?.status).toBe('in_progress');
+      // API失敗時は元の値のまま
+      expect(updatedTodo?.text).toBe('Next.js App Routerの学習');
+      expect(updatedTodo?.status).toBe('in-progress');
 
       consoleSpy.mockRestore();
     });
@@ -433,7 +441,16 @@ describe('useTodos', () => {
         });
       });
 
-      mockApiRequest.mockResolvedValueOnce({ success: true });
+      const updatedTodoResponse = {
+        id: 'number-time-todo-2',
+        text: 'Updated Number Todo',
+        status: 'done',
+        bool: false,
+        createdTime: 1111111111,
+        updateTime: 1111111111,
+      };
+
+      mockApiRequest.mockResolvedValueOnce(updatedTodoResponse);
 
       await act(async () => {
         await result.current.saveTodo();
@@ -472,7 +489,16 @@ describe('useTodos', () => {
         });
       });
 
-      mockApiRequest.mockResolvedValueOnce({ success: true });
+      const updatedTodoResponse = {
+        id: 'tomillis-time-todo',
+        text: 'Updated ToMillis Todo',
+        status: 'done',
+        bool: false,
+        createdTime: { toMillis: () => 5555555555 },
+        updateTime: { toMillis: () => 5555555555 },
+      };
+
+      mockApiRequest.mockResolvedValueOnce(updatedTodoResponse);
 
       await act(async () => {
         await result.current.saveTodo();
@@ -509,7 +535,16 @@ describe('useTodos', () => {
         });
       });
 
-      mockApiRequest.mockResolvedValueOnce({ success: true });
+      const updatedTodoResponse = {
+        id: 'non-function-tomillis-todo',
+        text: 'Updated Non Function Todo',
+        status: 'done',
+        bool: false,
+        createdTime: { toMillis: 'not-a-function' },
+        updateTime: { toMillis: 'not-a-function' },
+      };
+
+      mockApiRequest.mockResolvedValueOnce(updatedTodoResponse);
 
       await act(async () => {
         await result.current.saveTodo();
@@ -544,7 +579,16 @@ describe('useTodos', () => {
         });
       });
 
-      mockApiRequest.mockResolvedValueOnce({ success: true });
+      const updatedTodoResponse = {
+        id: 'falsy-time-todo',
+        text: 'Updated Falsy Todo',
+        status: 'done',
+        bool: false,
+        createdTime: null,
+        updateTime: null,
+      };
+
+      mockApiRequest.mockResolvedValueOnce(updatedTodoResponse);
 
       await act(async () => {
         await result.current.saveTodo();
@@ -579,7 +623,16 @@ describe('useTodos', () => {
         });
       });
 
-      mockApiRequest.mockResolvedValueOnce({ success: true });
+      const updatedTodoResponse = {
+        id: 'nan-time-todo',
+        text: 'Updated NaN Todo',
+        status: 'done',
+        bool: false,
+        createdTime: 'not-a-number',
+        updateTime: 'not-a-number',
+      };
+
+      mockApiRequest.mockResolvedValueOnce(updatedTodoResponse);
 
       await act(async () => {
         await result.current.saveTodo();
@@ -622,7 +675,16 @@ describe('useTodos', () => {
         });
       });
 
-      mockApiRequest.mockResolvedValueOnce({ success: true });
+      const updatedTodoResponse = {
+        id: 'saveTodo-no-tomillis',
+        text: 'Updated SaveTodo No ToMillis',
+        status: 'done',
+        bool: false,
+        createdTime: { someProperty: 'no-tomillis' },
+        updateTime: { someProperty: 'no-tomillis' },
+      };
+
+      mockApiRequest.mockResolvedValueOnce(updatedTodoResponse);
 
       await act(async () => {
         await result.current.saveTodo();

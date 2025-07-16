@@ -3,24 +3,9 @@
 import { useState, useCallback } from 'react';
 import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
 import { apiRequest } from '@/features/libs/apis';
-import { jstTime } from '@/features/utils/dateUtils';
+import { getTime } from '@/features/utils/dateUtils';
 
 export const useTodos = (initialTodos: TodoListProps[]) => {
-  //
-  // ***** helper functions ******
-  //
-  // タイムスタンプの取得処理（共通関数）
-  const getTime = (timestamp: unknown) => {
-    if (typeof timestamp === 'number') return timestamp;
-    if (
-      timestamp &&
-      typeof (timestamp as { toMillis?: () => number }).toMillis === 'function'
-    ) {
-      return (timestamp as { toMillis: () => number }).toMillis();
-    }
-    return parseInt(String(timestamp), 10) || 0;
-  };
-
   //
   // ***** state ******
   //
@@ -48,10 +33,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // todo追加
   const addTodo = useCallback(async () => {
     if (input.text && input.status) {
-      const currentTime = jstTime().getTime();
       const newTodo = {
-        updateTime: currentTime.toString(),
-        createdTime: currentTime.toString(),
         text: input.text,
         bool: false,
         status: input.status,
@@ -60,7 +42,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       try {
         // server side
         const result = await apiRequest<
-          TodoPayload<'POST', true>,
+          TodoPayload<'POST'>,
           TodoResponse<'POST'>
         >('/api/todos', 'POST', newTodo);
 
@@ -93,7 +75,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         prevTodos.filter((todo) => todo.id !== id),
       ); // todo.id が id と一致しない todo だけを残す新しい配列を作成
       // server side
-      await apiRequest<TodoPayload<'DELETE', true>, TodoResponse<'DELETE'>>(
+      await apiRequest<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
         '/api/todos',
         'DELETE',
         { id },
@@ -133,7 +115,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
             ),
           );
           // server side
-          await apiRequest<TodoPayload<'PUT', true>, TodoResponse<'PUT'>>(
+          await apiRequest<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
             '/api/todos',
             'PUT',
             {
@@ -167,37 +149,29 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         }
 
         const updateTodo = {
-          updateTime: jstTime().getTime().toString(),
           text: input.text,
           status: input.status,
         };
 
         try {
+          // server side
+          const result = await apiRequest<
+            TodoPayload<'PUT'>,
+            TodoResponse<'PUT'>
+          >('/api/todos', 'PUT', {
+            id: editId,
+            ...updateTodo,
+          });
+
           // client
           setTodos((prevTodos: TodoListProps[]) => {
             const updatedTodos = prevTodos.map((todo) =>
-              todo.id === editId
-                ? ({
-                    ...todo,
-                    text: updateTodo.text,
-                    status: updateTodo.status,
-                    updateTime: todo.updateTime, // 既存の型を保持
-                  } as TodoListProps)
-                : todo,
+              todo.id === editId ? (result as TodoListProps) : todo,
             );
             return updatedTodos.sort((a, b) => {
               return getTime(b.createdTime) - getTime(a.createdTime);
             });
           });
-          // server side
-          await apiRequest<TodoPayload<'PUT', true>, TodoResponse<'PUT'>>(
-            '/api/todos',
-            'PUT',
-            {
-              id: editId,
-              ...updateTodo,
-            },
-          );
 
           setInput({ text: '', status: '' });
           setEditId(null);

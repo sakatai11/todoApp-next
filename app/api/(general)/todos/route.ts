@@ -9,22 +9,13 @@ export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
     req,
     async (uid, body) => {
-      const { text, status, updateTime, createdTime } = body;
+      const { text, status } = body;
 
       if (text && status) {
-        const validUpdateTime = Number(updateTime);
-        const validCreatedTime = Number(createdTime);
-        
-        if (isNaN(validUpdateTime) || isNaN(validCreatedTime)) {
-          return NextResponse.json(
-            { error: 'Invalid timestamp values' },
-            { status: 400 },
-          );
-        }
-        
+        const currentTime = Timestamp.now();
         const newTodo = {
-          updateTime: Timestamp.fromMillis(validUpdateTime),
-          createdTime: Timestamp.fromMillis(validCreatedTime),
+          updateTime: currentTime,
+          createdTime: currentTime,
           text,
           bool: false,
           status,
@@ -36,6 +27,7 @@ export async function POST(req: Request) {
             .doc(uid)
             .collection('todos')
             .add(newTodo);
+
           return NextResponse.json(
             { id: docRef.id, ...newTodo },
             { status: 200 },
@@ -75,31 +67,21 @@ export async function PUT(req: Request) {
           );
         }
 
-        if (
-          'id' in payload &&
-          'text' in payload &&
-          'status' in payload &&
-          'updateTime' in payload
-        ) {
-          const { id, updateTime, text, status } = payload;
-          const validUpdateTime = Number(updateTime);
-          
-          if (isNaN(validUpdateTime)) {
-            return NextResponse.json(
-              { error: 'Invalid updateTime value' },
-              { status: 400 },
-            );
-          }
+        if ('id' in payload && 'text' in payload && 'status' in payload) {
+          const { id, text, status } = payload;
+          const currentTime = Timestamp.now();
 
           await todosCollection.doc(id).update({
-            updateTime: Timestamp.fromMillis(validUpdateTime),
+            updateTime: currentTime,
             text,
-            status
+            status,
           });
-          return NextResponse.json(
-            { message: 'Todo updated save' },
-            { status: 200 },
-          );
+
+          // 更新されたドキュメントを取得してレスポンスを返す
+          const updatedDoc = await todosCollection.doc(id).get();
+          const updatedTodo = updatedDoc.data();
+
+          return NextResponse.json({ id, ...updatedTodo }, { status: 200 });
         }
 
         if (payload.type === 'restatus') {
