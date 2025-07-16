@@ -5,6 +5,11 @@ import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { TodoResponse } from '@/types/todos';
 import { Timestamp } from 'firebase-admin/firestore';
 
+/**
+ * Creates a new todo item for the authenticated user.
+ *
+ * Expects `text` and `status` fields in the request body. Returns the created todo item with its generated ID and timestamps on success. Responds with an error if required fields are missing or if creation fails.
+ */
 export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
     req,
@@ -49,6 +54,11 @@ export async function POST(req: Request) {
   );
 }
 
+/**
+ * Handles updates to todo items for the authenticated user.
+ *
+ * Supports toggling the `bool` field, updating `text` and `status` (with automatic update of `updateTime`), or batch updating the status of multiple todos. Returns the updated todo or a success message upon completion, or an error response if the payload is invalid or the update fails.
+ */
 export async function PUT(req: Request) {
   return withAuthenticatedUser<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
     req,
