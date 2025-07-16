@@ -5,26 +5,22 @@ import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { TodoResponse } from '@/types/todos';
 import { Timestamp } from 'firebase-admin/firestore';
 
+/**
+* 認証されたユーザーに対して新しいtodoアイテムを作成します。
+*
+* リクエストボディに`text`と`status`フィールドを期待します。成功時に生成されたIDとタイムスタンプを含む作成されたtodoアイテムを返します。必須フィールドが不足している場合または作成に失敗した場合はエラーを応答します。
+*/
 export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
     req,
     async (uid, body) => {
-      const { text, status, updateTime, createdTime } = body;
+      const { text, status } = body;
 
       if (text && status) {
-        const validUpdateTime = Number(updateTime);
-        const validCreatedTime = Number(createdTime);
-        
-        if (isNaN(validUpdateTime) || isNaN(validCreatedTime)) {
-          return NextResponse.json(
-            { error: 'Invalid timestamp values' },
-            { status: 400 },
-          );
-        }
-        
+        const currentTime = Timestamp.now();
         const newTodo = {
-          updateTime: Timestamp.fromMillis(validUpdateTime),
-          createdTime: Timestamp.fromMillis(validCreatedTime),
+          updateTime: currentTime,
+          createdTime: currentTime,
           text,
           bool: false,
           status,
@@ -36,6 +32,7 @@ export async function POST(req: Request) {
             .doc(uid)
             .collection('todos')
             .add(newTodo);
+
           return NextResponse.json(
             { id: docRef.id, ...newTodo },
             { status: 200 },
@@ -57,6 +54,11 @@ export async function POST(req: Request) {
   );
 }
 
+/**
+ * 認証されたユーザーのtodoアイテムの更新を処理します。
+ *
+ * `bool`フィールドの切り替え、`text`と`status`の更新（`updateTime`の自動更新を含む）、または複数のtodoのステータスの一括更新をサポートします。完了時に更新されたtodoまたは成功メッセージを返し、ペイロードが無効または更新に失敗した場合はエラーレスポンスを返します。
+ */
 export async function PUT(req: Request) {
   return withAuthenticatedUser<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
     req,
@@ -75,31 +77,28 @@ export async function PUT(req: Request) {
           );
         }
 
-        if (
-          'id' in payload &&
-          'text' in payload &&
-          'status' in payload &&
-          'updateTime' in payload
-        ) {
-          const { id, updateTime, text, status } = payload;
-          const validUpdateTime = Number(updateTime);
-          
-          if (isNaN(validUpdateTime)) {
+        if ('id' in payload && 'text' in payload && 'status' in payload) {
+          const { id, text, status } = payload;
+          const currentTime = Timestamp.now();
+
+          await todosCollection.doc(id).update({
+            updateTime: currentTime,
+            text,
+            status,
+          });
+
+          // 更新されたドキュメントを取得してレスポンスを返す
+          const updatedDoc = await todosCollection.doc(id).get();
+          const updatedTodo = updatedDoc.data();
+
+          if (!updatedTodo) {
             return NextResponse.json(
-              { error: 'Invalid updateTime value' },
-              { status: 400 },
+              { error: 'Updated document not found' },
+              { status: 404 },
             );
           }
 
-          await todosCollection.doc(id).update({
-            updateTime: Timestamp.fromMillis(validUpdateTime),
-            text,
-            status
-          });
-          return NextResponse.json(
-            { message: 'Todo updated save' },
-            { status: 200 },
-          );
+          return NextResponse.json({ id, ...updatedTodo }, { status: 200 });
         }
 
         if (payload.type === 'restatus') {
@@ -135,6 +134,11 @@ export async function PUT(req: Request) {
   );
 }
 
+/**
+* 認証されたユーザーのtodoアイテムを削除します。
+*
+* 削除するtodoアイテムの`id`が必要です。完了時に成功メッセージを返し、IDが不足している場合または削除に失敗した場合はエラーレスポンスを返します。
+*/
 export async function DELETE(req: Request) {
   return withAuthenticatedUser<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
     req,

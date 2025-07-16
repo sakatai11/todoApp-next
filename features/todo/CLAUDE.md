@@ -76,72 +76,19 @@ const { todoHooks, listHooks, deleteListHooks } = useTodoContext();
 
 ### 実際のデータ更新パターン
 
-```typescript
-// useStateベースの楽観的更新（useTodos.ts）
-const addTodo = async (newTodo: Omit<TodoListProps, 'id'>) => {
-  try {
-    // 1. API呼び出し
-    const result = await apiRequest('/api/todos', 'POST', newTodo);
-    // 2. 成功時のローカル状態更新
-    setTodos((prevTodos) => [...prevTodos, result]);
-  } catch (error) {
-    // エラーハンドリング
-    setError(error.message);
-    throw error;
-  }
-};
+詳細な実装パターンについては、[@todoApp-submodule/docs/features/todo/hooks/useTodos.md](../../todoApp-submodule/docs/features/todo/hooks/useTodos.md#9-実際のデータ更新パターン)を参照してください。
 
-// 削除時の楽観的更新
-const deleteTodo = async (id: string) => {
-  // 削除対象を保存（ロールバック用）
-  const todoToDelete = todos.find((todo) => todo.id === id);
-
-  try {
-    // 1. 即座にUI更新（楽観的更新）
-    setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
-    // 2. API呼び出し
-    await apiRequest('/api/todos', 'DELETE', { id });
-  } catch (error) {
-    // 3. エラー時はロールバック
-    if (todoToDelete) {
-      setTodos((prevTodos) => [...prevTodos, todoToDelete]);
-    }
-    setError(error.message);
-    throw error;
-  }
-};
-```
+- **Todo追加パターン**: サーバーサイドタイムスタンプ生成とローカル状態更新
+- **Todo編集パターン**: サーバーサイドupdateTime生成と楽観的更新
+- **Todo削除パターン**: 楽観的更新とエラー時のロールバック処理
 
 ### useSWR使用箇所
 
-```typescript
-// TodoWrapper.tsx - 初期データ取得のみ
-const { data, error, isLoading } = useSWR<DataProps>(
-  '/api/dashboards',
-  fetcher,
-  {
-    revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    suspense: false,
-    shouldRetryOnError: false,
-  },
-);
+詳細なuseSWRの使用パターンについては、[@todoApp-submodule/docs/features/todo/templates/TodoWrapper.md](../../todoApp-submodule/docs/features/todo/templates/TodoWrapper.md#51-useswr使用パターン)を参照してください。
 
-// データ取得完了後、TodoProviderに初期データを渡す
-if (isLoading || !data || !data.contents) return <TodosLoading />;
-if (error) return <ErrorDisplay message={error.message} />;
-
-const { contents } = data;
-const { todos, lists } = contents;
-
-<TodoProvider initialTodos={todos} initialLists={lists}>
-  <Box>
-    <PushContainer />
-    <MainContainer />
-  </Box>
-</TodoProvider>
-```
+- **使用箇所**: TodoWrapperコンポーネントでの初期データ取得のみ
+- **役割**: サーバーからのTodo・リストデータ取得とContext初期化
+- **制約**: 初期データ取得後は、useSWRではなくuseStateベースの状態管理を使用
 
 ## テスト要件
 

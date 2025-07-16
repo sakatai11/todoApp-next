@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Button, Box, Typography, TextField } from '@mui/material';
 import { ModalPropType } from '@/types/components';
-import { jstFormattedDate } from '@/features/utils/dateUtils';
+import { jstFormattedDate, getTime } from '@/features/utils/dateUtils';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import StatusPullList from '@/features/todo/components/elements/Status/StatusPullList';
@@ -62,7 +62,7 @@ const EditModal = React.memo(
                 paddingBottom="8px"
                 display="block"
               >
-                編集日時：{jstFormattedDate(todo.updateTime.toMillis())}
+                編集日時：{jstFormattedDate(getTime(todo.updateTime))}
               </Typography>
             )}
             <TextField
