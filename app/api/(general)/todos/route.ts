@@ -81,6 +81,13 @@ export async function PUT(req: Request) {
           const updatedDoc = await todosCollection.doc(id).get();
           const updatedTodo = updatedDoc.data();
 
+          if (!updatedTodo) {
+            return NextResponse.json(
+              { error: 'Updated document not found' },
+              { status: 404 },
+            );
+          }
+
           return NextResponse.json({ id, ...updatedTodo }, { status: 200 });
         }
 

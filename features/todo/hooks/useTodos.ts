@@ -166,7 +166,9 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
           // client
           setTodos((prevTodos: TodoListProps[]) => {
             const updatedTodos = prevTodos.map((todo) =>
-              todo.id === editId ? (result as TodoListProps) : todo,
+              todo.id === editId
+                ? ({ ...todo, ...result } as TodoListProps)
+                : todo,
             );
             return updatedTodos.sort((a, b) => {
               return getTime(b.createdTime) - getTime(a.createdTime);
