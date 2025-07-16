@@ -135,9 +135,9 @@ export async function PUT(req: Request) {
 }
 
 /**
-* Deletes a todo item for the authenticated user. * 認証されたユーザーのtodoアイテムを削除します。
+* 認証されたユーザーのtodoアイテムを削除します。
 *
-* Requires the `id` of the todo item to delete. Returns a success message on completion, and error responses if the ID is missing or deletion fails. * 削除するtodoアイテムの`id`が必要です。完了時に成功メッセージを返し、IDが不足している場合または削除に失敗した場合はエラーレスポンスを返します。
+* 削除するtodoアイテムの`id`が必要です。完了時に成功メッセージを返し、IDが不足している場合または削除に失敗した場合はエラーレスポンスを返します。
 */
 export async function DELETE(req: Request) {
   return withAuthenticatedUser<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
