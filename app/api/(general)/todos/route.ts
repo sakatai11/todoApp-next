@@ -6,10 +6,10 @@ import { TodoResponse } from '@/types/todos';
 import { Timestamp } from 'firebase-admin/firestore';
 
 /**
- * Creates a new todo item for the authenticated user.
- *
- * Expects `text` and `status` fields in the request body. Returns the created todo item with its generated ID and timestamps on success. Responds with an error if required fields are missing or if creation fails.
- */
+* 認証されたユーザーに対して新しいtodoアイテムを作成します。
+*
+* リクエストボディに`text`と`status`フィールドを期待します。成功時に生成されたIDとタイムスタンプを含む作成されたtodoアイテムを返します。必須フィールドが不足している場合または作成に失敗した場合はエラーを応答します。
+*/
 export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
     req,
