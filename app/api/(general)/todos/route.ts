@@ -5,6 +5,11 @@ import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { TodoResponse } from '@/types/todos';
 import { Timestamp } from 'firebase-admin/firestore';
 
+/**
+* 認証されたユーザーに対して新しいtodoアイテムを作成します。
+*
+* リクエストボディに`text`と`status`フィールドを期待します。成功時に生成されたIDとタイムスタンプを含む作成されたtodoアイテムを返します。必須フィールドが不足している場合または作成に失敗した場合はエラーを応答します。
+*/
 export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
     req,
@@ -49,6 +54,11 @@ export async function POST(req: Request) {
   );
 }
 
+/**
+ * 認証されたユーザーのtodoアイテムの更新を処理します。
+ *
+ * `bool`フィールドの切り替え、`text`と`status`の更新（`updateTime`の自動更新を含む）、または複数のtodoのステータスの一括更新をサポートします。完了時に更新されたtodoまたは成功メッセージを返し、ペイロードが無効または更新に失敗した場合はエラーレスポンスを返します。
+ */
 export async function PUT(req: Request) {
   return withAuthenticatedUser<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
     req,
@@ -124,6 +134,11 @@ export async function PUT(req: Request) {
   );
 }
 
+/**
+* 認証されたユーザーのtodoアイテムを削除します。
+*
+* 削除するtodoアイテムの`id`が必要です。完了時に成功メッセージを返し、IDが不足している場合または削除に失敗した場合はエラーレスポンスを返します。
+*/
 export async function DELETE(req: Request) {
   return withAuthenticatedUser<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
     req,
