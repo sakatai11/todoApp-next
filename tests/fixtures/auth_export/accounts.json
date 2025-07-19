@@ -1,0 +1,41 @@
+{
+  "kind": "identitytoolkit#DownloadAccountResponse",
+  "users": [
+    {
+      "localId": "test-user-1",
+      "email": "test@example.com",
+      "emailVerified": true,
+      "disabled": false,
+      "customAttributes": "{\"role\":\"user\"}",
+      "providerUserInfo": [
+        {
+          "providerId": "password",
+          "email": "test@example.com",
+          "federatedId": "test@example.com",
+          "rawId": "test@example.com"
+        }
+      ],
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "lastLoginAt": "2024-01-01T00:00:00.000Z",
+      "lastRefreshAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "localId": "test-admin-1",
+      "email": "admin@example.com",
+      "emailVerified": true,
+      "disabled": false,
+      "customAttributes": "{\"role\":\"admin\"}",
+      "providerUserInfo": [
+        {
+          "providerId": "password",
+          "email": "admin@example.com",
+          "federatedId": "admin@example.com",
+          "rawId": "admin@example.com"
+        }
+      ],
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "lastLoginAt": "2024-01-01T00:00:00.000Z",
+      "lastRefreshAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}

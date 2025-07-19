@@ -1,4 +1,4 @@
-import { TodoPayload } from '@/types/todos';
+import { TodoPayload, TodoListProps } from '@/types/todos';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { withAuthenticatedUser } from '@/app/libs/withAuth';
@@ -6,14 +6,57 @@ import { TodoResponse } from '@/types/todos';
 import { Timestamp } from 'firebase-admin/firestore';
 
 /**
-* 認証されたユーザーに対して新しいtodoアイテムを作成します。
-*
-* リクエストボディに`text`と`status`フィールドを期待します。成功時に生成されたIDとタイムスタンプを含む作成されたtodoアイテムを返します。必須フィールドが不足している場合または作成に失敗した場合はエラーを応答します。
-*/
+ * 認証されたユーザーのtodoリストを取得します。
+ *
+ * ユーザーのFirestoreドキュメントからtodoアイテムのリストを取得し、必要に応じて変換を行って返します。認証が失敗した場合や取得に失敗した場合はエラーレスポンスを返します。
+ */
+export async function GET(req: Request) {
+  return withAuthenticatedUser<
+    undefined,
+    { todos: TodoListProps[] } | { error: string }
+  >(req, async (uid) => {
+    try {
+      const todosSnapshot = await adminDB
+        .collection('users')
+        .doc(uid)
+        .collection('todos')
+        .get();
+
+      const todos: TodoListProps[] = todosSnapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as TodoListProps,
+      );
+
+      return NextResponse.json({ todos }, { status: 200 });
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+      return NextResponse.json(
+        { error: 'Error fetching todos' },
+        { status: 500 },
+      );
+    }
+  });
+}
+
+/**
+ * 認証されたユーザーに対して新しいtodoアイテムを作成します。
+ *
+ * リクエストボディに`text`と`status`フィールドを期待します。成功時に生成されたIDとタイムスタンプを含む作成されたtodoアイテムを返します。必須フィールドが不足している場合または作成に失敗した場合はエラーを応答します。
+ */
 export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
     req,
     async (uid, body) => {
+      if (!body) {
+        return NextResponse.json(
+          { error: 'Request body is required' },
+          { status: 400 },
+        );
+      }
+
       const { text, status } = body;
 
       if (text && status) {
@@ -35,7 +78,7 @@ export async function POST(req: Request) {
 
           return NextResponse.json(
             { id: docRef.id, ...newTodo },
-            { status: 200 },
+            { status: 201 },
           );
         } catch (error) {
           console.error('Error add todo:', error);
@@ -63,6 +106,13 @@ export async function PUT(req: Request) {
   return withAuthenticatedUser<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
     req,
     async (uid, payload) => {
+      if (!payload) {
+        return NextResponse.json(
+          { error: 'Request body is payload' },
+          { status: 400 },
+        );
+      }
+
       const todosCollection = adminDB
         .collection('users')
         .doc(uid)
@@ -81,11 +131,17 @@ export async function PUT(req: Request) {
           const { id, text, status } = payload;
           const currentTime = Timestamp.now();
 
-          await todosCollection.doc(id).update({
+          const updateData: {
+            updateTime: Timestamp;
+            text: string;
+            status: string;
+          } = {
             updateTime: currentTime,
             text,
             status,
-          });
+          };
+
+          await todosCollection.doc(id).update(updateData);
 
           // 更新されたドキュメントを取得してレスポンスを返す
           const updatedDoc = await todosCollection.doc(id).get();
@@ -98,7 +154,9 @@ export async function PUT(req: Request) {
             );
           }
 
-          return NextResponse.json({ id, ...updatedTodo }, { status: 200 });
+          const responseData = { id, ...updatedTodo };
+
+          return NextResponse.json(responseData, { status: 200 });
         }
 
         if (payload.type === 'restatus') {
@@ -135,15 +193,19 @@ export async function PUT(req: Request) {
 }
 
 /**
-* 認証されたユーザーのtodoアイテムを削除します。
-*
-* 削除するtodoアイテムの`id`が必要です。完了時に成功メッセージを返し、IDが不足している場合または削除に失敗した場合はエラーレスポンスを返します。
-*/
+ * 認証されたユーザーのtodoアイテムを削除します。
+ *
+ * 削除するtodoアイテムの`id`が必要です。完了時に成功メッセージを返し、IDが不足している場合または削除に失敗した場合はエラーレスポンスを返します。
+ */
 export async function DELETE(req: Request) {
   return withAuthenticatedUser<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
     req,
-    async (uid, { id }) => {
+    async (uid, body) => {
+      console.log('DELETE request - uid:', uid, 'body:', body);
+
+      const id = body?.id;
       if (!id) {
+        console.log('DELETE error: id is missing');
         return NextResponse.json(
           { error: 'TodoDelete is required' },
           { status: 400 },

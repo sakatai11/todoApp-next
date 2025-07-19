@@ -1,0 +1,219 @@
+/**
+ * Todo API統合テスト
+ * Firebase EmulatorとNext.js APIを使用した統合テスト
+ */
+
+import { describe, it, expect, beforeEach } from 'vitest';
+import { initializeTestDatabase, clearTestData } from '@/tests/setup-db';
+import { TodoListProps } from '@/types/todos';
+
+// APIテスト用のヘルパー関数
+const apiRequest = async (
+  method: string,
+  endpoint: string,
+  body?: unknown,
+  headers?: Record<string, string>,
+) => {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  const response = await fetch(`${baseUrl}/api${endpoint}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  return {
+    status: response.status,
+    data: response.headers.get('content-type')?.includes('application/json')
+      ? await response.json()
+      : await response.text(),
+  };
+};
+
+describe('Todo API 統合テスト', () => {
+  beforeEach(async () => {
+    await clearTestData();
+    await initializeTestDatabase();
+  });
+
+  describe('GET /api/(general)/todos', () => {
+    it('認証されたユーザーのTodoリストを正常に取得する', async () => {
+      // テスト用の認証ヘッダー（実際の実装に合わせて調整）
+      const authHeaders = {
+        Authorization: 'Bearer test-token',
+        'X-User-ID': 'test-user-1',
+      };
+
+      const response = await apiRequest(
+        'GET',
+        '/todos',
+        undefined,
+        authHeaders,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
+      expect(Array.isArray(response.data.todos)).toBe(true);
+      expect(response.data.todos.length).toBeGreaterThan(0);
+    });
+
+    it('未認証ユーザーは401エラーを受け取る', async () => {
+      const response = await apiRequest('GET', '/todos');
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('POST /api/(general)/todos', () => {
+    it('新しいTodoを正常に作成する', async () => {
+      const authHeaders = {
+        Authorization: 'Bearer test-token',
+        'X-User-ID': 'test-user-1',
+      };
+
+      const newTodo = {
+        text: '統合テスト用の新しいTodo',
+        status: 'todo',
+        category: 'todo',
+        isPinned: false,
+      };
+
+      const response = await apiRequest('POST', '/todos', newTodo, authHeaders);
+
+      expect(response.status).toBe(201);
+      expect(response.data.text).toBe(newTodo.text);
+      expect(response.data.status).toBe(newTodo.status);
+      expect(response.data.id).toBeDefined();
+      expect(response.data.createdTime).toBeDefined();
+    });
+
+    it('無効なデータで400エラーを返す', async () => {
+      const authHeaders = {
+        Authorization: 'Bearer test-token',
+        'X-User-ID': 'test-user-1',
+      };
+
+      const invalidTodo = {
+        // textフィールドが欠けている
+        status: 'todo',
+        category: 'todo',
+      };
+
+      const response = await apiRequest(
+        'POST',
+        '/todos',
+        invalidTodo,
+        authHeaders,
+      );
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('PUT /api/(general)/todos', () => {
+    it('既存のTodoを正常に更新する', async () => {
+      const authHeaders = {
+        Authorization: 'Bearer test-token',
+        'X-User-ID': 'test-user-1',
+      };
+
+      // まずTodoを取得して既存のIDを確認
+      const getTodosResponse = await apiRequest(
+        'GET',
+        '/todos',
+        undefined,
+        authHeaders,
+      );
+      const existingTodo = getTodosResponse.data.todos[0];
+
+      const updatedTodo = {
+        id: existingTodo.id,
+        text: '更新されたTodoテキスト',
+        status: 'done',
+        category: 'done',
+        isPinned: true,
+      };
+
+      const response = await apiRequest(
+        'PUT',
+        '/todos',
+        updatedTodo,
+        authHeaders,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.data.text).toBe(updatedTodo.text);
+      expect(response.data.status).toBe(updatedTodo.status);
+      expect(response.data.isPinned).toBe(true);
+    });
+  });
+
+  describe('DELETE /api/(general)/todos', () => {
+    it('既存のTodoを正常に削除する', async () => {
+      const authHeaders = {
+        Authorization: 'Bearer test-token',
+        'X-User-ID': 'test-user-1',
+      };
+
+      // まずTodoを取得して既存のIDを確認
+      const getTodosResponse = await apiRequest(
+        'GET',
+        '/todos',
+        undefined,
+        authHeaders,
+      );
+      const existingTodo = getTodosResponse.data.todos[0];
+
+      const response = await apiRequest(
+        'DELETE',
+        `/todos?id=${existingTodo.id}`,
+        undefined,
+        authHeaders,
+      );
+
+      expect(response.status).toBe(200);
+
+      // 削除されたことを確認
+      const verifyResponse = await apiRequest(
+        'GET',
+        '/todos',
+        undefined,
+        authHeaders,
+      );
+      const remainingTodos = verifyResponse.data.todos.filter(
+        (todo: TodoListProps) => todo.id === existingTodo.id,
+      );
+      expect(remainingTodos.length).toBe(0);
+    });
+  });
+});
+
+describe('Lists API 統合テスト', () => {
+  beforeEach(async () => {
+    await clearTestData();
+    await initializeTestDatabase();
+  });
+
+  describe('GET /api/(general)/lists', () => {
+    it('認証されたユーザーのリストを正常に取得する', async () => {
+      const authHeaders = {
+        Authorization: 'Bearer test-token',
+        'X-User-ID': 'test-user-1',
+      };
+
+      const response = await apiRequest(
+        'GET',
+        '/lists',
+        undefined,
+        authHeaders,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
+      expect(Array.isArray(response.data.lists)).toBe(true);
+      expect(response.data.lists.length).toBe(3); // モックデータには3つのリストがある
+    });
+  });
+});

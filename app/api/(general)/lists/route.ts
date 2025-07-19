@@ -1,12 +1,56 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
-import { ListPayload, ListResponse } from '@/types/lists';
+import { ListPayload, ListResponse, StatusListProps } from '@/types/lists';
 import { NextResponse } from 'next/server';
 import { withAuthenticatedUser } from '@/app/libs/withAuth';
+
+/**
+ * 認証されたユーザーのリストを取得します。
+ *
+ * ユーザーのFirestoreドキュメントからリストアイテムのリストを取得し、番号順でソートして返します。認証が失敗した場合や取得に失敗した場合はエラーレスポンスを返します。
+ */
+export async function GET(req: Request) {
+  return withAuthenticatedUser<
+    undefined,
+    { lists: StatusListProps[] } | { error: string }
+  >(req, async (uid) => {
+    try {
+      const listsSnapshot = await adminDB
+        .collection('users')
+        .doc(uid)
+        .collection('lists')
+        .orderBy('number', 'asc')
+        .get();
+
+      const lists: StatusListProps[] = listsSnapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as StatusListProps,
+      );
+
+      return NextResponse.json({ lists }, { status: 200 });
+    } catch (error) {
+      console.error('Error fetching lists:', error);
+      return NextResponse.json(
+        { error: 'Error fetching lists' },
+        { status: 500 },
+      );
+    }
+  });
+}
 
 export async function POST(req: Request) {
   return withAuthenticatedUser<ListPayload<'POST'>, ListResponse<'POST'>>(
     req,
     async (uid, body) => {
+      if (!body) {
+        return NextResponse.json(
+          { error: 'Request body is required' },
+          { status: 400 },
+        );
+      }
+
       const { category, number } = body;
 
       if (!category || !number) {
@@ -29,7 +73,7 @@ export async function POST(req: Request) {
           .add(newList);
         return NextResponse.json(
           { id: docRef.id, ...newList },
-          { status: 200 },
+          { status: 201 },
         );
       } catch (error) {
         console.error('Error add list:', error);
@@ -46,6 +90,13 @@ export async function PUT(req: Request) {
   return withAuthenticatedUser<ListPayload<'PUT'>, ListResponse<'PUT'>>(
     req,
     async (uid, payload) => {
+      if (!payload) {
+        return NextResponse.json(
+          { error: 'Request body is payload' },
+          { status: 400 },
+        );
+      }
+
       try {
         const listsCollection = adminDB
           .collection('users')
@@ -133,7 +184,7 @@ export async function DELETE(req: Request) {
   return withAuthenticatedUser<ListPayload<'DELETE'>, ListResponse<'DELETE'>>(
     req,
     async (uid, body) => {
-      const { id } = body;
+      const id = body?.id;
 
       if (!id) {
         return NextResponse.json(

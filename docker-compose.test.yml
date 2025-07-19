@@ -1,0 +1,79 @@
+services:
+  # Firebase Emulatorサービス（テスト専用）
+  firebase-emulator-test:
+    image: node:18-alpine
+    ports:
+      - '4001:4000'  # Emulator UI (開発と分離)
+      - '8081:8080'  # Firestore (開発と分離)
+      - '9100:9099'  # Auth (開発と分離)
+    volumes:
+      - .:/workspace
+      - ./tests/fixtures:/workspace/tests/fixtures
+    working_dir: /workspace
+    command: >
+      sh -c "
+        apk add --no-cache openjdk11-jre curl &&
+        npm install -g firebase-tools &&
+        firebase emulators:start --project=todoapp-test --config=firebase.test.json --only=firestore,auth,ui --import=./tests/fixtures --export-on-exit=./tests/fixtures
+      "
+    environment:
+      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Next.jsアプリ（テスト用）
+  nextjs-test:
+    build: .
+    ports:
+      - '3001:3000'  # 開発サーバーと分離
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
+      - NEXT_PUBLIC_EMULATOR_MODE=true
+    depends_on:
+      firebase-emulator-test:
+        condition: service_healthy
+
+  # E2Eテスト実行用コンテナ
+  e2e-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - PLAYWRIGHT_BASE_URL=http://nextjs-test:3000
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
+    depends_on:
+      - nextjs-test
+      - firebase-emulator-test
+    profiles:
+      - test  # プロファイルを使用してオプションで実行
+
+  # ITテスト実行用コンテナ
+  integration-test:
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
+    depends_on:
+      firebase-emulator-test:
+        condition: service_healthy
+    command: npm run test:integration
+    profiles:
+      - test  # プロファイルを使用してオプションで実行
