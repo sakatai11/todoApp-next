@@ -12,11 +12,13 @@ import {
   mockUser,
 } from '../todoApp-submodule/mocks/data';
 
-// Firebase Admin SDKの初期化（エミュレーター用）
+// Firebase Admin SDKの初期化（Docker Emulator専用）
 if (getApps().length === 0) {
-  // エミュレーター環境では認証情報は不要
-  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8081';
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9100';
+  // Docker環境でのFirebase Emulator接続専用
+  console.log(`🔗 Firebase接続先: ${process.env.FIRESTORE_EMULATOR_HOST}`);
+  console.log(
+    `🔑 認証モード: Emulator (${process.env.FIREBASE_AUTH_EMULATOR_HOST})`,
+  );
 
   initializeApp({
     projectId: 'todoapp-test',

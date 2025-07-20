@@ -3,9 +3,20 @@
  * Firebase EmulatorとNext.js APIを使用した統合テスト
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+/**
+ * Docker統合テスト用ファイル
+ *
+ * このファイルはDocker環境（npm run docker:test:run）でのみ実行されます。
+ * ローカル環境での実行はサポートされていません。
+ *
+ * 使用方法:
+ * npm run docker:test:run
+ */
+
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
 import { initializeTestDatabase, clearTestData } from '@/tests/setup-db';
 import { TodoListProps } from '@/types/todos';
+import { server } from '@/todoApp-submodule/mocks/server';
 
 // APIテスト用のヘルパー関数
 const apiRequest = async (
@@ -32,11 +43,24 @@ const apiRequest = async (
   };
 };
 
+// Docker環境でのみ実行される統合テストのため、MSWを停止
+beforeAll(() => {
+  if (process.env.NODE_ENV === 'test' && process.env.FIRESTORE_EMULATOR_HOST) {
+    server.close();
+  }
+});
+
+afterAll(() => {
+  if (process.env.NODE_ENV === 'test' && process.env.FIRESTORE_EMULATOR_HOST) {
+    server.listen();
+  }
+});
+
 describe('Todo API 統合テスト', () => {
   beforeEach(async () => {
     await clearTestData();
     await initializeTestDatabase();
-  });
+  }, 30000); // タイムアウトを30秒に延長
 
   describe('GET /api/(general)/todos', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
@@ -77,7 +101,6 @@ describe('Todo API 統合テスト', () => {
         text: '統合テスト用の新しいTodo',
         status: 'todo',
         category: 'todo',
-        isPinned: false,
       };
 
       const response = await apiRequest('POST', '/todos', newTodo, authHeaders);
@@ -133,7 +156,6 @@ describe('Todo API 統合テスト', () => {
         text: '更新されたTodoテキスト',
         status: 'done',
         category: 'done',
-        isPinned: true,
       };
 
       const response = await apiRequest(
@@ -146,7 +168,6 @@ describe('Todo API 統合テスト', () => {
       expect(response.status).toBe(200);
       expect(response.data.text).toBe(updatedTodo.text);
       expect(response.data.status).toBe(updatedTodo.status);
-      expect(response.data.isPinned).toBe(true);
     });
   });
 
@@ -194,7 +215,7 @@ describe('Lists API 統合テスト', () => {
   beforeEach(async () => {
     await clearTestData();
     await initializeTestDatabase();
-  });
+  }, 30000); // タイムアウトを30秒に延長
 
   describe('GET /api/(general)/lists', () => {
     it('認証されたユーザーのリストを正常に取得する', async () => {

@@ -1,4 +1,7 @@
 {
+  "projects": {
+    "default": "todoapp-test"
+  },
   "firestore": {
     "database": "(default)",
     "location": "asia-northeast1",

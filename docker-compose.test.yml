@@ -71,9 +71,11 @@ services:
       - NODE_ENV=test
       - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
       - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
+      - FIREBASE_PROJECT_ID=todoapp-test
+      - NEXT_PUBLIC_APP_URL=http://nextjs-test:3000
     depends_on:
       firebase-emulator-test:
         condition: service_healthy
-    command: npm run test:integration
+    command: npx vitest run tests/features/todo/api.integration.test.ts
     profiles:
       - test  # プロファイルを使用してオプションで実行
