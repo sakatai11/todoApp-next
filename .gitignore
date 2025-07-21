@@ -51,3 +51,6 @@ CLAUDE.local.md
 
 # MSW generated file
 public/mockServiceWorker.js
+
+# Firebase Emulator Data (generated)
+firebase-emulator-data/
