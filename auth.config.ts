@@ -79,19 +79,22 @@ export const authConfig = {
           try {
             console.log(token.lastRefresh);
             console.log('リフレッシュトークンを取得します');
-            const refreshResponse = await fetch(
-              `${process.env.NEXTAUTH_URL}/api/auth/refresh`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  uid: token.sub,
-                  email: token.email,
-                }),
+            // Docker環境では内部ネットワークを使用
+            const baseUrl =
+              process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
+                ? 'http://localhost:3000' // Docker内部ネットワーク
+                : process.env.NEXTAUTH_URL;
+
+            const refreshResponse = await fetch(`${baseUrl}/api/auth/refresh`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
               },
-            );
+              body: JSON.stringify({
+                uid: token.sub,
+                email: token.email,
+              }),
+            });
 
             if (refreshResponse.ok) {
               const { customToken } = await refreshResponse.json();

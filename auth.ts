@@ -36,21 +36,24 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         }
 
         try {
-          const res = await fetch(
-            `${process.env.NEXTAUTH_URL}/api/auth/server-login`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, password }),
-            },
-          );
+          // Docker環境では内部ネットワークを使用
+          const baseUrl =
+            process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
+              ? 'http://localhost:3000' // Docker内部ネットワーク
+              : process.env.NEXTAUTH_URL;
+
+          const res = await fetch(`${baseUrl}/api/auth/server-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
 
           if (!res.ok) {
             throw new Error('ログインに失敗しました');
           }
 
-          const { customToken, decodedToken, tokenExpiry, userRole } = await res.json();
-          
+          const { customToken, decodedToken, tokenExpiry, userRole } =
+            await res.json();
           console.log('token:', customToken);
           return {
             id: decodedToken.uid,
