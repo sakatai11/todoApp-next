@@ -5,10 +5,11 @@
   "firestore": {
     "database": "(default)",
     "location": "asia-northeast1",
-    "rules": "firestore.rules",
+    "rules": "firestore.test.rules",
     "indexes": "firestore.indexes.json"
   },
   "emulators": {
+    "singleProjectMode": true,
     "auth": {
       "port": 9099,
       "host": "0.0.0.0"
@@ -21,6 +22,9 @@
       "enabled": true,
       "port": 4000,
       "host": "0.0.0.0"
+    },
+    "export": {
+      "path": "./firebase-emulator-data"
     }
   }
 }

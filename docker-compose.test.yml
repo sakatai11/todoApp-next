@@ -3,24 +3,34 @@ services:
   firebase-emulator-test:
     image: node:18-alpine
     ports:
-      - '4001:4000'  # Emulator UI (開発と分離)
-      - '8081:8080'  # Firestore (開発と分離)
-      - '9100:9099'  # Auth (開発と分離)
+      - '4000:4000' # Emulator UI (localhost:4000)
+      - '8081:8080' # Firestore (開発と分離)
+      - '9100:9099' # Auth (開発と分離)
     volumes:
       - .:/workspace
-      - ./tests/fixtures:/workspace/tests/fixtures
+      - ./firebase-emulator-data:/workspace/firebase-emulator-data
     working_dir: /workspace
     command: >
       sh -c "
         apk add --no-cache openjdk11-jre curl &&
         npm install -g firebase-tools &&
-        firebase emulators:start --project=todoapp-test --config=firebase.test.json --only=firestore,auth,ui --import=./tests/fixtures --export-on-exit=./tests/fixtures
+        firebase emulators:start --project=todoapp-test --config=firebase.test.json --only=firestore,auth,ui --export-on-exit=./firebase-emulator-data --import=./firebase-emulator-data &
+        sleep 30 &&
+        until curl -s http://localhost:9099/identitytoolkit.googleapis.com/v1/projects/todoapp-test/config?key=fake-api-key > /dev/null; do sleep 2; done &&
+        node scripts/init-firebase-data.mjs &&
+        wait
       "
     environment:
       - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
       - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099
+      # 本番データ取得設定（オプション - 実際のプロジェクトIDと認証情報に置き換えてください）
+      - USE_PRODUCTION_DATA=true
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_ADMIN_PRIVATE_KEY=${FIREBASE_ADMIN_PRIVATE_KEY}
+      - FIREBASE_ADMIN_CLIENT_EMAIL=${FIREBASE_ADMIN_CLIENT_EMAIL}
+      # テストアカウントのメールアドレスはコード内で定義
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:4000']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -29,15 +39,27 @@ services:
   nextjs-test:
     build: .
     ports:
-      - '3001:3000'  # 開発サーバーと分離
+      - '3001:3000' # 開発サーバーと分離
     volumes:
       - .:/app
       - /app/node_modules
     environment:
       - NODE_ENV=test
+      - NEXT_PUBLIC_API_MOCKING=disabled
       - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
       - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
       - NEXT_PUBLIC_EMULATOR_MODE=true
+      - NEXTAUTH_SECRET=test-secret-for-docker-testing
+      - NEXTAUTH_URL=http://localhost:3001
+      - NEXT_PUBLIC_TEST_USER_UID=test-user-1
+      - NEXT_PUBLIC_TEST_ADMIN_UID=test-admin-1
+      - FIREBASE_PROJECT_ID=todoapp-test
+      # 本番データ取得設定（オプション - 実際のプロジェクトIDと認証情報に置き換えてください）
+      - USE_PRODUCTION_DATA=true
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_ADMIN_PRIVATE_KEY=${FIREBASE_ADMIN_PRIVATE_KEY}
+      - FIREBASE_ADMIN_CLIENT_EMAIL=${FIREBASE_ADMIN_CLIENT_EMAIL}
+      # テストアカウントのメールアドレスはコード内で定義
     depends_on:
       firebase-emulator-test:
         condition: service_healthy
@@ -59,7 +81,7 @@ services:
       - nextjs-test
       - firebase-emulator-test
     profiles:
-      - test  # プロファイルを使用してオプションで実行
+      - test # プロファイルを使用してオプションで実行
 
   # ITテスト実行用コンテナ
   integration-test:
@@ -76,6 +98,8 @@ services:
     depends_on:
       firebase-emulator-test:
         condition: service_healthy
-    command: npx vitest run tests/features/todo/api.integration.test.ts
+      nextjs-test:
+        condition: service_started
+    command: npx vitest run tests/features/todo/api.integration.test.ts --config vitest.integration.config.ts
     profiles:
-      - test  # プロファイルを使用してオプションで実行
+      - test # プロファイルを使用してオプションで実行
