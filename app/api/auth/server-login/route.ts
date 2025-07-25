@@ -62,19 +62,26 @@ export async function POST(req: Request) {
     const { adminAuth, adminDB } = firebaseAdmin;
 
     // Firebase Auth REST APIを使ってサーバー側で認証（パスワード検証）
-    const firebaseApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-    const res = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          returnSecureToken: true,
-        }),
-      },
-    );
+    const isEmulatorMode =
+      process.env.FIREBASE_AUTH_EMULATOR_HOST ||
+      process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true';
+    const firebaseApiKey =
+      process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'fake-api-key';
+
+    // Emulator環境とプロダクション環境でURLを切り替え
+    const authUrl = isEmulatorMode
+      ? `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`
+      : `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`;
+
+    const res = await fetch(authUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        password,
+        returnSecureToken: true,
+      }),
+    });
 
     if (!res.ok) {
       const error = await res.json();
@@ -97,8 +104,23 @@ export async function POST(req: Request) {
     try {
       const userDoc = await adminDB.collection('users').doc(uid).get();
       userRole = userDoc.data()?.role;
+
+      // Emulator環境でユーザーロールが存在しない場合のデフォルト値設定
+      if (!userRole && isEmulatorMode) {
+        userRole = email?.includes('admin') ? 'admin' : 'user';
+        console.log(
+          `Emulator mode: Setting default role '${userRole}' for ${email}`,
+        );
+      }
     } catch (e) {
       console.error('Error fetching user role:', e);
+      // Emulator環境でのフォールバック
+      if (isEmulatorMode) {
+        userRole = email?.includes('admin') ? 'admin' : 'user';
+        console.log(
+          `Emulator mode fallback: Setting role '${userRole}' for ${email}`,
+        );
+      }
     }
 
     const response = { decodedToken, customToken, tokenExpiry, userRole };

@@ -32,29 +32,16 @@ export async function withAuthenticatedUser<T, R>(
 
     // GETリクエストではボディを読み取らない
     if (req.method !== 'GET') {
-      if (req.method === 'DELETE') {
-        // DELETEリクエストのクエリパラメータから id を取得
-        try {
-          const url = new URL(req.url);
-          const id = url.searchParams.get('id');
-          if (id) {
-            body = { id } as T;
-          }
-          console.log('DELETE request parsed - id:', id);
-        } catch (error) {
-          console.error('Error parsing DELETE URL:', error);
-        }
-      } else {
-        // POST/PUTなどのリクエストではJSONボディを解析
-        const clonedReq = req.clone();
-        const contentType = clonedReq.headers.get('content-type');
+      // POST/PUT/DELETEリクエストではJSONボディを解析
+      const clonedReq = req.clone();
+      const contentType = clonedReq.headers.get('content-type');
 
-        if (contentType?.includes('application/json')) {
-          try {
-            body = await clonedReq.json();
-          } catch (error) {
-            console.error('Error parsing JSON body:', error);
-          }
+      if (contentType?.includes('application/json')) {
+        try {
+          body = await clonedReq.json();
+          console.log(`${req.method} request parsed - body:`, body);
+        } catch (error) {
+          console.error('Error parsing JSON body:', error);
         }
       }
     }

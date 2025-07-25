@@ -14,6 +14,7 @@ let firebaseAdminApp;
 const isEmulatorMode =
   process.env.NODE_ENV === 'test' ||
   process.env.FIRESTORE_EMULATOR_HOST ||
+  process.env.FIREBASE_AUTH_EMULATOR_HOST ||
   process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true';
 
 if (getApps().length > 0) {
@@ -21,6 +22,20 @@ if (getApps().length > 0) {
 } else if (isEmulatorMode) {
   // エミュレーター環境での初期化（認証情報不要）
   console.log('Firebase Admin: エミュレーターモードで初期化中...');
+  console.log('環境変数確認:');
+  console.log(
+    '- FIRESTORE_EMULATOR_HOST:',
+    process.env.FIRESTORE_EMULATOR_HOST,
+  );
+  console.log(
+    '- FIREBASE_AUTH_EMULATOR_HOST:',
+    process.env.FIREBASE_AUTH_EMULATOR_HOST,
+  );
+  console.log(
+    '- NEXT_PUBLIC_EMULATOR_MODE:',
+    process.env.NEXT_PUBLIC_EMULATOR_MODE,
+  );
+
   firebaseAdminApp = initializeApp({
     projectId: process.env.FIREBASE_PROJECT_ID || 'todoapp-test',
   });
