@@ -6,7 +6,7 @@
 import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
-import { TEST_ACCOUNTS } from '@/todoApp-submodule/mocks/data/master/firebase/export_my_data';
+import { TEST_ACCOUNTS } from '@/todoApp-submodule/mocks/data/master/firebase/export_test_data';
 
 // Firebase Admin SDKの初期化（Docker Emulator専用）
 if (getApps().length === 0) {

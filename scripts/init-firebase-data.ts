@@ -14,7 +14,7 @@ import {
   fetchTestDbTodoDataByUserId,
   fetchTestDbListDataByUserId,
 } from '@/scripts/helpers/testDbDataFetcher';
-import { TEST_ACCOUNTS } from '@/todoApp-submodule/mocks/data/master/firebase/export_my_data';
+import { TEST_ACCOUNTS } from '@/todoApp-submodule/mocks/data/master/firebase/export_test_data';
 
 // Firebase Admin SDKの初期化
 if (process.env.FIRESTORE_EMULATOR_HOST) {

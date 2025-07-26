@@ -8,7 +8,7 @@ import {
   EXPORTED_USERS,
   getTodosByUserId,
   getListsByUserId,
-} from '@/todoApp-submodule/mocks/data/master/firebase/export_my_data';
+} from '@/todoApp-submodule/mocks/data/master/firebase/export_test_data';
 import { UserData } from '@/types/auth/authData';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
