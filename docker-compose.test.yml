@@ -4,7 +4,7 @@ services:
     image: node:18-alpine
     ports:
       - '4000:4000' # Emulator UI (localhost:4000)
-      - '8081:8080' # Firestore (開発と分離)
+      - '8090:8080' # Firestore (開発と分離)
       - '9100:9099' # Auth (開発と分離)
     volumes:
       - .:/workspace
@@ -21,7 +21,7 @@ services:
         wait
       "
     environment:
-      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
+      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8090
       - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099
       # ローカルテストデータ使用設定
       - USE_TEST_DB_DATA=true
@@ -36,18 +36,18 @@ services:
   nextjs-test:
     build: .
     ports:
-      - '3001:3000' # 開発サーバーと分離
+      - '3002:3000' # 開発サーバーと分離
     volumes:
       - .:/app
       - /app/node_modules
     environment:
       - NODE_ENV=test
       - NEXT_PUBLIC_API_MOCKING=disabled
-      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8090
       - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
       - NEXT_PUBLIC_EMULATOR_MODE=true
       - NEXTAUTH_SECRET=test-secret-for-docker-testing
-      - NEXTAUTH_URL=http://localhost:3001
+      - NEXTAUTH_URL=http://localhost:3002
       - NEXT_PUBLIC_TEST_USER_UID=test-user-1
       - NEXT_PUBLIC_TEST_ADMIN_UID=test-admin-1
       - FIREBASE_PROJECT_ID=todoapp-test
@@ -69,7 +69,7 @@ services:
     environment:
       - NODE_ENV=test
       - PLAYWRIGHT_BASE_URL=http://nextjs-test:3000
-      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8090
       - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
     depends_on:
       - nextjs-test
@@ -85,7 +85,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=test
-      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8090
       - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
       - FIREBASE_PROJECT_ID=todoapp-test
       - NEXT_PUBLIC_APP_URL=http://nextjs-test:3000

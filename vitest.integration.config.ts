@@ -14,7 +14,7 @@ export default defineConfig({
     hookTimeout: 30000, // フックタイムアウトも30秒に設定
     env: {
       // Firebase Emulator用環境変数
-      FIRESTORE_EMULATOR_HOST: 'localhost:8081',
+      FIRESTORE_EMULATOR_HOST: 'localhost:8090',
       FIREBASE_AUTH_EMULATOR_HOST: 'localhost:9100',
       NEXT_PUBLIC_EMULATOR_MODE: 'true',
       GCLOUD_PROJECT: 'todoapp-test',
