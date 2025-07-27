@@ -1,5 +1,5 @@
 import { FullConfig } from '@playwright/test';
-import { clearTestData } from '../setup-db';
+import { clearTestData } from '@/scripts/cleanup-db';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function globalTeardown(config: FullConfig) {
