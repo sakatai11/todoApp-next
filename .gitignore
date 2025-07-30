@@ -47,7 +47,9 @@ next-env.d.ts
 firebase.json
 firestore.indexes.json
 firestore.rules
+firestore.test.rules
 CLAUDE.local.md
+.github
 
 # MSW generated file
 public/mockServiceWorker.js
