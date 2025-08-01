@@ -50,6 +50,8 @@ firestore.rules
 firestore.test.rules
 CLAUDE.local.md
 .github
+.serena
+.claude
 
 # MSW generated file
 public/mockServiceWorker.js
