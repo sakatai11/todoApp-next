@@ -1,22 +1,31 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+// テスト用認証情報
+const TEST_EMAIL = process.env.E2E_TEST_EMAIL || 'test@example.com';
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'testpassword123';
+
+// ログインヘルパー関数
+async function loginUser(page: Page) {
+  await page.goto('/signin');
+  await page.fill('[data-testid="email-input"]', TEST_EMAIL);
+  await page.fill('[data-testid="password-input"]', TEST_PASSWORD);
+  await page.click('[data-testid="login-button"]');
+
+  // Todoページへの遷移を確認
+  await expect(page).toHaveURL(/.*todo/);
+  await expect(page.locator('[data-testid="todo-list"]')).toBeVisible();
+}
 
 test.describe('Todo管理フロー', () => {
   test.beforeEach(async ({ page }) => {
-    // テスト前にログインページに移動
-    await page.goto('/signin');
+    // 各テスト前にログインを実行
+    await loginUser(page);
   });
 
   test('ユーザーログイン〜Todo作成〜編集〜削除の一連のフロー', async ({
     page,
   }) => {
-    // ログイン
-    await page.fill('[data-testid="email-input"]', 'test@example.com');
-    await page.fill('[data-testid="password-input"]', 'testpassword123');
-    await page.click('[data-testid="login-button"]');
-
-    // Todoページへの遷移を確認
-    await expect(page).toHaveURL(/.*todo/);
-    await expect(page.locator('[data-testid="todo-list"]')).toBeVisible();
+    // ログインは beforeEach で実行済み
 
     // 新しいTodoの作成
     const newTodoText = 'E2Eテストで作成されたTodo';
@@ -62,13 +71,7 @@ test.describe('Todo管理フロー', () => {
   });
 
   test('ドラッグ&ドロップでTodoの並び替え', async ({ page }) => {
-    // ログイン
-    await page.fill('[data-testid="email-input"]', 'test@example.com');
-    await page.fill('[data-testid="password-input"]', 'testpassword123');
-    await page.click('[data-testid="login-button"]');
-
-    // Todoページへの遷移を確認
-    await expect(page).toHaveURL(/.*todo/);
+    // ログインは beforeEach で実行済み
 
     // 2つのTodoを作成
     await page.fill('[data-testid="todo-input"]', '最初のTodo');
@@ -94,13 +97,7 @@ test.describe('Todo管理フロー', () => {
   });
 
   test('リスト管理機能', async ({ page }) => {
-    // ログイン
-    await page.fill('[data-testid="email-input"]', 'test@example.com');
-    await page.fill('[data-testid="password-input"]', 'testpassword123');
-    await page.click('[data-testid="login-button"]');
-
-    // Todoページへの遷移を確認
-    await expect(page).toHaveURL(/.*todo/);
+    // ログインは beforeEach で実行済み
 
     // 新しいリストの作成
     await page.click('[data-testid="add-list-button"]');
@@ -124,13 +121,7 @@ test.describe('Todo管理フロー', () => {
   });
 
   test('ピン留め機能', async ({ page }) => {
-    // ログイン
-    await page.fill('[data-testid="email-input"]', 'test@example.com');
-    await page.fill('[data-testid="password-input"]', 'testpassword123');
-    await page.click('[data-testid="login-button"]');
-
-    // Todoページへの遷移を確認
-    await expect(page).toHaveURL(/.*todo/);
+    // ログインは beforeEach で実行済み
 
     // 新しいTodoの作成
     await page.fill('[data-testid="todo-input"]', 'ピン留めテスト用Todo');
@@ -158,14 +149,7 @@ test.describe('Todo管理フロー', () => {
     // モバイルサイズに変更
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // ログイン
-    await page.goto('/signin');
-    await page.fill('[data-testid="email-input"]', 'test@example.com');
-    await page.fill('[data-testid="password-input"]', 'testpassword123');
-    await page.click('[data-testid="login-button"]');
-
-    // Todoページへの遷移を確認
-    await expect(page).toHaveURL(/.*todo/);
+    // ログインは beforeEach で実行済み（ページサイズ変更後も有効）
 
     // モバイル版のナビゲーションメニューの確認
     await page.click('[data-testid="mobile-menu-button"]');

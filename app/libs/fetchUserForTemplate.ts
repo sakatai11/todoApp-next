@@ -26,6 +26,10 @@ export async function fetchUserForTemplate() {
       ? 'http://localhost:3000' // Docker内部ネットワーク
       : process.env.NEXTAUTH_URL;
 
+  if (!baseUrl) {
+    throw new Error('Base URL is not configured');
+  }
+
   const response = await fetch(`${baseUrl}/api/user`, {
     cache: 'no-store',
     headers: {

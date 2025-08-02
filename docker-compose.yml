@@ -16,21 +16,16 @@ services:
       - firebase-emulator
 
   firebase-emulator:
-    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    build:
+      context: .
+      dockerfile: firebase-emulator.Dockerfile
     ports:
-      - '4000:4000'  # Emulator UI
-      - '8080:8080'  # Firestore
-      - '9099:9099'  # Auth
-      - '5001:5001'  # Functions (将来的に使用可能)
+      - '127.0.0.1:4000:4000'  # Emulator UI
+      - '127.0.0.1:8080:8080'  # Firestore
+      - '127.0.0.1:9099:9099'  # Auth
+      - '127.0.0.1:5001:5001'  # Functions (将来的に使用可能)
     volumes:
       - .:/workspace
-    working_dir: /workspace
-    command: >
-      sh -c "
-        apt-get update && apt-get install -y openjdk-11-jre-headless &&
-        gcloud components install firebase-cli --quiet &&
-        firebase emulators:start --project=todoapp-next-dev --only=firestore,auth,ui --host=0.0.0.0
-      "
     environment:
       - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
       - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099

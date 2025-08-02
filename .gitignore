@@ -50,6 +50,7 @@ firestore.rules
 firestore.test.rules
 CLAUDE.local.md
 .github
+# ↑CI/CD用ファイルをコミットする場合はコメントアウト
 .serena
 .claude
 

@@ -39,8 +39,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           // Docker環境では内部ネットワークを使用
           const baseUrl =
             process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
-              ? 'http://localhost:3000' // Docker内部ネットワーク
+              ? process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
               : process.env.NEXTAUTH_URL;
+
+          if (!baseUrl) {
+            throw new Error('Base URL is not configured for authentication');
+          }
 
           const res = await fetch(`${baseUrl}/api/auth/server-login`, {
             method: 'POST',
