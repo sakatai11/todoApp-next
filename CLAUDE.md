@@ -111,5 +111,6 @@ npm run msw:init        # Mock Service Workerを初期化
 - **テスト状況**: ✅ 全テスト成功、100%カバレッジ達成
 - **テストフレームワーク**: Vitest + React Testing Library + MSW
 - **テストコマンド**: `npm run test`（実行）/ `npm run test:coverage`（カバレッジ）/ `npm run test:ui`（UIモード）
+- **統合テスト**: `npm run docker:test:run` でDocker + Firebase Emulator環境テスト（ポート3002/4000/8090/9100）
 - **テスト品質**: ESLint準拠、表記統一ルール適用、サブモジュールデータ統一使用
 - **詳細ガイド**: `tests/CLAUDE.md`を参照（テスト結果詳細・設定・ガイドライン）

@@ -52,7 +52,7 @@ export const useDeleteList = ({
           // 非同期削除処理を並列で実行し、すべての結果を待つ
           await Promise.all(
             todosToDelete.map((todo) =>
-              apiRequest<TodoPayload<'DELETE', true>, TodoResponse<'DELETE'>>(
+              apiRequest<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
                 '/api/todos',
                 'DELETE',
                 {

@@ -1,0 +1,31 @@
+version: '3.9'
+services:
+  nextjs:
+    build: .
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_MOCKING=enabled
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator:9099
+    depends_on:
+      - firebase-emulator
+
+  firebase-emulator:
+    build:
+      context: .
+      dockerfile: firebase-emulator.Dockerfile
+    ports:
+      - '127.0.0.1:4000:4000'  # Emulator UI
+      - '127.0.0.1:8080:8080'  # Firestore
+      - '127.0.0.1:9099:9099'  # Auth
+      - '127.0.0.1:5001:5001'  # Functions (将来的に使用可能)
+    volumes:
+      - .:/workspace
+    environment:
+      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099

@@ -58,7 +58,7 @@ export const useUpdateStatusAndCategory = ({
         );
 
         // statusの更新
-        await apiRequest<TodoPayload<'PUT', true>, TodoResponse<'PUT'>>(
+        await apiRequest<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
           '/api/todos',
           'PUT',
           {
