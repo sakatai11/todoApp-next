@@ -1,8 +1,5 @@
 FROM mcr.microsoft.com/playwright:v1.54.1-focal
 
-# Node.jsのバージョンを指定
-ARG NODE_VERSION=20
-
 # 作業ディレクトリを設定
 WORKDIR /app
 

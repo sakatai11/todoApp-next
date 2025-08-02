@@ -21,21 +21,6 @@ if (getApps().length > 0) {
   firebaseAdminApp = getApps()[0];
 } else if (isEmulatorMode) {
   // エミュレーター環境での初期化（認証情報不要）
-  console.log('Firebase Admin: エミュレーターモードで初期化中...');
-  console.log('環境変数確認:');
-  console.log(
-    '- FIRESTORE_EMULATOR_HOST:',
-    process.env.FIRESTORE_EMULATOR_HOST,
-  );
-  console.log(
-    '- FIREBASE_AUTH_EMULATOR_HOST:',
-    process.env.FIREBASE_AUTH_EMULATOR_HOST,
-  );
-  console.log(
-    '- NEXT_PUBLIC_EMULATOR_MODE:',
-    process.env.NEXT_PUBLIC_EMULATOR_MODE,
-  );
-
   firebaseAdminApp = initializeApp({
     projectId: process.env.FIREBASE_PROJECT_ID || 'todoapp-test',
   });
@@ -55,10 +40,7 @@ if (getApps().length > 0) {
     throw new Error('FIREBASE_SERVICE_ACCOUNT is missing required fields');
   }
 
-  console.log('Firebase Admin: 本番モードで初期化中...');
   firebaseAdminApp = initializeApp({ credential: cert(serviceAccount) });
-  console.log('Client email being used:', serviceAccount.clientEmail);
-  console.log('Private key length:', serviceAccount.privateKey?.length || 0);
 }
 const adminDB = getFirestore(firebaseAdminApp);
 // サーバー側の認証インスタンスを取得

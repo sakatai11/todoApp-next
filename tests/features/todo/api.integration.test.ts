@@ -16,6 +16,15 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
 import { TodoListProps } from '@/types/todos';
 import { server } from '@/todoApp-submodule/mocks/server';
+import { clearTestData } from '@/scripts/cleanup-db';
+import { initializeApp, getApps } from 'firebase-admin/app';
+
+// Firebase Admin SDK初期化（テスト環境）
+if (getApps().length === 0 && process.env.FIRESTORE_EMULATOR_HOST) {
+  initializeApp({
+    projectId: 'todoapp-test',
+  });
+}
 
 // APIテスト用のヘルパー関数
 const apiRequest = async (
@@ -57,9 +66,20 @@ afterAll(() => {
 
 describe('Todo API 統合テスト', () => {
   beforeEach(async () => {
-    // データクリアは時間がかかるためスキップし、既存データでテスト
-    console.log('テストデータクリアをスキップ - 既存データでテスト実行');
-  }, 5000);
+    // テストの独立性を確保するため、各テスト前にデータをクリア
+    if (process.env.FIRESTORE_EMULATOR_HOST) {
+      try {
+        await clearTestData();
+        // データクリア後、初期データを再投入（必要に応じて）
+        // ここでは最小限のデータクリアのみ実行
+      } catch (error) {
+        console.warn(
+          'テストデータクリアに失敗しましたが、テストを継続します:',
+          error,
+        );
+      }
+    }
+  }, 10000); // タイムアウトを10秒に増加
 
   describe('GET /api/todos', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
@@ -213,9 +233,20 @@ describe('Todo API 統合テスト', () => {
 
 describe('Lists API 統合テスト', () => {
   beforeEach(async () => {
-    // データクリアは時間がかかるためスキップし、既存データでテスト
-    console.log('テストデータクリアをスキップ - 既存データでテスト実行');
-  }, 5000);
+    // テストの独立性を確保するため、各テスト前にデータをクリア
+    if (process.env.FIRESTORE_EMULATOR_HOST) {
+      try {
+        await clearTestData();
+        // データクリア後、初期データを再投入（必要に応じて）
+        // ここでは最小限のデータクリアのみ実行
+      } catch (error) {
+        console.warn(
+          'テストデータクリアに失敗しましたが、テストを継続します:',
+          error,
+        );
+      }
+    }
+  }, 10000); // タイムアウトを10秒に増加
 
   describe('GET /api/lists', () => {
     it('認証されたユーザーのリストを正常に取得する', async () => {

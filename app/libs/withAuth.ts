@@ -16,7 +16,6 @@ export async function withAuthenticatedUser<T, R>(
     process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
   ) {
     uid = req.headers.get('X-User-ID') || undefined;
-    console.log('Test auth mode - Using X-User-ID:', uid);
   } else {
     // 本番環境では通常のセッション認証
     const session = await auth();
@@ -39,7 +38,6 @@ export async function withAuthenticatedUser<T, R>(
       if (contentType?.includes('application/json')) {
         try {
           body = await clonedReq.json();
-          console.log(`${req.method} request parsed - body:`, body);
         } catch (error) {
           console.error('Error parsing JSON body:', error);
         }

@@ -15,7 +15,6 @@ services:
         apk add --no-cache openjdk11-jre curl &&
         npm install -g firebase-tools tsx &&
         firebase emulators:start --project=todoapp-test --config=firebase.test.json --only=firestore,auth,ui --export-on-exit=./firebase-emulator-data --import=./firebase-emulator-data &
-        sleep 30 &&
         until curl -s http://localhost:9099/identitytoolkit.googleapis.com/v1/projects/todoapp-test/config?key=fake-api-key > /dev/null; do sleep 2; done &&
         tsx scripts/init-firebase-data.ts &&
         wait

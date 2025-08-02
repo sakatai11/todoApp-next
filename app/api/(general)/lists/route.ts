@@ -92,7 +92,7 @@ export async function PUT(req: Request) {
     async (uid, payload) => {
       if (!payload) {
         return NextResponse.json(
-          { error: 'Request body is payload' },
+          { error: 'payload is required' },
           { status: 400 },
         );
       }

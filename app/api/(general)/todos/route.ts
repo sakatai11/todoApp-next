@@ -108,7 +108,7 @@ export async function PUT(req: Request) {
     async (uid, payload) => {
       if (!payload) {
         return NextResponse.json(
-          { error: 'Request body is payload' },
+          { error: 'Request payload is required' },
           { status: 400 },
         );
       }
@@ -201,11 +201,8 @@ export async function DELETE(req: Request) {
   return withAuthenticatedUser<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
     req,
     async (uid, body) => {
-      console.log('DELETE request - uid:', uid, 'body:', body);
-
       const id = body?.id;
       if (!id) {
-        console.log('DELETE error: id is missing');
         return NextResponse.json(
           { error: 'TodoDelete is required' },
           { status: 400 },

@@ -108,18 +108,12 @@ export async function POST(req: Request) {
       // Emulator環境でユーザーロールが存在しない場合のデフォルト値設定
       if (!userRole && isEmulatorMode) {
         userRole = email?.includes('admin') ? 'admin' : 'user';
-        console.log(
-          `Emulator mode: Setting default role '${userRole}' for ${email}`,
-        );
       }
     } catch (e) {
       console.error('Error fetching user role:', e);
       // Emulator環境でのフォールバック
       if (isEmulatorMode) {
         userRole = email?.includes('admin') ? 'admin' : 'user';
-        console.log(
-          `Emulator mode fallback: Setting role '${userRole}' for ${email}`,
-        );
       }
     }
 
