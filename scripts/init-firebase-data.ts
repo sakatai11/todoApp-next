@@ -74,9 +74,7 @@ async function createInitialData() {
           displayName: user.name,
           emailVerified: true,
         });
-        console.log(
-          `✅ ユーザー ${testAccount.email} が作成されました (password: ${testAccount.password})`,
-        );
+        console.log(`✅ ユーザー ${testAccount.email} が作成されました`);
         createdUsers.push(createdUser);
       } catch (error) {
         const firebaseError = error as { code?: string; message?: string };
