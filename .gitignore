@@ -59,3 +59,7 @@ public/mockServiceWorker.js
 
 # Firebase Emulator Data (generated)
 firebase-emulator-data/
+
+# Firebase Emulator Logs
+firebase-debug.log
+firestore-debug.log
