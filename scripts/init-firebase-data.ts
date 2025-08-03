@@ -15,6 +15,7 @@ import {
   fetchTestDbListDataByUserId,
 } from '@/scripts/helpers/testDbDataFetcher';
 import { TEST_ACCOUNTS } from '@/todoApp-submodule/mocks/data/master/firebase/export_test_data';
+import { DEV_ACCOUNTS } from '@/todoApp-submodule/mocks/data/master/firebase/export_dev_data';
 
 // Firebase Admin SDKの初期化
 if (process.env.FIRESTORE_EMULATOR_HOST) {
@@ -34,12 +35,15 @@ async function createInitialData() {
   try {
     console.log('📝 初期データ作成を開始...');
 
-    // テスト環境DBデータの取得
+    // データソース使用の確認
     if (!shouldUseTestDbData()) {
       throw new Error(
-        'テスト環境DBデータ使用が無効になっています。USE_TEST_DB_DATA=trueを設定してください。',
+        'データソース使用が無効になっています。USE_TEST_DB_DATA=trueまたはUSE_DEV_DB_DATA=trueを設定してください。',
       );
     }
+
+    const isDevMode = process.env.USE_DEV_DB_DATA === 'true';
+    const accountsToUse = isDevMode ? DEV_ACCOUNTS : TEST_ACCOUNTS;
 
     console.log('🔄 テスト環境DBからユーザーデータを取得中...');
     const users = await fetchTestDbUserData();
@@ -57,39 +61,39 @@ async function createInitialData() {
     console.log('👤 テストユーザーを作成中...');
     const createdUsers = [];
     for (const user of users) {
-      const testAccount = TEST_ACCOUNTS.find(
+      const userAccount = accountsToUse.find(
         (account) => account.email === user.email,
       );
 
-      if (!testAccount) {
-        console.warn(`⚠️ テストアカウント情報が見つかりません: ${user.email}`);
+      if (!userAccount) {
+        console.warn(`⚠️ アカウント情報が見つかりません: ${user.email}`);
         continue;
       }
 
       try {
         const createdUser = await auth.createUser({
           uid: user.id,
-          email: testAccount.email,
-          password: testAccount.password,
+          email: userAccount.email,
+          password: userAccount.password,
           displayName: user.name,
           emailVerified: true,
         });
-        console.log(`✅ ユーザー ${testAccount.email} が作成されました`);
+        console.log(`✅ ユーザー ${userAccount.email} が作成されました`);
         createdUsers.push(createdUser);
       } catch (error) {
         const firebaseError = error as { code?: string; message?: string };
         if (firebaseError.code === 'auth/uid-already-exists') {
-          console.log(`ℹ️ ユーザー ${testAccount.email} は既に存在します`);
+          console.log(`ℹ️ ユーザー ${userAccount.email} は既に存在します`);
         } else if (firebaseError.code === 'auth/email-already-exists') {
           console.log(
-            `ℹ️ メールアドレス ${testAccount.email} は既に使用されています`,
+            `ℹ️ メールアドレス ${userAccount.email} は既に使用されています`,
           );
         } else if (firebaseError.code === 'auth/weak-password') {
-          console.error(`❌ パスワードが弱すぎます: ${testAccount.email}`);
+          console.error(`❌ パスワードが弱すぎます: ${userAccount.email}`);
           throw error;
         } else {
           console.error(
-            `❌ ユーザー ${testAccount.email} の作成中にエラー (${firebaseError.code}):`,
+            `❌ ユーザー ${userAccount.email} の作成中にエラー (${firebaseError.code}):`,
             firebaseError.message || error,
           );
           throw error;

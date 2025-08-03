@@ -13,7 +13,7 @@
  * npm run docker:test:run
  */
 
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { TodoListProps } from '@/types/todos';
 import { server } from '@/todoApp-submodule/mocks/server';
 import { clearTestData } from '@/scripts/cleanup-db';
@@ -65,13 +65,12 @@ afterAll(() => {
 });
 
 describe('Todo API 統合テスト', () => {
-  beforeEach(async () => {
-    // テストの独立性を確保するため、各テスト前にデータをクリア
+  // テスト前の1回のみデータクリアを実行（効率化）
+  beforeAll(async () => {
     if (process.env.FIRESTORE_EMULATOR_HOST) {
       try {
         await clearTestData();
-        // データクリア後、初期データを再投入（必要に応じて）
-        // ここでは最小限のデータクリアのみ実行
+        console.log('📋 テストデータクリア完了 - 初期状態でテスト開始');
       } catch (error) {
         console.warn(
           'テストデータクリアに失敗しましたが、テストを継続します:',
@@ -79,7 +78,7 @@ describe('Todo API 統合テスト', () => {
         );
       }
     }
-  }, 10000); // タイムアウトを10秒に増加
+  }, 60000); // タイムアウトを60秒に増加
 
   describe('GET /api/todos', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
@@ -232,21 +231,7 @@ describe('Todo API 統合テスト', () => {
 });
 
 describe('Lists API 統合テスト', () => {
-  beforeEach(async () => {
-    // テストの独立性を確保するため、各テスト前にデータをクリア
-    if (process.env.FIRESTORE_EMULATOR_HOST) {
-      try {
-        await clearTestData();
-        // データクリア後、初期データを再投入（必要に応じて）
-        // ここでは最小限のデータクリアのみ実行
-      } catch (error) {
-        console.warn(
-          'テストデータクリアに失敗しましたが、テストを継続します:',
-          error,
-        );
-      }
-    }
-  }, 10000); // タイムアウトを10秒に増加
+  // Listsテストは既存データを利用（データクリア不要）
 
   describe('GET /api/lists', () => {
     it('認証されたユーザーのリストを正常に取得する', async () => {

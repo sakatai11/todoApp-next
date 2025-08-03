@@ -1,11 +1,11 @@
 {
   "projects": {
-    "default": "todoapp-test"
+    "default": "todoapp-next-dev"
   },
   "firestore": {
     "database": "(default)",
     "location": "asia-northeast1",
-    "rules": "firestore.test.rules",
+    "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
   "emulators": {
@@ -23,8 +23,8 @@
       "port": 4000,
       "host": "0.0.0.0"
     },
-    "hub": {
-      "port": 4400
+    "export": {
+      "path": "./firebase-emulator-data"
     }
   }
 }

@@ -9,6 +9,14 @@ import {
   getTodosByUserId,
   getListsByUserId,
 } from '@/todoApp-submodule/mocks/data/master/firebase/export_test_data';
+
+// 開発環境データのインポート
+import {
+  DEV_ACCOUNTS,
+  EXPORTED_USERS as DEV_EXPORTED_USERS,
+  getTodosByUserId as getDevTodosByUserId,
+  getListsByUserId as getDevListsByUserId,
+} from '@/todoApp-submodule/mocks/data/master/firebase/export_dev_data';
 import { UserData } from '@/types/auth/authData';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
@@ -18,11 +26,17 @@ import { StatusListProps } from '@/types/lists';
  */
 export async function fetchTestDbUserData(): Promise<UserData[]> {
   try {
-    console.log('📄 ローカルテストデータからユーザーデータを取得中...');
+    const dataSource = getDataSource();
+    console.log(
+      `📄 ${dataSource === 'dev' ? '開発' : 'テスト'}環境データからユーザーデータを取得中...`,
+    );
 
-    // TEST_ACCOUNTSで指定されたユーザーのみ返す
-    const filteredUsers = EXPORTED_USERS.filter((user) =>
-      TEST_ACCOUNTS.some((account) => account.email === user.email),
+    const accounts = getAccounts();
+    const users = getUsers();
+
+    // アカウント情報で指定されたユーザーのみ返す
+    const filteredUsers = users.filter((user) =>
+      accounts.some((account) => account.email === user.email),
     );
 
     console.log(`✅ ${filteredUsers.length}件のユーザーデータを取得しました`);
@@ -92,10 +106,54 @@ export async function fetchTestDbListData(): Promise<StatusListProps[]> {
 }
 
 /**
+ * 使用するデータソースを判定
+ */
+function getDataSource() {
+  if (process.env.USE_DEV_DB_DATA === 'true') {
+    return 'dev';
+  } else if (process.env.USE_TEST_DB_DATA === 'true') {
+    return 'test';
+  }
+  return null;
+}
+
+/**
+ * データソースに応じてアカウント情報を取得
+ */
+function getAccounts() {
+  const dataSource = getDataSource();
+  return dataSource === 'dev' ? DEV_ACCOUNTS : TEST_ACCOUNTS;
+}
+
+/**
+ * データソースに応じてユーザーデータを取得
+ */
+function getUsers() {
+  const dataSource = getDataSource();
+  return dataSource === 'dev' ? DEV_EXPORTED_USERS : EXPORTED_USERS;
+}
+
+/**
+ * データソースに応じてTodoデータ取得関数を取得
+ */
+function getTodosFunction() {
+  const dataSource = getDataSource();
+  return dataSource === 'dev' ? getDevTodosByUserId : getTodosByUserId;
+}
+
+/**
+ * データソースに応じてリストデータ取得関数を取得
+ */
+function getListsFunction() {
+  const dataSource = getDataSource();
+  return dataSource === 'dev' ? getDevListsByUserId : getListsByUserId;
+}
+
+/**
  * テスト環境DBデータを使用するかどうかの判定
  */
 export function shouldUseTestDbData(): boolean {
-  return process.env.USE_TEST_DB_DATA === 'true';
+  return getDataSource() !== null;
 }
 
 /**
@@ -107,7 +165,8 @@ export async function fetchTestDbTodoDataByUserId(
   try {
     console.log(`📄 ユーザーID: ${userId} のTodoデータを取得中...`);
 
-    const userTodos = getTodosByUserId(userId);
+    const getTodosFunc = getTodosFunction();
+    const userTodos = getTodosFunc(userId);
     console.log(`✅ ${userTodos.length}件のTodoデータを取得しました`);
     return userTodos;
   } catch (error) {
@@ -125,7 +184,8 @@ export async function fetchTestDbListDataByUserId(
   try {
     console.log(`📄 ユーザーID: ${userId} のリストデータを取得中...`);
 
-    const userLists = getListsByUserId(userId);
+    const getListsFunc = getListsFunction();
+    const userLists = getListsFunc(userId);
     console.log(`✅ ${userLists.length}件のリストデータを取得しました`);
     return userLists;
   } catch (error) {

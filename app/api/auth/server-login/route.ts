@@ -70,17 +70,25 @@ export async function POST(req: Request) {
 
     // Emulator環境とプロダクション環境でURLを切り替え
     const authUrl = isEmulatorMode
-      ? `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`
+      ? `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${firebaseApiKey}`
       : `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`;
+
+    const requestBody = isEmulatorMode
+      ? {
+          email,
+          password,
+          returnSecureToken: true,
+        }
+      : {
+          email,
+          password,
+          returnSecureToken: true,
+        };
 
     const res = await fetch(authUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        password,
-        returnSecureToken: true,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!res.ok) {

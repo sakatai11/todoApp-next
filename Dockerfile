@@ -1,6 +1,9 @@
 # Node.js公式の軽量イメージ
 FROM node:20-alpine
 
+# 必要なパッケージをインストール（health check用）
+RUN apk add --no-cache wget curl
+
 # 作業ディレクトリ作成
 WORKDIR /app
 

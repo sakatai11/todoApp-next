@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   nextjs:
     build: .
@@ -9,9 +8,16 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_MOCKING=enabled
+      - NEXT_PUBLIC_API_MOCKING=disabled
       - FIRESTORE_EMULATOR_HOST=firebase-emulator:8080
       - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator:9099
+      - NEXT_PUBLIC_EMULATOR_MODE=true
+      - NEXTAUTH_SECRET=dev-secret-for-docker
+      - NEXTAUTH_URL=http://localhost:3000
+      - FIREBASE_PROJECT_ID=todoapp-next-dev
+      - USE_DEV_DB_DATA=true
+      - NEXT_PUBLIC_TEST_USER_UID=dev-user-1
+      - NEXT_PUBLIC_TEST_ADMIN_UID=dev-admin-1
     depends_on:
       - firebase-emulator
 
@@ -29,3 +35,4 @@ services:
     environment:
       - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
       - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099
+      - USE_DEV_DB_DATA=true
