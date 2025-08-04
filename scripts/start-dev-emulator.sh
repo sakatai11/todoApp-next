@@ -1,10 +1,10 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Firebase Emulatorデータディレクトリの確認
 EXPORT_DIR="./firebase-emulator-data"
 
-if [ -d "$EXPORT_DIR" ] && [ "$(ls -A $EXPORT_DIR 2>/dev/null)" ]; then
+if [ -d "$EXPORT_DIR" ] && [ "$(ls -A "$EXPORT_DIR" 2>/dev/null)" ]; then
   echo "📁 既存のFirebase Emulatorデータが見つかりました"
   SKIP_INIT=true
   # 既存データをインポートして起動
@@ -18,7 +18,9 @@ fi
 EMULATOR_PID=$!
 
 # Auth Emulatorの準備完了を待機（タイムアウト付き）
-TIMEOUT=60
+TIMEOUT=${EMULATOR_TIMEOUT:-60}
+SLEEP_INTERVAL=${EMULATOR_SLEEP_INTERVAL:-2}
+ADDITIONAL_WAIT=${EMULATOR_ADDITIONAL_WAIT:-10}
 COUNTER=0
 until curl -s http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/projects/todoapp-next-dev/config?key=fake-api-key > /dev/null; do
   if [ $COUNTER -ge $TIMEOUT ]; then
@@ -27,12 +29,12 @@ until curl -s http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/projects/t
     exit 1
   fi
   echo "⏳ Waiting for Auth Emulator... ($COUNTER/$TIMEOUT)"
-  sleep 2
-  COUNTER=$((COUNTER + 2))
+  sleep $SLEEP_INTERVAL
+  COUNTER=$((COUNTER + SLEEP_INTERVAL))
 done
 
 # 追加待機時間
-sleep 10
+sleep $ADDITIONAL_WAIT
 
 # データ初期化実行（初回のみ）
 if [ "$SKIP_INIT" = false ]; then
