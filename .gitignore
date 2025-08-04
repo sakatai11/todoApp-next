@@ -9,6 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+/scripts
 
 # testing
 /coverage
@@ -45,11 +46,28 @@ next-env.d.ts
 .eslintcache
 .firebaserc
 firebase.json
+firebase.dev.json
+firebase.test.json
 firestore.indexes.json
 firestore.rules
-/docs
-/.clinerules.md
-/CLAUDE.md
+firestore.test.rules
+CLAUDE.local.md
+.github
+# ↑CI/CD用ファイルをコミットする場合はコメントアウト
+.serena
+.claude
 
 # MSW generated file
 public/mockServiceWorker.js
+
+# Firebase Emulator Data (generated)
+firebase-emulator-data/
+
+# Firebase Emulator Logs
+firebase-debug.log
+firestore-debug.log
+
+# Submodule
+todoApp-submodule
+
+/tests

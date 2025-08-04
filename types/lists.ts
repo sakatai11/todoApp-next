@@ -1,7 +1,7 @@
 import { DragEndEvent } from '@dnd-kit/core';
 import { BaseHookType } from '@/types/common';
 
-// todoデータの型
+// listデータの型
 export type StatusListProps = {
   id: string;
   category: string;
