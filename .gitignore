@@ -45,6 +45,8 @@ next-env.d.ts
 .eslintcache
 .firebaserc
 firebase.json
+firebase.dev.json
+firebase.test.json
 firestore.indexes.json
 firestore.rules
 firestore.test.rules
@@ -63,3 +65,6 @@ firebase-emulator-data/
 # Firebase Emulator Logs
 firebase-debug.log
 firestore-debug.log
+
+# Submodule
+todoApp-submodule
