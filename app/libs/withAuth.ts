@@ -6,18 +6,44 @@ import { auth } from '@/auth';
 // R: レスポンスデータの型
 export async function withAuthenticatedUser<T, R>(
   req: Request,
-  handler: (uid: string, body: T) => Promise<NextResponse<R>>,
+  handler: (uid: string, body?: T) => Promise<NextResponse<R>>,
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  let uid: string | undefined;
+
+  // テスト環境では X-User-ID ヘッダーから認証情報を取得
+  if (
+    process.env.NODE_ENV === 'test' ||
+    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
+  ) {
+    uid = req.headers.get('X-User-ID') || undefined;
+  } else {
+    // 本番環境では通常のセッション認証
+    const session = await auth();
+    uid = session?.user?.id;
+  }
+
+  if (!uid) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const uid = session.user.id;
-
   try {
-    const clonedReq = req.clone(); // reqパラメータからクローン
-    const body = await clonedReq.json();
+    let body: T | undefined;
+
+    // GETリクエストではボディを読み取らない
+    if (req.method !== 'GET') {
+      // POST/PUT/DELETEリクエストではJSONボディを解析
+      const clonedReq = req.clone();
+      const contentType = clonedReq.headers.get('content-type');
+
+      if (contentType?.includes('application/json')) {
+        try {
+          body = await clonedReq.json();
+        } catch (error) {
+          console.error('Error parsing JSON body:', error);
+        }
+      }
+    }
+
     return await handler(uid, body);
   } catch (error) {
     console.error('Error processing request:', error);

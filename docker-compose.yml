@@ -1,0 +1,38 @@
+services:
+  nextjs:
+    build: .
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_MOCKING=disabled
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator:9099
+      - NEXT_PUBLIC_EMULATOR_MODE=true
+      - NEXTAUTH_SECRET=dev-secret-for-docker
+      - NEXTAUTH_URL=http://localhost:3000
+      - FIREBASE_PROJECT_ID=todoapp-next-dev
+      - USE_DEV_DB_DATA=true
+      - NEXT_PUBLIC_TEST_USER_UID=dev-user-1
+      - NEXT_PUBLIC_TEST_ADMIN_UID=dev-admin-1
+    depends_on:
+      - firebase-emulator
+
+  firebase-emulator:
+    build:
+      context: .
+      dockerfile: firebase-emulator.Dockerfile
+    ports:
+      - '127.0.0.1:4000:4000'  # Emulator UI
+      - '127.0.0.1:8080:8080'  # Firestore
+      - '127.0.0.1:9099:9099'  # Auth
+      - '127.0.0.1:5001:5001'  # Functions (将来的に使用可能)
+    volumes:
+      - .:/workspace
+    environment:
+      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099
+      - USE_DEV_DB_DATA=true

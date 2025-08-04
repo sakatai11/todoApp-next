@@ -20,7 +20,17 @@ export async function fetchUserForTemplate() {
   const incomingHeaders = await headers();
   const cookieHeader = incomingHeaders.get('cookie') || '';
 
-  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/user`, {
+  // Docker環境では内部ネットワークを使用
+  const baseUrl =
+    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
+      ? 'http://localhost:3000' // Docker内部ネットワーク
+      : process.env.NEXTAUTH_URL;
+
+  if (!baseUrl) {
+    throw new Error('Base URL is not configured');
+  }
+
+  const response = await fetch(`${baseUrl}/api/user`, {
     cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',

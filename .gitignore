@@ -47,7 +47,19 @@ next-env.d.ts
 firebase.json
 firestore.indexes.json
 firestore.rules
+firestore.test.rules
 CLAUDE.local.md
+.github
+# ↑CI/CD用ファイルをコミットする場合はコメントアウト
+.serena
+.claude
 
 # MSW generated file
 public/mockServiceWorker.js
+
+# Firebase Emulator Data (generated)
+firebase-emulator-data/
+
+# Firebase Emulator Logs
+firebase-debug.log
+firestore-debug.log

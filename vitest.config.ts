@@ -9,7 +9,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
     include: ['**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist', '.next'],
+    exclude: [
+      'node_modules',
+      'dist',
+      '.next',
+      '**/*integration*.test.ts', // 統合テストを除外
+      '**/*integration*.spec.ts', // 統合テストを除外
+      'tests/e2e/**/*.spec.ts', // E2Eテストを除外
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

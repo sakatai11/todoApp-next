@@ -1,0 +1,18 @@
+# Firebase Emulator用カスタムDockerfile（開発環境）
+FROM node:20-alpine
+
+# 必要なパッケージをインストール
+RUN apk add --no-cache openjdk11-jre curl bash && \
+    npm install -g firebase-tools@13.5.1 tsx@4.7.0
+
+# 作業ディレクトリを設定
+WORKDIR /workspace
+
+# 全ファイルをコピー（スクリプトを含む）
+COPY . .
+
+# シェルスクリプトに実行権限を付与
+RUN chmod +x scripts/start-dev-emulator.sh
+
+# Firebase Emulatorを起動し、データ初期化を実行するコマンド
+CMD ["bash", "./scripts/start-dev-emulator.sh"]
