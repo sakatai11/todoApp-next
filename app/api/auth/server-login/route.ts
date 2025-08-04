@@ -93,7 +93,7 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const error = await res.json();
-      console.error('Firebase REST login error:', error);
+      console.error('server-login: Firebase REST login error:', error);
       return NextResponse.json({ error: '認証エラー' }, { status: 401 });
     }
 
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(validatedData);
   } catch (error) {
-    console.error('Error generating custom token:', error);
+    console.error('server-login: エラー発生:', error);
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 500 });
   }
 }
