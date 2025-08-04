@@ -55,13 +55,16 @@ export async function fetchTestDbTodoData(): Promise<TodoListProps[]> {
     console.log('📄 ローカルテストデータからTodoデータを取得中...');
 
     // 全ユーザーのTodoデータを取得
-    const filteredUsers = EXPORTED_USERS.filter((user) =>
-      TEST_ACCOUNTS.some((account) => account.email === user.email),
+    const accounts = getAccounts();
+    const users = getUsers();
+    const filteredUsers = users.filter((user) =>
+      accounts.some((account) => account.email === user.email),
     );
 
+    const getTodosFunc = getTodosFunction();
     const allTodos: TodoListProps[] = [];
     for (const user of filteredUsers) {
-      const userTodos = getTodosByUserId(user.id);
+      const userTodos = getTodosFunc(user.id);
       allTodos.push(...userTodos);
       console.log(
         `✅ ユーザー ${user.name} の${userTodos.length}件のTodoデータを取得`,
@@ -84,13 +87,16 @@ export async function fetchTestDbListData(): Promise<StatusListProps[]> {
     console.log('📄 ローカルテストデータからリストデータを取得中...');
 
     // 全ユーザーのリストデータを取得
-    const filteredUsers = EXPORTED_USERS.filter((user) =>
-      TEST_ACCOUNTS.some((account) => account.email === user.email),
+    const accounts = getAccounts();
+    const users = getUsers();
+    const filteredUsers = users.filter((user) =>
+      accounts.some((account) => account.email === user.email),
     );
 
+    const getListsFunc = getListsFunction();
     const allLists: StatusListProps[] = [];
     for (const user of filteredUsers) {
-      const userLists = getListsByUserId(user.id);
+      const userLists = getListsFunc(user.id);
       allLists.push(...userLists);
       console.log(
         `✅ ユーザー ${user.name} の${userLists.length}件のリストデータを取得`,
