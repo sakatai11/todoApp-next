@@ -1,4 +1,6 @@
-# プロジェクトメモリ - Todo アプリ開発ガイドライン
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 **必ず日本語で回答してください**
 
@@ -19,7 +21,25 @@ npm run lint            # ESLintを自動修正で実行
 npm run prettier        # Prettierでコードをフォーマット
 npm run format          # prettierとlintの両方を実行
 
-# テスト・モック
+# テスト
+npm run test            # テスト（watch mode）
+npm run test:run        # テスト一回実行
+npm run test:coverage   # カバレッジ付きテスト実行
+npm run test:ui         # Vitest UIモードでテスト実行
+npm run test:e2e        # Playwright E2Eテスト
+npm run test:e2e:ui     # Playwright UIモードでE2Eテスト
+
+# Docker統合テスト
+npm run docker:test     # Firebase Emulator環境起動
+npm run docker:test:run # 統合テスト実行（Firebase Emulator + tsx）
+npm run docker:test:down # Docker環境停止
+npm run docker:e2e:run  # E2Eテスト実行
+
+# Firebase Emulator
+npm run emulator:start  # 開発用Firebase Emulator起動
+npm run emulator:test   # テスト用Firebase Emulator起動
+
+# モック
 npm run msw:init        # Mock Service Workerを初期化
 ```
 
@@ -35,81 +55,68 @@ npm run msw:init        # Mock Service Workerを初期化
 - **テスト**: Vitest + React Testing Library + MSW
 - **モック**: MSW（Mock Service Worker）
 
-### 現在のディレクトリ構造
+### アーキテクチャ概要
 
-詳細なプロジェクト構造については、[@todoApp-submodule/docs/PRODUCTS.md](todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)を参照してください。
-
-### 認証フロー
-
-- カスタム認証プロバイダーを使用したNextAuth.js
-- サーバーサイドトークン検証用のFirebase Admin SDK
-- [@app/api/auth/server-login](/app/api/auth/server-login)経由でのカスタムトークン交換
-- ロールベースアクセス制御（admin/userロール）
-
-### データ管理
-
-- Todo状態管理用のReact Context（`TodoContext`）
-- サーバー状態管理とキャッシュ用のSWR
-- データベースとしてのFirebase Firestore
-- より良いUXのための楽観的更新
-
-### API構造
-
-- Next.jsルートグループ`()`を使用したグループ化されたルート
-- 管理者用と一般ユーザー用の分離されたAPI
-- バックエンド操作用のFirebase Admin SDK
-- リクエスト/レスポンスデータのZodバリデーション
+- **ディレクトリ構造**: フィーチャーベース設計（`features/`内で機能自己完結）
+- **ルーティング**: Next.js App Router + ルートグループ`()`による整理
+- **API構造**: 管理者用`(admin)/`、一般用`(general)/`、認証用`auth/`に分離
+- **詳細構造**: [@todoApp-submodule/docs/PRODUCTS.md](todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)参照
 
 ### 重要なプロジェクト注意事項
 
 - 本番環境ではTypeScriptビルドエラーを無視（`ignoreBuildErrors: true`）
 - 開発時のAPIモック用MSWを使用
 - キャッシュ制御ヘッダー付きのVercelデプロイ設定
-- 明確な関心の分離を持つフィーチャーベースアーキテクチャ
 
-## プロジェクト固有のガイドライン
+## 開発パターン
 
-### ディレクトリ構造ルール
+### フィーチャーベース開発
+- 新しい機能は`features/`内で自己完結させる
+- 共通コンポーネントは`features/shared/`に配置
+- テストファイルは対応する機能構造と同じ階層に配置
 
-- **フィーチャーベースアーキテクチャに従う**: 各機能は[@features/](/features/)ディレクトリ内で自己完結型にする
-- **App Routerの規約を使用**: Next.jsルートグループ`()`を使用して関連ルートをグループ化
-- **既存パターンを尊重**: 管理者ルートは[@app/(admin)/admin](</app/(admin)/admin>)、認証は[@app/(auth)](</app/(auth)>)、ダッシュボードは[@app/(dashboards)](</app/(dashboards)>)に配置
-- **API組織**: 機能別にAPIをグループ化 -`(admin)/`、`(general)/`、`auth/`
+### 認証フロー
+1. NextAuth.jsカスタムプロバイダーでログイン
+2. `/api/auth/server-login`でFirebase Custom Token取得
+3. Firebase Admin SDKでサーバーサイド検証
+4. Role-based access control (admin/user)
 
-### 認証実装
-
-- **NextAuth.js v5パターンを使用**: 既存のカスタム認証プロバイダー設定に従う
-- **Firebase統合**: サーバーサイド操作にFirebase Admin SDKを使用
-- **トークン処理**: トークン交換に既存の [@app/api/auth/server-login](/app/api/auth/server-login)エンドポイントを活用
-- **ロールベースアクセス**: admin/userロールの区別を維持
-
-### 状態管理パターン
-
-- **TodoContext**: Todo状態管理に既存のReact Contextを使用
-- **SWR統合**: サーバー状態管理とキャッシュにSWRを活用
-- **楽観的更新**: より良いユーザー体験のために楽観的UI更新を実装
-- **エラーハンドリング**: Contextプロバイダーの既存エラーハンドリングパターンに従う
-
-### コンポーネント開発
-
-- **Material-UI使用**: 既存のMUIコンポーネントパターンとテーマに従う
-- **Tailwind統合**: MUIと併用してユーティリティスタイリングにTailwindを使用
-- **ドラッグ＆ドロップ**: 既存の実装パターンに従って@dnd-kit/coreを使用
-- **フォームバリデーション**: 全てのフォームバリデーションにZodスキーマを使用
+### 状態管理
+- **Local State**: React Context（TodoContext）
+- **Server State**: SWR（データフェッチング・キャッシュ）
+- **楽観的更新**: UI即座反映による良好なUX
 
 ### API開発
+- **Admin API**: `app/api/(admin)/` - 管理者用操作
+- **General API**: `app/api/(general)/` - 一般ユーザー用操作
+- **Auth API**: `app/api/auth/` - 認証関連操作
+- **バリデーション**: 全てのAPIでZod必須
 
-- **グループ化されたルート**: 組織化にNext.jsルートグループを使用
-- **Firebase操作**: 全てのバックエンド操作にFirebase Admin SDKを使用
-- **リクエストバリデーション**: 全てのAPIリクエスト/レスポンスにZodバリデーションを実装
-- **エラーレスポンス**: 既存のエラーレスポンスパターンに従う
+### コンポーネント開発
+- **UI**: Material-UI（MUI）+ Tailwind CSS
+- **ドラッグ＆ドロップ**: @dnd-kit/core
+- **フォーム**: Zodスキーマでバリデーション
 
-### テストガイドライン
+### テスト環境
+- **Unit/Integration**: Vitest + React Testing Library + MSW
+- **E2E**: Playwright
+- **統合テスト**: `npm run docker:test:run`（Firebase Emulator + Docker）
 
-#### クイックリファレンス
+## テストガイドライン
 
-- **テストフレームワーク**: Vitest + React Testing Library + MSW
-- **テストコマンド**: `npm run test`（実行）/ `npm run test:coverage`（カバレッジ）/ `npm run test:ui`（UIモード）
-- **統合テスト**: `npm run docker:test:run` でDocker + Firebase Emulator環境テスト（ポート3002/4000/8080/9099）
-- **テスト品質**: ESLint準拠、表記統一ルール適用、サブモジュールデータ統一使用
-- **詳細ガイド**: [@tests/CLAUDE.md](tests/CLAUDE.md)を参照（テスト結果詳細・設定・ガイドライン）
+- **フレームワーク**: Vitest + React Testing Library + MSW + Playwright
+- **カバレッジ**: 100%達成済み（413テスト成功）
+- **統合テスト**: Docker + Firebase Emulator（ポート3002/4000/8080/9099）
+- **品質基準**: ESLint準拠、表記統一ルール、サブモジュールデータ統一
+- **詳細ガイド**: [@tests/CLAUDE.md](tests/CLAUDE.md)参照
+
+## 開発時の重要なルール
+
+### ディレクトリ構造
+- App Routerルートグループ`()`で機能別整理
+- 管理者: `app/(admin)/admin`、認証: `app/(auth)`、ダッシュボード: `app/(dashboards)`
+
+### コード品質
+- 既存パターンの踏襲（MUI + Tailwind、NextAuth.js v5、Firebase Admin SDK）
+- エラーハンドリングパターンの統一
+- Zodバリデーションの徹底
