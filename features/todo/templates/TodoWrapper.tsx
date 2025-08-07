@@ -10,11 +10,12 @@ import TodosLoading from '@/app/(dashboards)/loading';
 import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
 import { ErrorBoundary } from 'react-error-boundary';
 
-type DataProps = {
-  contents: {
-    todos: TodoListProps[];
-    lists: StatusListProps[];
-  };
+type TodoDataProps = {
+  todos: TodoListProps[];
+};
+
+type ListDataProps = {
+  lists: StatusListProps[];
 };
 
 const fetcher = async (url: string) => {
@@ -37,33 +38,49 @@ const baseUrl =
     : ''; // クライアント環境
 
 // APIエンドポイントのURL
-const apiUrl = `${baseUrl}/api/dashboards`;
+const todosApiUrl = `${baseUrl}/api/todos`;
+const listsApiUrl = `${baseUrl}/api/lists`;
 
 // 安全な事前読み込み（クライアントのみで実行されることを保証）
 if (typeof window !== 'undefined') {
-  preload(apiUrl, fetcher);
+  preload(todosApiUrl, fetcher);
+  preload(listsApiUrl, fetcher);
 }
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
-  const { data, error, isLoading } = useSWR<DataProps>(
-    '/api/dashboards',
-    fetcher,
-    {
-      revalidateOnMount: true,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      suspense: false,
-      shouldRetryOnError: false,
-    },
-  );
+  const {
+    data: todosData,
+    error: todosError,
+    isLoading: todosLoading,
+  } = useSWR<TodoDataProps>('/api/todos', fetcher, {
+    revalidateOnMount: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    suspense: false,
+    shouldRetryOnError: false,
+  });
 
-  if (isLoading || !data || !data.contents) return <TodosLoading />;
+  const {
+    data: listsData,
+    error: listsError,
+    isLoading: listsLoading,
+  } = useSWR<ListDataProps>('/api/lists', fetcher, {
+    revalidateOnMount: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    suspense: false,
+    shouldRetryOnError: false,
+  });
+
+  const isLoading = todosLoading || listsLoading;
+  const error = todosError || listsError;
+
+  if (isLoading || !todosData || !listsData) return <TodosLoading />;
   if (error) return <ErrorDisplay message={error.message} />;
 
-  // suspense:trueの場合、dataはneverになるのでnullチェック不要
-  const { contents } = data as DataProps;
-  const { todos, lists } = contents;
+  const { todos } = todosData;
+  const { lists } = listsData;
 
   return (
     <TodoProvider initialTodos={todos} initialLists={lists}>

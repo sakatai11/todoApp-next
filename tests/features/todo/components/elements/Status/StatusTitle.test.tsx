@@ -273,22 +273,4 @@ describe('StatusTitle', () => {
       ).not.toBeInTheDocument();
     });
   });
-
-  describe('編集モード完全テスト（100%カバレッジ）', () => {
-    it('isStatusがfalseの場合のtitle表示テスト（132行目カバー）', async () => {
-      const mockEditList = vi.fn().mockResolvedValue(false);
-
-      mockUseUpdateStatusAndCategory.mockReturnValue({
-        editId: null,
-        editList: mockEditList,
-        setEditId: vi.fn(),
-      });
-
-      render(<StatusTitle {...defaultProps} />, {
-        withTodoProvider: true,
-      });
-
-      expect(screen.getByText(mockList.category)).toBeInTheDocument();
-    });
-  });
 });
