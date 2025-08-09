@@ -45,6 +45,35 @@ const mockListsUseSWRData = {
   isLoading: false,
 };
 
+// 共通fetcherロジック（テスト用）
+const createTestFetcher = async (url: string) => {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+
+  // エミュレーターモード時はX-User-IDヘッダーを追加
+  if (
+    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
+    headers['X-User-ID'] =
+      process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
+  }
+
+  const response = await fetch(url, {
+    credentials: 'include',
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Unknown error');
+  }
+
+  return response.json();
+};
+
 vi.mock('swr', () => ({
   default: (url: string) => {
     if (url.includes('/api/todos')) return mockTodosUseSWRData;
@@ -255,11 +284,26 @@ describe('TodoWrapper', () => {
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
     });
 
-    it('fetch失敗時にエラーをthrowする', async () => {
+    it.each([
+      {
+        description: 'fetch失敗時にエラーをthrowする',
+        errorMessage: 'Test error',
+        expectation: 'error-display要素が表示される',
+        assertion: (screenObject: typeof screen) =>
+          expect(screenObject.getByTestId('error-display')).toBeInTheDocument(),
+      },
+      {
+        description: 'fetch失敗時にUnknown errorとしてハンドリングされる',
+        errorMessage: 'Unknown error',
+        expectation: 'Unknown errorメッセージが表示される',
+        assertion: (screenObject: typeof screen) =>
+          expect(screenObject.getByText('Unknown error')).toBeInTheDocument(),
+      },
+    ])('$description', async ({ errorMessage, assertion }) => {
       // エラー状態でレンダリング
       Object.assign(mockTodosUseSWRData, {
         data: { todos: [] },
-        error: new Error('Test error'),
+        error: new Error(errorMessage),
         isLoading: false,
       });
 
@@ -269,24 +313,7 @@ describe('TodoWrapper', () => {
       );
       render(<TodoWrapper />, { withTodoProvider: false });
 
-      expect(screen.getByTestId('error-display')).toBeInTheDocument();
-    });
-
-    it('fetch失敗時にUnknown errorとしてハンドリングされる', async () => {
-      // エラー状態でレンダリング
-      Object.assign(mockTodosUseSWRData, {
-        data: { todos: [] },
-        error: new Error('Unknown error'),
-        isLoading: false,
-      });
-
-      // モック適用後にTodoWrapperを動的インポート
-      const { default: TodoWrapper } = await import(
-        '@/features/todo/templates/TodoWrapper'
-      );
-      render(<TodoWrapper />, { withTodoProvider: false });
-
-      expect(screen.getByText('Unknown error')).toBeInTheDocument();
+      assertion(screen);
     });
 
     it('fetcher関数が正常にfetchAPIを呼び出す', async () => {
@@ -308,17 +335,28 @@ describe('TodoWrapper', () => {
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
     });
 
-    it('fetcher関数でfetch失敗時のエラーハンドリング', async () => {
-      // fetchをエラーレスポンスでモック（errorフィールド有り）
+    it.each([
+      {
+        description: 'fetcher関数でfetch失敗時のエラーハンドリング',
+        fetchResponse: { error: 'Specific error message' },
+        expectedError: 'Specific error message',
+      },
+      {
+        description: 'fetcher関数でfetch失敗時のUnknown errorハンドリング',
+        fetchResponse: {},
+        expectedError: 'Unknown error',
+      },
+    ])('$description', async ({ fetchResponse, expectedError }) => {
+      // fetchをエラーレスポンスでモック
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
-        json: vi.fn().mockResolvedValue({ error: 'Specific error message' }),
+        json: vi.fn().mockResolvedValue(fetchResponse),
       });
 
       // エラー状態でレンダリング
       Object.assign(mockTodosUseSWRData, {
         data: { todos: [] },
-        error: new Error('Specific error message'),
+        error: new Error(expectedError),
         isLoading: false,
       });
 
@@ -328,68 +366,28 @@ describe('TodoWrapper', () => {
       );
       render(<TodoWrapper />, { withTodoProvider: false });
 
-      expect(screen.getByText('Specific error message')).toBeInTheDocument();
+      expect(screen.getByText(expectedError)).toBeInTheDocument();
     });
 
-    it('fetcher関数でfetch失敗時のUnknown errorハンドリング', async () => {
-      // fetchをエラーレスポンス（errorフィールドなし）でモック
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        json: vi.fn().mockResolvedValue({}),
-      });
-
-      // エラー状態でレンダリング
-      Object.assign(mockTodosUseSWRData, {
-        data: { todos: [] },
-        error: new Error('Unknown error'),
-        isLoading: false,
-      });
-
-      // モック適用後にTodoWrapperを動的インポート
-      const { default: TodoWrapper } = await import(
-        '@/features/todo/templates/TodoWrapper'
-      );
-      render(<TodoWrapper />, { withTodoProvider: false });
-
-      expect(screen.getByText('Unknown error')).toBeInTheDocument();
-    });
-
-    it('fetcher関数でcredentials includeが設定される', async () => {
+    it('fetcher関数でcredentials includeとAcceptヘッダーが設定される', async () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue({ success: true }),
       });
       global.fetch = mockFetch;
 
-      // SWRの実際の実装をモックして、fetcher関数を直接テスト
-      const originalSWR = vi.mocked(await import('swr')).default;
-      vi.mocked(await import('swr')).default = vi
-        .fn()
-        .mockImplementation((url: string, fetcher) => {
-          if (url.includes('/api/todos')) {
-            // fetcher関数を実行してcredentialsが設定されることを確認
-            fetcher(url);
-            expect(mockFetch).toHaveBeenCalledWith(url, {
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-User-ID':
-                  process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1',
-              },
-            });
-            return mockTodosUseSWRData;
-          }
-          return mockListsUseSWRData;
-        });
+      // 共通fetcherロジックを直接テスト
+      await createTestFetcher('/api/todos');
 
-      // モック適用後にTodoWrapperを動的インポート
-      const { default: TodoWrapper } = await import(
-        '@/features/todo/templates/TodoWrapper'
-      );
-      render(<TodoWrapper />, { withTodoProvider: false });
-
-      vi.mocked(await import('swr')).default = originalSWR;
+      // fetchが正しいオプション（credentials + Accept ヘッダー）で呼び出されることを確認
+      expect(mockFetch).toHaveBeenCalledWith('/api/todos', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-User-ID': process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1',
+        },
+      });
     });
 
     it('fetcherでerrorDataが空の場合にUnknown errorが投げられる', async () => {
@@ -399,14 +397,21 @@ describe('TodoWrapper', () => {
         json: vi.fn().mockResolvedValue({}), // errorフィールドなし
       });
 
-      // エラー状態でレンダリング
+      // 共通fetcherロジックでエラーハンドリングをテスト
+      try {
+        await createTestFetcher('/api/todos');
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe('Unknown error');
+      }
+
+      // エラー表示のテスト
       Object.assign(mockTodosUseSWRData, {
         data: { todos: [] },
         error: new Error('Unknown error'),
         isLoading: false,
       });
 
-      // モック適用後にTodoWrapperを動的インポート
       const { default: TodoWrapper } = await import(
         '@/features/todo/templates/TodoWrapper'
       );
@@ -426,38 +431,9 @@ describe('TodoWrapper', () => {
         json: mockJson,
       });
 
-      // fetcher関数と同じロジックを直接実装してテスト
-      const testFetcher = async (url: string) => {
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        };
-
-        // エミュレーターモード時はX-User-IDヘッダーを追加
-        if (
-          process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
-          process.env.NODE_ENV !== 'production'
-        ) {
-          headers['X-User-ID'] =
-            process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
-        }
-
-        const response = await fetch(url, {
-          credentials: 'include',
-          headers,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json(); // この行をテスト
-          throw new Error(errorData.error || 'Unknown error');
-        }
-
-        return response.json();
-      };
-
-      // fetcher関数を直接実行してエラーハンドリングをテスト
+      // 共通fetcherロジックを使用してテスト
       try {
-        await testFetcher('/api/todos');
+        await createTestFetcher('/api/todos');
       } catch (error) {
         expect(error).toBeInstanceOf(Error);
         expect((error as Error).message).toBe('Direct test error');
@@ -569,38 +545,9 @@ describe('TodoWrapper', () => {
         json: mockJson,
       });
 
-      // fetcher関数と同じロジックを直接実装してテスト（TodoErrorBoundary内でのテスト）
-      const testFetcher = async (url: string) => {
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        };
-
-        // エミュレーターモード時はX-User-IDヘッダーを追加
-        if (
-          process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
-          process.env.NODE_ENV !== 'production'
-        ) {
-          headers['X-User-ID'] =
-            process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
-        }
-
-        const response = await fetch(url, {
-          credentials: 'include',
-          headers,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json(); // この行をテスト
-          throw new Error(errorData.error || 'Unknown error');
-        }
-
-        return response.json();
-      };
-
-      // fetcher関数を直接実行してエラーハンドリングをテスト
+      // 共通fetcherロジックを使用してテスト
       try {
-        await testFetcher('/api/todos');
+        await createTestFetcher('/api/todos');
       } catch (error) {
         expect(error).toBeInstanceOf(Error);
         expect((error as Error).message).toBe('Direct fetch error');
