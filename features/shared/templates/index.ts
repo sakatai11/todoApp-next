@@ -1,3 +1,3 @@
-import HeaderWrapper from '@/features/shared/templates/HeaderWrapper';
+import ClientWrapper from '@/features/shared/templates/ClientWrapper';
 
-export { HeaderWrapper };
+export { ClientWrapper };

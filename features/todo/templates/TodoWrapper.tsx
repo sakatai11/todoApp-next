@@ -19,8 +19,21 @@ type ListDataProps = {
 };
 
 const fetcher = async (url: string) => {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // 開発・テスト環境ではX-User-IDヘッダーを追加
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    headers['X-User-ID'] = 'dev-user-1'; // Docker環境・テスト環境用のテストユーザーID
+  }
+
   const response = await fetch(url, {
     credentials: 'include', // セッション情報を送信
+    headers,
   });
 
   if (!response.ok) {
