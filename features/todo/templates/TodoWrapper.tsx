@@ -24,11 +24,9 @@ const fetcher = async (url: string) => {
   };
 
   // 開発・テスト環境ではX-User-IDヘッダーを追加
-  if (
-    process.env.NODE_ENV === 'development' ||
-    process.env.NODE_ENV === 'test'
-  ) {
-    headers['X-User-ID'] = 'dev-user-1'; // Docker環境・テスト環境用のテストユーザーID
+  if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+    headers['X-User-ID'] =
+      process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
   }
 
   const response = await fetch(url, {

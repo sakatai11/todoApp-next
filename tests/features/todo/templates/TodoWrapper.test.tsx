@@ -67,6 +67,10 @@ describe('TodoWrapper', () => {
     mockListsUseSWRData.error = null;
     mockListsUseSWRData.isLoading = false;
 
+    // テスト環境でエミュレーターモードを有効化
+    vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
+    vi.stubEnv('NEXT_PUBLIC_TEST_USER_UID', 'test-user-1');
+
     vi.clearAllMocks();
   });
 
@@ -309,6 +313,11 @@ describe('TodoWrapper', () => {
             fetcher('/api/todos');
             expect(mockFetch).toHaveBeenCalledWith('/api/todos', {
               credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID':
+                  process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1',
+              },
             });
             return mockTodosUseSWRData;
           }
@@ -352,8 +361,19 @@ describe('TodoWrapper', () => {
 
       // fetcher関数と同じロジックを直接実装してテスト
       const testFetcher = async (url: string) => {
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        // エミュレーターモード時はX-User-IDヘッダーを追加
+        if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+          headers['X-User-ID'] =
+            process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
+        }
+
         const response = await fetch(url, {
           credentials: 'include',
+          headers,
         });
 
         if (!response.ok) {
@@ -464,8 +484,19 @@ describe('TodoWrapper', () => {
 
       // fetcher関数と同じロジックを直接実装してテスト（TodoErrorBoundary内でのテスト）
       const testFetcher = async (url: string) => {
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        // エミュレーターモード時はX-User-IDヘッダーを追加
+        if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+          headers['X-User-ID'] =
+            process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
+        }
+
         const response = await fetch(url, {
           credentials: 'include',
+          headers,
         });
 
         if (!response.ok) {
