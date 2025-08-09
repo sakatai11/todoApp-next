@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**必ず日本語で回答してください**
+## 必ず日本語で回答してください
 
 ## プロジェクト概要
 
@@ -71,33 +71,39 @@ npm run msw:init        # Mock Service Workerを初期化
 ## 開発パターン
 
 ### フィーチャーベース開発
+
 - 新しい機能は`features/`内で自己完結させる
 - 共通コンポーネントは`features/shared/`に配置
 - テストファイルは対応する機能構造と同じ階層に配置
 
 ### 認証フロー
+
 1. NextAuth.jsカスタムプロバイダーでログイン
 2. `/api/auth/server-login`でFirebase Custom Token取得
 3. Firebase Admin SDKでサーバーサイド検証
 4. Role-based access control (admin/user)
 
 ### 状態管理
+
 - **Local State**: React Context（TodoContext）
 - **Server State**: SWR（データフェッチング・キャッシュ）
 - **楽観的更新**: UI即座反映による良好なUX
 
 ### API開発
+
 - **Admin API**: `app/api/(admin)/` - 管理者用操作
 - **General API**: `app/api/(general)/` - 一般ユーザー用操作
 - **Auth API**: `app/api/auth/` - 認証関連操作
 - **バリデーション**: 全てのAPIでZod必須
 
 ### コンポーネント開発
+
 - **UI**: Material-UI（MUI）+ Tailwind CSS
 - **ドラッグ＆ドロップ**: @dnd-kit/core
 - **フォーム**: Zodスキーマでバリデーション
 
 ### テスト環境
+
 - **Unit/Integration**: Vitest + React Testing Library + MSW
 - **E2E**: Playwright
 - **統合テスト**: `npm run docker:test:run`（Firebase Emulator + Docker）
@@ -113,10 +119,12 @@ npm run msw:init        # Mock Service Workerを初期化
 ## 開発時の重要なルール
 
 ### ディレクトリ構造
+
 - App Routerルートグループ`()`で機能別整理
 - 管理者: `app/(admin)/admin`、認証: `app/(auth)`、ダッシュボード: `app/(dashboards)`
 
 ### コード品質
+
 - 既存パターンの踏襲（MUI + Tailwind、NextAuth.js v5、Firebase Admin SDK）
 - エラーハンドリングパターンの統一
 - Zodバリデーションの徹底

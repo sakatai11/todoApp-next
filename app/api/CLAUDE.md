@@ -1,8 +1,10 @@
-# API開発ガイドライン
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 必ず日本語で回答してください
 
 ## 全体情報参照
-
-**必ず日本語で回答してください**
 
 **重要**: プロジェクト全体の方針は [`@CLAUDE.md`](../../CLAUDE.md)（プロジェクトルート）を参照してください。
 このファイルはAPI開発固有の技術的詳細に特化しています。

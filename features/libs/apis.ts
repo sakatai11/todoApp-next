@@ -9,7 +9,10 @@ export const apiRequest = async <TRequest, TResponse = TRequest>(
     };
 
     // Docker エミュレーター環境では環境変数からユーザーIDを取得
-    if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+    if (
+      process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+      process.env.NODE_ENV !== 'production'
+    ) {
       // デフォルトは一般ユーザー、管理者機能テスト時はTEST_ADMIN_UIDを使用
       const testUserUid = process.env.NEXT_PUBLIC_TEST_USER_UID;
       const testAdminUid = process.env.NEXT_PUBLIC_TEST_ADMIN_UID;

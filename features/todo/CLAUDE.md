@@ -1,6 +1,8 @@
-# Todo機能ガイドライン
+# CLAUDE.md
 
-**必ず日本語で回答してください**
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 必ず日本語で回答してください
 
 ## 全体情報参照
 
@@ -51,7 +53,10 @@ Todo機能の主要構成:
 - **エンドポイント**: [@app/api/(general)/todos/](<../../app/api/(general)/todos/>) と [@app/api/(general)/lists/](<../../app/api/(general)/lists/>)
 - **初期データ**: useSWRで初期データ取得（TodoWrapper）
 - **バリデーション**: Zodスキーマで全リクエスト/レスポンス検証
-- **認証**: NextAuth.jsトークンで認証
+- **認証**:
+  - **本番環境**: NextAuth.jsトークンで認証
+  - **開発・テスト環境**: `X-User-ID`ヘッダーでユーザー識別
+  - **環境判定**: `NEXT_PUBLIC_EMULATOR_MODE=true`で環境別認証を切り替え
 
 ## 重要な実装パターン
 
@@ -90,8 +95,23 @@ const { todoHooks, listHooks, deleteListHooks } = useTodoContext();
 - **役割**: サーバーからのTodo・リストデータ取得とContext初期化
 - **制約**: 初期データ取得後は、useSWRではなくuseStateベースの状態管理を使用
 
+### 環境別認証設定
+
+**環境変数設定**:
+
+- **開発環境**: `NEXT_PUBLIC_TEST_USER_UID=dev-user-1`
+- **テスト環境**: `NEXT_PUBLIC_TEST_USER_UID=test-user-1`
+- **本番環境**: 環境変数なし（NextAuth.js認証）
+
+**withAuth.ts**での認証処理:
+
+- テスト・開発・Emulator環境: `X-User-ID`ヘッダーから認証
+- 本番環境: NextAuth.jsセッションから認証
+
 ## テスト要件
 
-- **100%カバレッジ**: 全フック・コンポーネント
-- **MSW**: API モッキング統一
+- **100%カバレッジ**: 全フック・コンポーネント（444テスト成功）
+- **MSW**: ユニットテストでのAPIモッキング統一
+- **環境設定**: テスト実行時に`NEXT_PUBLIC_EMULATOR_MODE=true`を設定
 - **テストパターン**: 楽観的更新、エラーハンドリング、ドラッグ&ドロップ
+- **統合テスト**: Docker環境でFirebase Emulator使用
