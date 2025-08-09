@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/tests/test-utils';
-import TodoWrapper from '@/features/todo/templates/TodoWrapper';
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
@@ -75,14 +74,22 @@ describe('TodoWrapper', () => {
   });
 
   describe('基本レンダリング', () => {
-    it('正常にレンダリングされ、子コンポーネントが表示される', () => {
+    it('正常にレンダリングされ、子コンポーネントが表示される', async () => {
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
       expect(screen.getByTestId('main-container')).toBeInTheDocument();
     });
 
-    it('SWRConfigとErrorBoundaryのラッパーが適用される', () => {
+    it('SWRConfigとErrorBoundaryのラッパーが適用される', async () => {
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // コンポーネントが正常にレンダリングされることで、ラッパーが機能していることを確認
@@ -91,7 +98,7 @@ describe('TodoWrapper', () => {
   });
 
   describe('ローディング状態', () => {
-    it('todosがローディング中はTodosLoadingが表示される', () => {
+    it('todosがローディング中はTodosLoadingが表示される', async () => {
       // todosのSWRの状態をローディング中に設定
       Object.assign(mockTodosUseSWRData, {
         data: null,
@@ -99,12 +106,16 @@ describe('TodoWrapper', () => {
         isLoading: true,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('loading')).toBeInTheDocument();
     });
 
-    it('listsがローディング中はTodosLoadingが表示される', () => {
+    it('listsがローディング中はTodosLoadingが表示される', async () => {
       // listsのSWRの状態をローディング中に設定
       Object.assign(mockListsUseSWRData, {
         data: null,
@@ -112,6 +123,10 @@ describe('TodoWrapper', () => {
         isLoading: true,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('loading')).toBeInTheDocument();
@@ -119,7 +134,7 @@ describe('TodoWrapper', () => {
   });
 
   describe('エラー状態', () => {
-    it('todosエラー時にErrorDisplayが表示される', () => {
+    it('todosエラー時にErrorDisplayが表示される', async () => {
       // todosのSWRの状態をエラーに設定
       Object.assign(mockTodosUseSWRData, {
         data: { todos: [] },
@@ -127,6 +142,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('error-display')).toBeInTheDocument();
@@ -134,7 +153,7 @@ describe('TodoWrapper', () => {
       expect(screen.getByText('Test error message')).toBeInTheDocument();
     });
 
-    it('listsエラー時にErrorDisplayが表示される', () => {
+    it('listsエラー時にErrorDisplayが表示される', async () => {
       // listsのSWRの状態をエラーに設定
       Object.assign(mockListsUseSWRData, {
         data: { lists: [] },
@@ -142,6 +161,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('error-display')).toBeInTheDocument();
@@ -151,7 +174,7 @@ describe('TodoWrapper', () => {
   });
 
   describe('データ不足状態', () => {
-    it('todosDataが存在しない場合はローディングが表示される', () => {
+    it('todosDataが存在しない場合はローディングが表示される', async () => {
       // todosのSWRの状態をdata無しに設定
       Object.assign(mockTodosUseSWRData, {
         data: null,
@@ -159,12 +182,16 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('loading')).toBeInTheDocument();
     });
 
-    it('listsDataが存在しない場合はローディングが表示される', () => {
+    it('listsDataが存在しない場合はローディングが表示される', async () => {
       // listsのSWRの状態をdata無しに設定
       Object.assign(mockListsUseSWRData, {
         data: null,
@@ -172,6 +199,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('loading')).toBeInTheDocument();
@@ -179,18 +210,26 @@ describe('TodoWrapper', () => {
   });
 
   describe('環境変数', () => {
-    it('NODE_ENVが本番環境の場合も正常に動作する', () => {
+    it('NODE_ENVが本番環境の場合も正常に動作する', async () => {
       vi.stubEnv('NODE_ENV', 'production');
       vi.stubEnv('NEXTAUTH_URL', 'https://example.com');
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
     });
 
-    it('NODE_ENVが開発環境の場合も正常に動作する', () => {
+    it('NODE_ENVが開発環境の場合も正常に動作する', async () => {
       vi.stubEnv('NODE_ENV', 'development');
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
@@ -206,6 +245,10 @@ describe('TodoWrapper', () => {
       });
 
       // 通常のレンダリングで正常データを返す
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // 正常なレンダリングが完了することを確認
@@ -220,6 +263,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('error-display')).toBeInTheDocument();
@@ -233,6 +280,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByText('Unknown error')).toBeInTheDocument();
@@ -246,12 +297,11 @@ describe('TodoWrapper', () => {
       });
       global.fetch = mockFetch;
 
-      // 動的インポートでfetcher関数にアクセス
+      // TodoWrapperをレンダリングしてfetcher関数が実行されることを確認
+      // モック適用後にTodoWrapperを動的インポート
       const { default: TodoWrapper } = await import(
         '@/features/todo/templates/TodoWrapper'
       );
-
-      // TodoWrapperをレンダリングしてfetcher関数が実行されることを確認
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // 正常なレンダリングが完了することを確認
@@ -272,6 +322,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByText('Specific error message')).toBeInTheDocument();
@@ -291,6 +345,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByText('Unknown error')).toBeInTheDocument();
@@ -325,6 +383,10 @@ describe('TodoWrapper', () => {
           return mockListsUseSWRData;
         });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       vi.mocked(await import('swr')).default = originalSWR;
@@ -344,6 +406,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('error-display')).toBeInTheDocument();
@@ -403,8 +469,12 @@ describe('TodoWrapper', () => {
   });
 
   describe('TodoErrorBoundary', () => {
-    it('ErrorBoundaryの構造が正しく設定される', () => {
+    it('ErrorBoundaryの構造が正しく設定される', async () => {
       // 正常なレンダリングでErrorBoundaryが適用されることを確認
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // ErrorBoundaryが正常に動作することを、子コンポーネントの表示で確認
@@ -412,8 +482,12 @@ describe('TodoWrapper', () => {
       expect(screen.getByTestId('main-container')).toBeInTheDocument();
     });
 
-    it('ErrorBoundaryの構成が正しく設定されることを確認', () => {
+    it('ErrorBoundaryの構成が正しく設定されることを確認', async () => {
       // ErrorBoundaryが正常に構成されていることを確認
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // 正常なレンダリングが完了することでErrorBoundaryの構成を確認
@@ -421,8 +495,12 @@ describe('TodoWrapper', () => {
       expect(screen.getByTestId('main-container')).toBeInTheDocument();
     });
 
-    it('ErrorBoundaryが正しくラップされていることを確認', () => {
+    it('ErrorBoundaryが正しくラップされていることを確認', async () => {
       // ErrorBoundaryが正常に動作することを確認（FallbackComponentが設定されている）
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // ErrorBoundaryが正常に子コンポーネントをレンダリングしていることを確認
@@ -472,6 +550,10 @@ describe('TodoWrapper', () => {
       global.fetch = mockFetch;
 
       // 正常なレンダリングでfetcher関数が実行されることを確認
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
@@ -534,6 +616,10 @@ describe('TodoWrapper', () => {
         isLoading: false,
       });
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
       expect(screen.getByText('Direct fetch error')).toBeInTheDocument();
     });
@@ -577,29 +663,41 @@ describe('TodoWrapper', () => {
   });
 
   describe('プリロード機能', () => {
-    it('プリロード関数が定義される', () => {
+    it('プリロード関数が定義される', async () => {
       // プリロード関数がモックで定義されていることを確認
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // プリロード関数が定義されていることを確認
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
     });
 
-    it('本番環境でのbaseUrl設定が正常に動作する', () => {
+    it('本番環境でのbaseUrl設定が正常に動作する', async () => {
       // 本番環境をシミュレート
       vi.stubEnv('NODE_ENV', 'production');
       vi.stubEnv('NEXTAUTH_URL', 'https://example.com');
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // 正常なレンダリングが完了することを確認
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
     });
 
-    it('クライアント環境でのbaseUrl設定が正常に動作する', () => {
+    it('クライアント環境でのbaseUrl設定が正常に動作する', async () => {
       // 開発環境をシミュレート
       vi.stubEnv('NODE_ENV', 'development');
 
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // 正常なレンダリングが完了することを確認
@@ -608,14 +706,22 @@ describe('TodoWrapper', () => {
   });
 
   describe('コンポーネント構造', () => {
-    it('Box要素が適切にレンダリングされる', () => {
+    it('Box要素が適切にレンダリングされる', async () => {
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       const boxElement = screen.getByTestId('push-container').closest('div');
       expect(boxElement).toBeInTheDocument();
     });
 
-    it('TodoProviderが適切に設定される', () => {
+    it('TodoProviderが適切に設定される', async () => {
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
       render(<TodoWrapper />, { withTodoProvider: false });
 
       // TodoProviderが内部で使用されていることを、子コンポーネントの表示で確認
