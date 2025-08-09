@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**必ず日本語で回答してください**
+## 必ず日本語で回答してください
 
 ## 全体情報参照
 
@@ -30,17 +30,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 主要コンポーネント
 
 #### Navigation/NavigationContents
+
 - **役割**: ユーザーメニューとサインアウト機能
 - **認証統合**: Server Actions（authSignOut）との連携
 - **状態管理**: モーダル開閉状態のローカル管理
 - **スタイリング**: MUI Boxベースのドロップダウンナビ
 
 #### Mock/MockIndicator
+
 - **環境制御**: 開発環境 + MOCK_MODE有効時のみ表示
 - **デバッグ支援**: テスト用認証情報の画面表示
 - **条件表示**: `NODE_ENV !== 'development'`で本番非表示
 
 #### templates/ClientWrapper
+
 - **動的インポート**: `dynamic()`でSSR無効化
 - **ヘッダー統合**: HeaderWrapperコンポーネントのクライアント実行
 - **型安全**: LinkSection/UserDataの厳密な型定義
@@ -49,8 +52,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```typescript
 // 開発環境判定
-if (process.env.NODE_ENV !== 'development' || 
-    process.env.NEXT_PUBLIC_API_MOCKING !== 'enabled') {
+if (
+  process.env.NODE_ENV !== 'development' ||
+  process.env.NEXT_PUBLIC_API_MOCKING !== 'enabled'
+) {
   return null;
 }
 

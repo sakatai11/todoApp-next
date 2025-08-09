@@ -11,7 +11,10 @@ export async function withAuthenticatedUser<T, R>(
   let uid: string | undefined;
 
   // テスト環境・開発環境では X-User-ID ヘッダーから認証情報を取得
-  if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+  if (
+    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
     uid = req.headers.get('X-User-ID') || undefined;
   } else {
     // 本番環境では通常のセッション認証

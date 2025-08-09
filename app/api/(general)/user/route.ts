@@ -14,21 +14,21 @@ export async function GET() {
     }
 
     const uid = session.user.id;
-    const email = session.user.email;
 
     // Firestoreのusersコレクションからuidが一致するドキュメントを取得
-    const userSnapshot = await adminDB
-      .collection('users')
-      .where('email', '==', email)
-      .get();
-
+    const doc = await adminDB.collection('users').doc(uid).get();
+    const data = doc.data();
     // 各データマッピング
-    const userData: UserData[] = userSnapshot.docs.map((document) => ({
-      id: uid || document.id,
-      email: document.data().email,
-      role: document.data().role,
-      createdAt: document.data().createdAt,
-    }));
+    const userData: UserData[] = data
+      ? [
+          {
+            id: uid,
+            email: data.email,
+            role: data.role,
+            createdAt: data.createdAt.toMillis(),
+          },
+        ]
+      : [];
 
     // JSONレスポンスを返す
     return NextResponse.json({ user: userData }, { status: 200 });

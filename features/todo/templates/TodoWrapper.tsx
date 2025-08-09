@@ -21,10 +21,14 @@ type ListDataProps = {
 const fetcher = async (url: string) => {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
   };
 
   // 開発・テスト環境ではX-User-IDヘッダーを追加
-  if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+  if (
+    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
     headers['X-User-ID'] =
       process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
   }
@@ -64,7 +68,7 @@ const TodoContent = (): React.ReactElement => {
     data: todosData,
     error: todosError,
     isLoading: todosLoading,
-  } = useSWR<TodoDataProps>('/api/todos', fetcher, {
+  } = useSWR<TodoDataProps>(todosApiUrl, fetcher, {
     revalidateOnMount: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -76,7 +80,7 @@ const TodoContent = (): React.ReactElement => {
     data: listsData,
     error: listsError,
     isLoading: listsLoading,
-  } = useSWR<ListDataProps>('/api/lists', fetcher, {
+  } = useSWR<ListDataProps>(listsApiUrl, fetcher, {
     revalidateOnMount: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -87,8 +91,8 @@ const TodoContent = (): React.ReactElement => {
   const isLoading = todosLoading || listsLoading;
   const error = todosError || listsError;
 
-  if (isLoading || !todosData || !listsData) return <TodosLoading />;
   if (error) return <ErrorDisplay message={error.message} />;
+  if (isLoading || !todosData || !listsData) return <TodosLoading />;
 
   const { todos } = todosData;
   const { lists } = listsData;

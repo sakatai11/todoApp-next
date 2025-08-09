@@ -5,7 +5,10 @@ import { LinkSection } from '@/types/markdown/markdownData';
 import { UserData } from '@/types/auth/authData';
 
 const HeaderWrapper = dynamic(
-  () => import('@/features/shared/components/elements/heading/HeaderWrapper'),
+  () =>
+    import('@/features/shared/components/elements/heading/HeaderWrapper').then(
+      (m) => m.HeaderWrapper,
+    ),
   { ssr: false },
 );
 

@@ -48,8 +48,8 @@ const mockListsUseSWRData = {
 
 vi.mock('swr', () => ({
   default: (url: string) => {
-    if (url === '/api/todos') return mockTodosUseSWRData;
-    if (url === '/api/lists') return mockListsUseSWRData;
+    if (url.includes('/api/todos')) return mockTodosUseSWRData;
+    if (url.includes('/api/lists')) return mockListsUseSWRData;
     return { data: null, error: null, isLoading: false };
   },
   SWRConfig: ({ children }: { children: React.ReactNode }) => children,
@@ -308,13 +308,14 @@ describe('TodoWrapper', () => {
       vi.mocked(await import('swr')).default = vi
         .fn()
         .mockImplementation((url: string, fetcher) => {
-          if (url === '/api/todos') {
+          if (url.includes('/api/todos')) {
             // fetcher関数を実行してcredentialsが設定されることを確認
-            fetcher('/api/todos');
-            expect(mockFetch).toHaveBeenCalledWith('/api/todos', {
+            fetcher(url);
+            expect(mockFetch).toHaveBeenCalledWith(url, {
               credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
+                Accept: 'application/json',
                 'X-User-ID':
                   process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1',
               },
@@ -363,10 +364,14 @@ describe('TodoWrapper', () => {
       const testFetcher = async (url: string) => {
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         };
 
         // エミュレーターモード時はX-User-IDヘッダーを追加
-        if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+        if (
+          process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+          process.env.NODE_ENV !== 'production'
+        ) {
           headers['X-User-ID'] =
             process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
         }
@@ -486,10 +491,14 @@ describe('TodoWrapper', () => {
       const testFetcher = async (url: string) => {
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         };
 
         // エミュレーターモード時はX-User-IDヘッダーを追加
-        if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+        if (
+          process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+          process.env.NODE_ENV !== 'production'
+        ) {
           headers['X-User-ID'] =
             process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
         }
