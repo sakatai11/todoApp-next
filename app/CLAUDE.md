@@ -91,19 +91,58 @@ export default function Template({ children }: { children: React.ReactNode }) {
 
 ### プロバイダー構成
 
+#### SessionProvider（NextAuth.js認証）
+
+```typescript
+// providers/SessionProvider.tsx
+'use client'
+
+import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react';
+
+export function SessionProvider({ children }: SessionProviderProps) {
+  return (
+    <NextAuthSessionProvider>
+      {children}
+    </NextAuthSessionProvider>
+  );
+}
+```
+
+**使用目的**:
+- NextAuth.js `useSession`フック対応
+- 認証状態管理の統一化
+- セキュリティ向上（customTokenをセッションから除外）
+
 #### MSWプロバイダー（環境別制御）
 
 ```typescript
 // providers/MSWProvider.tsx
 'use client'
 
-export default function MSWProvider({ children }: { children: React.ReactNode }) {
+export function MSWProvider({ children }: { children: React.ReactNode }) {
   if (process.env.NODE_ENV === 'development') {
     // 開発環境でのみMSW有効化
   }
   return <>{children}</>
 }
 ```
+
+#### プロバイダー階層構造
+
+```typescript
+// app/layout.tsx
+<SessionProvider>
+  <MSWProvider>
+    {children}
+    <MockIndicator />
+  </MSWProvider>
+</SessionProvider>
+```
+
+**階層の理由**:
+- **SessionProvider（最上位）**: 認証状態をアプリ全体で管理
+- **MSWProvider**: API モック機能（開発環境のみ）
+- **MockIndicator**: 開発環境での視覚的フィードバック
 
 ## 重要な実装時の注意点
 
