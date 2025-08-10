@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { LinkSection } from '@/types/markdown/markdownData';
 import { UserData } from '@/types/auth/authData';
-import HeadingContents from '@/features/shared/components/elements/Heading/HeadingContents';
+import HeadingContents from '@/features/shared/components/elements/heading/atoms/HeadingContents';
 import IconContents from '@/features/shared/components/elements/Icon/IconContents';
 import NavigationContents from '@/features/shared/components/elements/Navigation/NavigationContents';
 

@@ -21,7 +21,7 @@ export default async function Template({
 
   return (
     <>
-      {showHeader && <Header.HeaderWrapper data={headerLinks} user={user} />}
+      {showHeader && <Header.ClientWrapper data={headerLinks} user={user} />}
       {children}
     </>
   );
