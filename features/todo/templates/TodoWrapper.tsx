@@ -9,6 +9,7 @@ import useSWR, { SWRConfig, preload } from 'swr';
 import TodosLoading from '@/app/(dashboards)/loading';
 import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useSession } from 'next-auth/react';
 
 type TodoDataProps = {
   todos: TodoListProps[];
@@ -18,17 +19,18 @@ type ListDataProps = {
   lists: StatusListProps[];
 };
 
+// エミュレーターモード判定ヘルパー関数
+const isEmulatorMode = () =>
+  process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+  process.env.NODE_ENV !== 'production';
+
 const fetcher = async (url: string) => {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   };
 
   // 開発・テスト環境ではX-User-IDヘッダーを追加
-  if (
-    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
-    process.env.NODE_ENV !== 'production'
-  ) {
+  if (isEmulatorMode()) {
     headers['X-User-ID'] =
       process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
   }
@@ -64,32 +66,51 @@ if (typeof window !== 'undefined') {
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
+  const { status } = useSession();
+
+  // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
+  const emulatorMode = isEmulatorMode();
+  const shouldFetch = emulatorMode || status === 'authenticated';
+
   const {
     data: todosData,
     error: todosError,
     isLoading: todosLoading,
-  } = useSWR<TodoDataProps>(todosApiUrl, fetcher, {
+  } = useSWR<TodoDataProps>(shouldFetch ? todosApiUrl : null, fetcher, {
     revalidateOnMount: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     suspense: false,
-    shouldRetryOnError: false,
+    shouldRetryOnError: true,
   });
 
   const {
     data: listsData,
     error: listsError,
     isLoading: listsLoading,
-  } = useSWR<ListDataProps>(listsApiUrl, fetcher, {
+  } = useSWR<ListDataProps>(shouldFetch ? listsApiUrl : null, fetcher, {
     revalidateOnMount: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     suspense: false,
-    shouldRetryOnError: false,
+    shouldRetryOnError: true,
   });
 
   const isLoading = todosLoading || listsLoading;
   const error = todosError || listsError;
+
+  // 認証中の場合はローディング表示
+  if (!emulatorMode && status === 'loading') return <TodosLoading />;
+
+  // 本番環境で未認証の場合は認証ページへリダイレクト
+  if (!emulatorMode && status === 'unauthenticated') {
+    if (typeof window !== 'undefined') {
+      return (
+        <ErrorDisplay message="認証されていません。ログインしてください。" />
+      );
+    }
+    return <TodosLoading />;
+  }
 
   if (error) return <ErrorDisplay message={error.message} />;
   if (isLoading || !todosData || !listsData) return <TodosLoading />;

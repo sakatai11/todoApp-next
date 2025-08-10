@@ -6,12 +6,8 @@ declare module 'next-auth' {
     user?: {
       id?: string;
       email?: string;
-      customToken?: string;
       role?: string;
     } & DefaultSession['user'];
-    tokenExpiry?: number;
-    tokenIssuedAt?: number;
-    lastRefresh?: number;
   }
 
   //jwt callbackとsession callbackで使用可能。データベースを使用する場合は、session callbackの2番目のパラメータ。

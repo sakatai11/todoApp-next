@@ -129,14 +129,8 @@ export const authConfig = {
       session.user = {
         id: token.sub,
         email: token.email,
-        customToken: token.customToken,
         role: token.role,
       };
-
-      // トークンの有効期限情報をセッションに追加
-      session.tokenExpiry = token.tokenExpiry;
-      session.tokenIssuedAt = token.tokenIssuedAt;
-
       return session;
     },
   },
