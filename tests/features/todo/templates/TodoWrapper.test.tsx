@@ -1,18 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/tests/test-utils';
+import { useSession } from 'next-auth/react';
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(() => ({
-    data: {
-      user: {
-        id: 'test-user-id',
-        email: 'test@example.com',
-        role: 'user',
-      },
-    },
-    status: 'authenticated',
-  })),
+  useSession: vi.fn(),
   SessionProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
@@ -85,9 +77,9 @@ const createTestFetcher = async (url: string) => {
 };
 
 vi.mock('swr', () => ({
-  default: (url: string) => {
-    if (url.includes('/api/todos')) return mockTodosUseSWRData;
-    if (url.includes('/api/lists')) return mockListsUseSWRData;
+  default: (url: string | null) => {
+    if (url && url.includes('/api/todos')) return mockTodosUseSWRData;
+    if (url && url.includes('/api/lists')) return mockListsUseSWRData;
     return { data: null, error: null, isLoading: false };
   },
   SWRConfig: ({ children }: { children: React.ReactNode }) => children,
@@ -104,6 +96,18 @@ describe('TodoWrapper', () => {
     mockListsUseSWRData.data = { lists: [] };
     mockListsUseSWRData.error = null;
     mockListsUseSWRData.isLoading = false;
+
+    // デフォルトの認証状態にリセット
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: {
+          id: 'test-user-id',
+          email: 'test@example.com',
+          role: 'USER',
+        },
+      },
+      status: 'authenticated',
+    } as never);
 
     // テスト環境でエミュレーターモードを有効化
     vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
@@ -684,6 +688,82 @@ describe('TodoWrapper', () => {
       // TodoProviderが内部で使用されていることを、子コンポーネントの表示で確認
       expect(screen.getByTestId('push-container')).toBeInTheDocument();
       expect(screen.getByTestId('main-container')).toBeInTheDocument();
+    });
+  });
+
+  describe('認証状態表示', () => {
+    it('セッションがローディング中はローディング画面が表示される', async () => {
+      // エミュレーターモードを無効化
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
+
+      // セッション状態をloadingに設定
+      vi.mocked(useSession).mockReturnValue({
+        data: null,
+        status: 'loading',
+      } as never);
+
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
+      render(<TodoWrapper />, { withTodoProvider: false });
+
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+
+      // エミュレーターモードを元に戻す
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
+    });
+
+    it('未認証セッション状態を正常に処理する', async () => {
+      // エミュレーターモードを無効化
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
+
+      // セッション状態をunauthenticatedに設定
+      vi.mocked(useSession).mockReturnValue({
+        data: null,
+        status: 'unauthenticated',
+      } as never);
+
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
+      render(<TodoWrapper />, { withTodoProvider: false });
+
+      // 未認証状態ではローディング画面が表示される（リダイレクト前）
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+
+      // エミュレーターモードを元に戻す
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
+    });
+
+    it('認証済みセッション状態で正常に動作する', async () => {
+      // エミュレーターモードを無効化
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
+
+      // デフォルトの認証済み状態を確認
+      vi.mocked(useSession).mockReturnValue({
+        data: {
+          user: {
+            id: 'test-user-id',
+            email: 'test@example.com',
+            role: 'USER',
+          },
+        },
+        status: 'authenticated',
+      } as never);
+
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
+      render(<TodoWrapper />, { withTodoProvider: false });
+
+      expect(screen.getByTestId('push-container')).toBeInTheDocument();
+      expect(screen.getByTestId('main-container')).toBeInTheDocument();
+
+      // エミュレーターモードを元に戻す
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
     });
   });
 });

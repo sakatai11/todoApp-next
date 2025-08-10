@@ -19,17 +19,18 @@ type ListDataProps = {
   lists: StatusListProps[];
 };
 
+// エミュレーターモード判定ヘルパー関数
+const isEmulatorMode = () =>
+  process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
+  process.env.NODE_ENV !== 'production';
+
 const fetcher = async (url: string) => {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   };
 
   // 開発・テスト環境ではX-User-IDヘッダーを追加
-  if (
-    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
-    process.env.NODE_ENV !== 'production'
-  ) {
+  if (isEmulatorMode()) {
     headers['X-User-ID'] =
       process.env.NEXT_PUBLIC_TEST_USER_UID || 'test-user-1';
   }
@@ -68,11 +69,8 @@ const TodoContent = (): React.ReactElement => {
   const { status } = useSession();
 
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
-  const isEmulatorMode =
-    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
-    process.env.NODE_ENV !== 'production';
-
-  const shouldFetch = isEmulatorMode || status === 'authenticated';
+  const emulatorMode = isEmulatorMode();
+  const shouldFetch = emulatorMode || status === 'authenticated';
 
   const {
     data: todosData,
@@ -102,10 +100,15 @@ const TodoContent = (): React.ReactElement => {
   const error = todosError || listsError;
 
   // 認証中の場合はローディング表示
-  if (!isEmulatorMode && status === 'loading') return <TodosLoading />;
+  if (!emulatorMode && status === 'loading') return <TodosLoading />;
 
-  // 本番環境で未認証の場合はローディング表示（認証待ち）
-  if (!isEmulatorMode && status === 'unauthenticated') return <TodosLoading />;
+  // 本番環境で未認証の場合は認証ページへリダイレクト
+  if (!emulatorMode && status === 'unauthenticated') {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/signin';
+    }
+    return <TodosLoading />;
+  }
 
   if (error) return <ErrorDisplay message={error.message} />;
   if (isLoading || !todosData || !listsData) return <TodosLoading />;
