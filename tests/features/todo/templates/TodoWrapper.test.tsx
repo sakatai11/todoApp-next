@@ -3,6 +3,16 @@ import { render, screen } from '@/tests/test-utils';
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(() => ({
+    data: {
+      user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        role: 'user',
+      },
+    },
+    status: 'authenticated',
+  })),
   SessionProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
