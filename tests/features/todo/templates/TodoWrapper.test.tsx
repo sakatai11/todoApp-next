@@ -730,8 +730,10 @@ describe('TodoWrapper', () => {
       );
       render(<TodoWrapper />, { withTodoProvider: false });
 
-      // 未認証状態ではローディング画面が表示される（リダイレクト前）
-      expect(screen.getByTestId('loading')).toBeInTheDocument();
+      // 未認証状態ではエラーメッセージが表示される
+      expect(
+        screen.getByText('認証されていません。ログインしてください。'),
+      ).toBeInTheDocument();
 
       // エミュレーターモードを元に戻す
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
