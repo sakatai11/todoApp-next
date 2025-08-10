@@ -105,7 +105,9 @@ const TodoContent = (): React.ReactElement => {
   // 本番環境で未認証の場合は認証ページへリダイレクト
   if (!emulatorMode && status === 'unauthenticated') {
     if (typeof window !== 'undefined') {
-      window.location.href = '/signin';
+      return (
+        <ErrorDisplay message="認証されていません。ログインしてください。" />
+      );
     }
     return <TodosLoading />;
   }
