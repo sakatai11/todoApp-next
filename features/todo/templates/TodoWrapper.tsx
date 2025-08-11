@@ -66,35 +66,49 @@ if (typeof window !== 'undefined') {
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();
-  const shouldFetch = emulatorMode || status === 'authenticated';
+  const shouldFetch =
+    emulatorMode || (status === 'authenticated' && session?.user?.id);
+
+  // 共通のSWRオプション
+  const swrOptions = {
+    revalidateOnMount: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    suspense: false,
+    shouldRetryOnError: (err: Error) => {
+      // 401エラーの場合はリトライしない
+      return (
+        !err.message.includes('401') &&
+        !err.message.includes('Not authenticated')
+      );
+    },
+    errorRetryCount: 3,
+    errorRetryInterval: 1000,
+  };
 
   const {
     data: todosData,
     error: todosError,
     isLoading: todosLoading,
-  } = useSWR<TodoDataProps>(shouldFetch ? todosApiUrl : null, fetcher, {
-    revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    suspense: false,
-    shouldRetryOnError: true,
-  });
+  } = useSWR<TodoDataProps>(
+    shouldFetch ? todosApiUrl : null,
+    fetcher,
+    swrOptions,
+  );
 
   const {
     data: listsData,
     error: listsError,
     isLoading: listsLoading,
-  } = useSWR<ListDataProps>(shouldFetch ? listsApiUrl : null, fetcher, {
-    revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    suspense: false,
-    shouldRetryOnError: true,
-  });
+  } = useSWR<ListDataProps>(
+    shouldFetch ? listsApiUrl : null,
+    fetcher,
+    swrOptions,
+  );
 
   const isLoading = todosLoading || listsLoading;
   const error = todosError || listsError;
@@ -110,6 +124,13 @@ const TodoContent = (): React.ReactElement => {
       );
     }
     return <TodosLoading />;
+  }
+
+  // セッションはあるがcustomTokenがない場合（認証が不完全）
+  if (!emulatorMode && status === 'authenticated' && !session?.user?.id) {
+    return (
+      <ErrorDisplay message="認証情報が不完全です。再ログインしてください。" />
+    );
   }
 
   if (error) return <ErrorDisplay message={error.message} />;
