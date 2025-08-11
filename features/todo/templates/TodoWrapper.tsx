@@ -122,9 +122,7 @@ const TodoContent = (): React.ReactElement => {
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('API URLs', { todosApiUrl, listsApiUrl, shouldFetch });
-  }
+  console.log('API URLs', { todosApiUrl, listsApiUrl, shouldFetch });
 
   // 安全な事前読み込み（クライアントサイドのみ）
   useEffect(() => {
