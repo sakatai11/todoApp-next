@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
@@ -19,10 +20,60 @@ type ListDataProps = {
   lists: StatusListProps[];
 };
 
+// URLをuseMemoで固定化
+const useApiUrls = () => {
+  const baseUrl =
+    process.env.NODE_ENV === 'production'
+      ? process.env.NEXTAUTH_URL // サーバー環境
+      : ''; // クライアント環境
+
+  return useMemo(
+    () => ({
+      // APIエンドポイント
+      todos: `${baseUrl}/api/todos`,
+      lists: `${baseUrl}/api/lists`,
+    }),
+    [baseUrl],
+  );
+};
+
 // エミュレーターモード判定ヘルパー関数
 const isEmulatorMode = () =>
   process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
   process.env.NODE_ENV !== 'production';
+
+// エラー情報を含むオブジェクトを返す関数
+const createFetchError = (
+  message: string,
+  status: number,
+  statusText: string,
+) => {
+  const error = new Error(message);
+  return Object.assign(error, { status, statusText, isFetchError: true });
+};
+
+// 型ガード関数
+const isFetchError = (
+  err: unknown,
+): err is Error & {
+  status: number;
+  statusText: string;
+  isFetchError: true;
+} => {
+  if (!err || typeof err !== 'object') {
+    return false;
+  }
+
+  const errorObj = err as Record<string, unknown>;
+  return (
+    'isFetchError' in errorObj &&
+    errorObj.isFetchError === true &&
+    'status' in errorObj &&
+    typeof errorObj.status === 'number' &&
+    'statusText' in errorObj &&
+    typeof errorObj.statusText === 'string'
+  );
+};
 
 const fetcher = async (url: string) => {
   const headers: HeadersInit = {
@@ -41,60 +92,81 @@ const fetcher = async (url: string) => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Unknown error');
+    let message = `HTTP Error ${response.status}`;
+    try {
+      const ct = (response.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('application/json')) {
+        const data = await response.json();
+        message = data?.error || data?.message || message;
+      } else {
+        const text = await response.text();
+        message = text || message;
+      }
+    } catch {
+      // パースエラーや空レスポンスは無視してデフォルトメッセージ
+    }
+    throw createFetchError(message, response.status, response.statusText);
   }
 
   return response.json();
 };
 
-// URLを動的に構築
-const baseUrl =
-  process.env.NODE_ENV === 'production'
-    ? process.env.NEXTAUTH_URL // サーバー環境
-    : ''; // クライアント環境
-
-// APIエンドポイントのURL
-const todosApiUrl = `${baseUrl}/api/todos`;
-const listsApiUrl = `${baseUrl}/api/lists`;
-
-// 安全な事前読み込み（クライアントのみで実行されることを保証）
-if (typeof window !== 'undefined') {
-  preload(todosApiUrl, fetcher);
-  preload(listsApiUrl, fetcher);
-}
-
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();
-  const shouldFetch = emulatorMode || status === 'authenticated';
+  const { todos: todosApiUrl, lists: listsApiUrl } = useApiUrls();
+  const shouldFetch =
+    emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
+
+  // 安全な事前読み込み（クライアントサイドのみ）
+  useEffect(() => {
+    if (shouldFetch) {
+      preload(todosApiUrl, fetcher);
+      preload(listsApiUrl, fetcher);
+    }
+  }, [shouldFetch, todosApiUrl, listsApiUrl]);
+
+  // 共通のSWRオプション
+  const swrOptions = {
+    revalidateOnMount: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    suspense: false,
+    shouldRetryOnError: (err: Error) => {
+      // FetchErrorの場合はステータスコードでチェック
+      if (isFetchError(err)) {
+        // 401 (Unauthorized) または 403 (Forbidden) の場合はリトライしない
+        return err.status !== 401 && err.status !== 403;
+      }
+      // その他のエラーはリトライしない（ネットワークエラー等）
+      return false;
+    },
+    errorRetryCount: 3,
+    errorRetryInterval: 1000,
+  };
 
   const {
     data: todosData,
     error: todosError,
     isLoading: todosLoading,
-  } = useSWR<TodoDataProps>(shouldFetch ? todosApiUrl : null, fetcher, {
-    revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    suspense: false,
-    shouldRetryOnError: true,
-  });
+  } = useSWR<TodoDataProps>(
+    shouldFetch ? todosApiUrl : null,
+    fetcher,
+    swrOptions,
+  );
 
   const {
     data: listsData,
     error: listsError,
     isLoading: listsLoading,
-  } = useSWR<ListDataProps>(shouldFetch ? listsApiUrl : null, fetcher, {
-    revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    suspense: false,
-    shouldRetryOnError: true,
-  });
+  } = useSWR<ListDataProps>(
+    shouldFetch ? listsApiUrl : null,
+    fetcher,
+    swrOptions,
+  );
 
   const isLoading = todosLoading || listsLoading;
   const error = todosError || listsError;
@@ -110,6 +182,13 @@ const TodoContent = (): React.ReactElement => {
       );
     }
     return <TodosLoading />;
+  }
+
+  // セッションはあるがcustomTokenがない場合（認証が不完全）
+  if (!emulatorMode && status === 'authenticated' && !session?.user?.id) {
+    return (
+      <ErrorDisplay message="認証情報が不完全です。再ログインしてください。" />
+    );
   }
 
   if (error) return <ErrorDisplay message={error.message} />;
