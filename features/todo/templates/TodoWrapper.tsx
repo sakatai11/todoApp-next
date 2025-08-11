@@ -72,9 +72,20 @@ const fetcher = async (url: string) => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    const errorMessage = errorData.error || `HTTP Error ${response.status}`;
-    throw createFetchError(errorMessage, response.status, response.statusText);
+    let message = `HTTP Error ${response.status}`;
+    try {
+      const ct = (response.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('application/json')) {
+        const data = await response.json();
+        message = data?.error || data?.message || message;
+      } else {
+        const text = await response.text();
+        message = text || message;
+      }
+    } catch {
+      // パースエラーや空レスポンスは無視してデフォルトメッセージ
+    }
+    throw createFetchError(message, response.status, response.statusText);
   }
 
   return response.json();
