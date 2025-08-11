@@ -23,9 +23,7 @@ type ListDataProps = {
 // URLをuseMemoで固定化
 const useApiUrls = () => {
   const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? process.env.NEXTAUTH_URL // サーバー環境
-      : ''; // クライアント環境
+    typeof window === 'undefined' ? process.env.NEXTAUTH_URL || '' : '';
 
   return useMemo(
     () => ({
