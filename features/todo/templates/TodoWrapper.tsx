@@ -118,8 +118,13 @@ const TodoContent = (): React.ReactElement => {
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();
   const { todos: todosApiUrl, lists: listsApiUrl } = useApiUrls();
+
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('API URLs', { todosApiUrl, listsApiUrl, shouldFetch });
+  }
 
   // 安全な事前読み込み（クライアントサイドのみ）
   useEffect(() => {
