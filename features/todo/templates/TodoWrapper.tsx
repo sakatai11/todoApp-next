@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
@@ -17,6 +18,23 @@ type TodoDataProps = {
 
 type ListDataProps = {
   lists: StatusListProps[];
+};
+
+// URLをuseMemoで固定化
+const useApiUrls = () => {
+  const baseUrl =
+    process.env.NODE_ENV === 'production'
+      ? process.env.NEXTAUTH_URL // サーバー環境
+      : ''; // クライアント環境
+
+  return useMemo(
+    () => ({
+      // APIエンドポイント
+      todos: `${baseUrl}/api/todos`,
+      lists: `${baseUrl}/api/lists`,
+    }),
+    [baseUrl],
+  );
 };
 
 // エミュレーターモード判定ヘルパー関数
@@ -51,7 +69,9 @@ const isFetchError = (
     'isFetchError' in errorObj &&
     errorObj.isFetchError === true &&
     'status' in errorObj &&
-    'statusText' in errorObj
+    typeof errorObj.status === 'number' &&
+    'statusText' in errorObj &&
+    typeof errorObj.statusText === 'string'
   );
 };
 
@@ -91,30 +111,23 @@ const fetcher = async (url: string) => {
   return response.json();
 };
 
-// URLを動的に構築
-const baseUrl =
-  process.env.NODE_ENV === 'production'
-    ? process.env.NEXTAUTH_URL // サーバー環境
-    : ''; // クライアント環境
-
-// APIエンドポイントのURL
-const todosApiUrl = `${baseUrl}/api/todos`;
-const listsApiUrl = `${baseUrl}/api/lists`;
-
-// 安全な事前読み込み（クライアントのみで実行されることを保証）
-if (typeof window !== 'undefined') {
-  preload(todosApiUrl, fetcher);
-  preload(listsApiUrl, fetcher);
-}
-
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
   const { data: session, status } = useSession();
 
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();
+  const { todos: todosApiUrl, lists: listsApiUrl } = useApiUrls();
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
+
+  // 安全な事前読み込み（クライアントサイドのみ）
+  useEffect(() => {
+    if (shouldFetch) {
+      preload(todosApiUrl, fetcher);
+      preload(listsApiUrl, fetcher);
+    }
+  }, [shouldFetch, todosApiUrl, listsApiUrl]);
 
   // 共通のSWRオプション
   const swrOptions = {
