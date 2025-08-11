@@ -23,9 +23,7 @@ type ListDataProps = {
 // URLをuseMemoで固定化
 const useApiUrls = () => {
   const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? process.env.NEXTAUTH_URL // サーバー環境
-      : ''; // クライアント環境
+    typeof window === 'undefined' ? process.env.NEXTAUTH_URL || '' : '';
 
   return useMemo(
     () => ({
@@ -121,8 +119,6 @@ const TodoContent = (): React.ReactElement => {
 
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
-
-  console.log('API URLs', { todosApiUrl, listsApiUrl, shouldFetch });
 
   // 安全な事前読み込み（クライアントサイドのみ）
   useEffect(() => {
