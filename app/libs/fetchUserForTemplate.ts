@@ -21,14 +21,25 @@ export async function fetchUserForTemplate() {
     const incomingHeaders = await headers();
     const cookieHeader = incomingHeaders.get('cookie') || '';
 
-    // Docker環境では内部ネットワークを使用
-    const baseUrl =
-      process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
-        ? 'http://localhost:3000' // Docker内部ネットワーク
-        : process.env.NEXTAUTH_URL;
+    // baseURLの決定 - 環境に応じた優先順位で決定
+    let baseUrl: string | undefined;
+
+    if (process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true') {
+      // Docker環境では相対パスを使用（内部ネットワーク通信）
+      baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    } else {
+      // 本番環境では環境変数またはリクエストヘッダーから構築
+      baseUrl = process.env.NEXTAUTH_URL;
+
+      if (!baseUrl) {
+        const host = incomingHeaders.get('host');
+        const proto = incomingHeaders.get('x-forwarded-proto') ?? 'https';
+        baseUrl = host ? `${proto}://${host}` : undefined;
+      }
+    }
 
     if (!baseUrl) {
-      console.warn('Base URL is not configured, returning null user');
+      console.warn('Base URL could not be determined, returning null user');
       return { user: null };
     }
 
@@ -41,12 +52,26 @@ export async function fetchUserForTemplate() {
     });
 
     if (!response.ok) {
-      console.warn('Fetch user failed:', response.status, response.statusText);
+      console.warn(
+        `Fetch user failed: ${response.status} ${response.statusText}`,
+        `URL: ${baseUrl}/api/user`,
+      );
+
+      // レスポンスボディがある場合はエラー詳細を取得
+      try {
+        const errorData = await response.text();
+        console.warn('Error response body:', errorData);
+      } catch (parseError) {
+        console.warn('Could not parse error response:', parseError);
+      }
+
       // 認証エラーの場合はnullユーザーを返す（エラーを投げない）
       return { user: null };
     }
 
-    return response.json();
+    const userData = await response.json();
+    console.log('Successfully fetched user data for template');
+    return userData;
   } catch (error) {
     console.warn('Error fetching user for template:', error);
     // エラーが発生した場合もnullユーザーを返す

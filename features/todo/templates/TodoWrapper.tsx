@@ -24,6 +24,37 @@ const isEmulatorMode = () =>
   process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
   process.env.NODE_ENV !== 'production';
 
+// エラー情報を含むオブジェクトを返す関数
+const createFetchError = (
+  message: string,
+  status: number,
+  statusText: string,
+) => {
+  const error = new Error(message);
+  return Object.assign(error, { status, statusText, isFetchError: true });
+};
+
+// 型ガード関数
+const isFetchError = (
+  err: unknown,
+): err is Error & {
+  status: number;
+  statusText: string;
+  isFetchError: true;
+} => {
+  if (!err || typeof err !== 'object') {
+    return false;
+  }
+
+  const errorObj = err as Record<string, unknown>;
+  return (
+    'isFetchError' in errorObj &&
+    errorObj.isFetchError === true &&
+    'status' in errorObj &&
+    'statusText' in errorObj
+  );
+};
+
 const fetcher = async (url: string) => {
   const headers: HeadersInit = {
     Accept: 'application/json',
@@ -42,7 +73,8 @@ const fetcher = async (url: string) => {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error || 'Unknown error');
+    const errorMessage = errorData.error || `HTTP Error ${response.status}`;
+    throw createFetchError(errorMessage, response.status, response.statusText);
   }
 
   return response.json();
@@ -71,7 +103,7 @@ const TodoContent = (): React.ReactElement => {
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();
   const shouldFetch =
-    emulatorMode || (status === 'authenticated' && session?.user?.id);
+    emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
 
   // 共通のSWRオプション
   const swrOptions = {
@@ -80,11 +112,13 @@ const TodoContent = (): React.ReactElement => {
     revalidateOnReconnect: false,
     suspense: false,
     shouldRetryOnError: (err: Error) => {
-      // 401エラーの場合はリトライしない
-      return (
-        !err.message.includes('401') &&
-        !err.message.includes('Not authenticated')
-      );
+      // FetchErrorの場合はステータスコードでチェック
+      if (isFetchError(err)) {
+        // 401 (Unauthorized) または 403 (Forbidden) の場合はリトライしない
+        return err.status !== 401 && err.status !== 403;
+      }
+      // その他のエラーはリトライしない（ネットワークエラー等）
+      return false;
     },
     errorRetryCount: 3,
     errorRetryInterval: 1000,
