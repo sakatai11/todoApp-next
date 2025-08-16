@@ -1,8 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 import * as Admin from '@/features/admin/templates/index';
 import Template from '@/app/template';
 import { headers } from 'next/headers';
-
-export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
   const incomingHeaders = await headers();
