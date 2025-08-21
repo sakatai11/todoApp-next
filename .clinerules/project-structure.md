@@ -41,6 +41,8 @@ todoApp-next/
 │   ├── (auth)/                 # Grouped routes related to authentication
 │   │   ├── _signIn/            # Logic for signing in
 │   │   │   └── signIn.ts
+│   │   ├── _signOut/           # Logic for signing out
+│   │   │   └── signOut.ts
 │   │   ├── _signUp/            # Logic for signing up
 │   │   │   └── signUp.ts
 │   │   ├── account/            # Account-related pages
@@ -79,6 +81,9 @@ todoApp-next/
 │   │   │   └── server-login/   # Server-side login API
 │   │   │       └── route.ts
 │   ├── libs/                   # Shared libraries
+│   ├── providers/              # React providers
+│   │   ├── MSWProvider.tsx     # Mock Service Worker provider
+│   │   └── SessionProvider.tsx # Session management provider
 │   ├── static/                 # Static CSS files
 │   │   ├── input.css
 │   │   └── output.css
