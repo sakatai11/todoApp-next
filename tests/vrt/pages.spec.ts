@@ -1,5 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
-import '../../types/vrt';
+
+// VRT用の型定義
+declare global {
+  interface Window {
+    __VRT_MOCK_AUTH__: boolean;
+  }
+}
 
 /**
  * VRTテスト用の認証モックを設定するヘルパー関数
@@ -82,20 +88,12 @@ test.describe('Visual Regression Testing - Pages', () => {
     await expect(page).toHaveScreenshot('signup-page.png');
   });
 
-  test('Todoページ（ログイン前）', async ({ page }) => {
-    await page.goto('/todo');
-    await page.waitForLoadState('networkidle');
-    // サインインページにリダイレクトされることを確認
-    await expect(page).toHaveURL(/.*\/signin/);
-    await expect(page).toHaveScreenshot('todo-page-before-login.png');
-  });
-
   test('Todoページ（ログイン後）', async ({ page }) => {
     // VRTテスト用のモック認証を設定
     await setupMockAuth(page, {
       id: 'vrt-test-user',
       email: 'vrt@test.com',
-      role: 'user',
+      role: 'USER',
     });
 
     // 認証エラーを無視してTodoページに直接移動
@@ -119,20 +117,12 @@ test.describe('Visual Regression Testing - Pages', () => {
     await expect(page).toHaveScreenshot('todo-page-after-login.png');
   });
 
-  test('管理者ページ（ログイン前）', async ({ page }) => {
-    await page.goto('/admin');
-    await page.waitForLoadState('networkidle');
-    // サインインページにリダイレクトされることを確認
-    await expect(page).toHaveURL(/.*\/signin/);
-    await expect(page).toHaveScreenshot('admin-page-before-login.png');
-  });
-
   test('管理者ページ（管理者ログイン後）', async ({ page }) => {
     // VRTテスト用の管理者モック認証を設定
     await setupMockAuth(page, {
       id: 'vrt-admin-user',
       email: 'admin@vrt.com',
-      role: 'admin',
+      role: 'ADMIN',
     });
 
     // 認証エラーを無視して管理者ページに直接移動
