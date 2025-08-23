@@ -67,9 +67,10 @@ firebase-debug.log
 firestore-debug.log
 
 # Visual Regression Testing
+# ベースラインスクリーンショットはコミットし、テスト結果は除外
 /test-results/
 /tests/vrt/*-test-results/
-/tests/vrt/__screenshots__/
+# /tests/vrt/*-snapshots/ # ベースラインスクリーンショットはコミットする
 playwright-report/
 
 # Submodule

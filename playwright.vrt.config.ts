@@ -22,6 +22,12 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Additional options for CI environment */
+    ...(process.env.CI &&
+      {
+        // CI環境での追加設定はブラウザー固有設定で実装
+      }),
   },
 
   /* Configure projects for major browsers */
@@ -31,6 +37,8 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 720 },
+        // VRTの一貫性を高めるための追加設定
+        colorScheme: 'light', // ライトモードで統一
       },
     },
   ],

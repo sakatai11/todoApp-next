@@ -1,10 +1,66 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+import '../../types/vrt';
+
+/**
+ * VRTテスト用の認証モックを設定するヘルパー関数
+ * @param page Playwrightのページオブジェクト
+ * @param user モックユーザー情報
+ */
+async function setupMockAuth(
+  page: Page,
+  user: { id: string; email: string; role: string },
+) {
+  // VRTテスト用のモック認証を設定
+  await page.addInitScript((userData) => {
+    // セッションストレージでモック認証状態を設定
+    sessionStorage.setItem(
+      'vrt-mock-auth',
+      JSON.stringify({
+        user: userData,
+        authenticated: true,
+      }),
+    );
+
+    // 認証APIをモック
+    window.__VRT_MOCK_AUTH__ = true;
+  }, user);
+
+  // 既存の認証フローをスキップして、モックデータでAPIレスポンスを設定
+  await page.route('/api/auth/**', (route) => {
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ user }),
+    });
+  });
+
+  // 基本的なAPIエンドポイントのモック設定
+  await page.route('/api/(general|admin)/**', (route) => {
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ data: [], message: 'VRT Mock Response' }),
+    });
+  });
+}
 
 test.describe('Visual Regression Testing - Pages', () => {
   test.beforeEach(async ({ page }) => {
-    // 一貫したテスト環境のため、MSWを無効化
+    // 一貫したテスト環境のため、MSWを無効化し、アニメーションを無効化
     await page.addInitScript(() => {
       Object.defineProperty(window, 'msw', { value: undefined });
+
+      // アニメーションを無効化するCSSを追加
+      const style = document.createElement('style');
+      style.textContent = `
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0s !important;
+          animation-delay: 0s !important;
+          transition-duration: 0s !important;
+          transition-delay: 0s !important;
+        }
+      `;
+      document.head.appendChild(style);
     });
   });
 
@@ -36,45 +92,29 @@ test.describe('Visual Regression Testing - Pages', () => {
 
   test('Todoページ（ログイン後）', async ({ page }) => {
     // VRTテスト用のモック認証を設定
-    await page.addInitScript(() => {
-      // セッションストレージでモック認証状態を設定
-      sessionStorage.setItem(
-        'vrt-mock-auth',
-        JSON.stringify({
-          user: {
-            id: 'vrt-test-user',
-            email: 'vrt@test.com',
-            role: 'user',
-          },
-          authenticated: true,
-        }),
-      );
-
-      // 認証APIをモック
-      window.__VRT_MOCK_AUTH__ = true;
+    await setupMockAuth(page, {
+      id: 'vrt-test-user',
+      email: 'vrt@test.com',
+      role: 'user',
     });
-
-    // 既存の認証フローをスキップして、モックデータでTodoページを表示
-    await page.route('/api/auth/**', (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify({
-          user: { id: 'vrt-test-user', email: 'vrt@test.com', role: 'user' },
-        }),
-      });
-    });
-
-    await page.goto('/signin');
-    await page.waitForLoadState('networkidle');
-
-    // モック認証情報でログイン
-    await page.fill('input[name="email"]', 'example@test.com');
-    await page.fill('input[name="password"]', 'password');
 
     // 認証エラーを無視してTodoページに直接移動
     await page.goto('/todo');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
+
+    // 主要なコンテンツ要素が読み込まれるまで待機
+    await page.waitForSelector('body', { timeout: 10000 });
+
+    // UIアニメーション完了を確実に待機
+    await page.waitForFunction(
+      () => {
+        const elements = document.querySelectorAll(
+          '.MuiCircularProgress-root, .loading',
+        );
+        return elements.length === 0;
+      },
+      { timeout: 5000 },
+    );
 
     await expect(page).toHaveScreenshot('todo-page-after-login.png');
   });
@@ -89,45 +129,29 @@ test.describe('Visual Regression Testing - Pages', () => {
 
   test('管理者ページ（管理者ログイン後）', async ({ page }) => {
     // VRTテスト用の管理者モック認証を設定
-    await page.addInitScript(() => {
-      // セッションストレージで管理者モック認証状態を設定
-      sessionStorage.setItem(
-        'vrt-mock-auth',
-        JSON.stringify({
-          user: {
-            id: 'vrt-admin-user',
-            email: 'admin@vrt.com',
-            role: 'admin',
-          },
-          authenticated: true,
-        }),
-      );
-
-      // 認証APIをモック
-      window.__VRT_MOCK_AUTH__ = true;
+    await setupMockAuth(page, {
+      id: 'vrt-admin-user',
+      email: 'admin@vrt.com',
+      role: 'admin',
     });
-
-    // 管理者認証APIをモック
-    await page.route('/api/auth/**', (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify({
-          user: { id: 'vrt-admin-user', email: 'admin@vrt.com', role: 'admin' },
-        }),
-      });
-    });
-
-    await page.goto('/signin');
-    await page.waitForLoadState('networkidle');
-
-    // モック管理者認証情報でログイン
-    await page.fill('input[name="email"]', 'example@test.com');
-    await page.fill('input[name="password"]', 'password');
 
     // 認証エラーを無視して管理者ページに直接移動
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
+
+    // 管理者ページの主要なコンテンツ要素が読み込まれるまで待機
+    await page.waitForSelector('body', { timeout: 10000 });
+
+    // UIアニメーション完了を確実に待機
+    await page.waitForFunction(
+      () => {
+        const elements = document.querySelectorAll(
+          '.MuiCircularProgress-root, .loading',
+        );
+        return elements.length === 0;
+      },
+      { timeout: 5000 },
+    );
 
     await expect(page).toHaveScreenshot('admin-page-after-login.png');
   });
