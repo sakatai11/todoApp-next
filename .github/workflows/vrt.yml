@@ -41,6 +41,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run VRT
+        id: vrt
         run: npm run test:vrt
         env:
           CI: true
@@ -51,7 +52,7 @@ jobs:
         continue-on-error: true
 
       - name: Generate VRT snapshots on first run
-        if: failure()
+        if: ${{ always() && steps.vrt.outcome == 'failure' }}
         run: npm run test:vrt:update
         env:
           CI: true
@@ -72,6 +73,25 @@ jobs:
             echo "has_diff=false" >> $GITHUB_OUTPUT
             echo "diff_count=0" >> $GITHUB_OUTPUT
           fi
+
+      - name: Auto-update snapshots on visual differences
+        if: always() && steps.check_diff.outputs.has_diff == 'true'
+        run: npm run test:vrt:update
+        env:
+          CI: true
+          NEXTAUTH_SECRET: vrt-ci-secret-for-testing
+          NODE_ENV: test
+          FIREBASE_PROJECT_ID: todoapp-vrt-test
+          NEXT_PUBLIC_EMULATOR_MODE: true
+
+      - name: Commit updated snapshots
+        if: always() && steps.check_diff.outputs.has_diff == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add tests/vrt/*-snapshots/
+          git commit -m "chore: update VRT snapshots [skip ci]" || exit 0
+          git push
 
       - name: Upload test results
         if: ${{ always() && steps.check_diff.outputs.has_diff == 'true' && github.event.pull_request.head.repo.fork == false }}
