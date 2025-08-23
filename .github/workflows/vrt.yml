@@ -45,7 +45,20 @@ jobs:
         env:
           CI: true
           NEXTAUTH_SECRET: vrt-ci-secret-for-testing
+          NODE_ENV: test
+          FIREBASE_PROJECT_ID: todoapp-vrt-test
+          NEXT_PUBLIC_EMULATOR_MODE: true
         continue-on-error: true
+
+      - name: Generate VRT snapshots on first run
+        if: failure()
+        run: npm run test:vrt:update
+        env:
+          CI: true
+          NEXTAUTH_SECRET: vrt-ci-secret-for-testing
+          NODE_ENV: test
+          FIREBASE_PROJECT_ID: todoapp-vrt-test
+          NEXT_PUBLIC_EMULATOR_MODE: true
 
       - name: Check for visual differences
         if: ${{ always() }}
