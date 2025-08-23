@@ -32,20 +32,22 @@ async function setupMockAuth(
   }, user);
 
   // 既存の認証フローをスキップして、モックデータでAPIレスポンスを設定
-  await page.route('/api/auth/**', (route) => {
+  await page.route('**/api/auth/**', (route) => {
     route.fulfill({
       status: 200,
       body: JSON.stringify({ user }),
     });
   });
 
-  // 基本的なAPIエンドポイントのモック設定
-  await page.route('/api/(general|admin)/**', (route) => {
-    route.fulfill({
-      status: 200,
-      body: JSON.stringify({ data: [], message: 'VRT Mock Response' }),
+  // general/admin を個別にフルURL対応のglobでモック
+  for (const scope of ['general', 'admin'] as const) {
+    await page.route(`**/api/${scope}/**`, (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({ data: [], message: 'VRT Mock Response' }),
+      });
     });
-  });
+  }
 }
 
 test.describe('Visual Regression Testing - Pages', () => {
