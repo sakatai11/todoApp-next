@@ -44,6 +44,7 @@ jobs:
         run: npm run test:vrt
         env:
           CI: true
+          NEXTAUTH_SECRET: vrt-ci-secret-for-testing
         continue-on-error: true
 
       - name: Check for visual differences
