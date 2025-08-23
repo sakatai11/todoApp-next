@@ -66,5 +66,11 @@ firebase-emulator-data/
 firebase-debug.log
 firestore-debug.log
 
+# Visual Regression Testing
+/test-results/
+/tests/vrt/*-test-results/
+/tests/vrt/__screenshots__/
+playwright-report/
+
 # Submodule
 todoApp-submodule
