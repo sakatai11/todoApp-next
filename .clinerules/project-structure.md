@@ -8,6 +8,10 @@ We follow a feature-based and App Router-oriented architecture using Next.js 15.
 
 This directory organizes the app into logical features such as todo, sign, top, and admin. Each feature has subfolders for UI components, templates, and logic (e.g., hooks, contexts, DnD logic). This makes each feature self-contained and easy to scale.
 
+## tests/
+
+This directory contains a comprehensive testing environment using Vitest and modern testing frameworks. The test suite achieves 100% pass rate with high code coverage and follows feature-based organization that mirrors the main application structure. It includes unit tests with MSW (Mock Service Worker) for API mocking, integration tests using Docker and Firebase Emulator environment, and end-to-end tests with Playwright for complete user workflow validation.
+
 ## app/
 
 This is where the actual routing and rendering logic resides, structured by Next.js App Router conventions. Grouped routes like (auth) or (admin) allow cleaner separation between different parts of the application without polluting the URL.
@@ -117,6 +121,36 @@ todoApp-next/
 │   ├── validatedData.ts        # Validated data
 │   └── links/                  # External link definitions
 ├── public/                     # Static assets such as images
+├── scripts/                    # Project utility scripts
+│   ├── init-firebase-data.ts   # Firebase Emulator data initialization (tsx execution)
+│   ├── cleanup-db.ts           # Test database cleanup
+│   └── helpers/                # Helper functions for scripts
+│       └── testDbDataFetcher.ts # Test data fetching utilities
+├── tests/                      # Comprehensive testing suite
+│   ├── setup.ts                # Global unit test environment setup
+│   ├── setup-integration.ts    # Integration test environment setup
+│   ├── test-utils.tsx          # Custom render functions and test utilities
+│   ├── features/               # Feature-based test structure
+│   │   ├── utils/              # Utility function tests (4 files)
+│   │   ├── shared/             # Shared component tests
+│   │   │   └── components/     # Navigation and common component tests
+│   │   ├── todo/               # Todo feature comprehensive testing
+│   │   │   ├── api.integration.test.ts    # Todo API integration tests
+│   │   │   ├── contexts/                  # TodoContext tests
+│   │   │   ├── components/                # Todo component tests (13 files)
+│   │   │   │   ├── elements/              # UI element tests (Status, TodoList, Add, Modal, Error)
+│   │   │   │   ├── PushContainer/         # Container component tests
+│   │   │   │   └── MainContainer/         # Main container tests
+│   │   │   ├── hooks/                     # Todo custom hooks tests (4 files)
+│   │   │   └── templates/                 # TodoWrapper template tests
+│   │   └── libs/               # Common library tests
+│   ├── e2e/                    # End-to-end testing with Playwright
+│   │   ├── global-setup.ts     # E2E test global setup
+│   │   ├── global-teardown.ts  # E2E test global cleanup
+│   │   └── todo-flow.spec.ts   # Comprehensive todo workflow E2E tests
+│   └── fixtures/               # Test fixtures for Firebase Emulator
+│       ├── auth_export/        # Authentication data export
+│       └── firestore_export/   # Firestore data export
 ├── todoApp-submodule/
 │   ├── mocks/                 # Form definitions
 │   │   ├── browser.ts              # MSW browser configuration
