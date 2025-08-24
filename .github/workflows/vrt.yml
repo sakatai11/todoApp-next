@@ -8,9 +8,12 @@ on:
       - 'features/**'
       - 'public/**'
       - 'styles/**'
-      - '**.tsx'
-      - '**.ts'
-      - '**.css'
+      - '**/*.tsx'
+      - '**/*.ts'
+      - '**/*.css'
+      # Optional: VRT のみの変更でも起動したい場合
+      - 'tests/vrt/**'
+      - 'playwright.vrt.config.ts'
 
 permissions:
   contents: read
@@ -84,15 +87,6 @@ jobs:
           FIREBASE_PROJECT_ID: todoapp-vrt-test
           NEXT_PUBLIC_EMULATOR_MODE: true
 
-      - name: Commit updated snapshots
-        if: always() && steps.check_diff.outputs.has_diff == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add tests/vrt/*-snapshots/
-          git commit -m "chore: update VRT snapshots [skip ci]" || exit 0
-          git push
-
       - name: Upload test results
         if: ${{ always() && steps.check_diff.outputs.has_diff == 'true' && github.event.pull_request.head.repo.fork == false }}
         uses: actions/upload-artifact@v4
@@ -157,6 +151,25 @@ jobs:
             } catch (error) {
               console.error('Failed to post comment:', error);
             }
+
+      - name: Comment PR with no visual differences
+        if: always() && steps.check_diff.outputs.has_diff == 'false' && github.event.pull_request.head.repo.fork == false
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = '## 🖼️ Visual Regression Testing Results\n\n' +
+              '✅ **UI差分は検出されませんでした**\n\n' +
+              'すべてのページで視覚的変更はありません。\n\n' +
+              '---\n' +
+              '> 🤖 このコメントはVRTワークフローによって自動生成されました。';
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
 
       - name: Update PR template with screenshots
         if: always() && steps.check_diff.outputs.has_diff == 'true'
