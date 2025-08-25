@@ -714,7 +714,49 @@ describe('TodoWrapper', () => {
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
     });
 
-    it('未認証セッション状態を正常に処理する', async () => {
+    it('未認証セッション状態を正常に処理する（待機時間後のエラー表示）', async () => {
+      // エミュレーターモードを無効化
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
+
+      // セッション状態をunauthenticatedに設定
+      vi.mocked(useSession).mockReturnValue({
+        data: null,
+        status: 'unauthenticated',
+      } as never);
+
+      // 待機時間を模擬するため、Date.nowをモック
+      const mockNow = vi.spyOn(Date, 'now');
+      const initialTime = 1000000; // 初期時間
+      mockNow.mockReturnValue(initialTime);
+
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
+      const { rerender } = render(<TodoWrapper />, { withTodoProvider: false });
+
+      // 初回レンダリング時は待機中のためローディング画面が表示
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+
+      // 2秒経過後を模擬
+      mockNow.mockReturnValue(initialTime + 3000); // 3秒後
+
+      // 再レンダリングを強制実行
+      rerender(<TodoWrapper />);
+
+      // 待機時間経過後はエラーメッセージが表示される
+      expect(
+        screen.getByText('認証されていません。ログインしてください。'),
+      ).toBeInTheDocument();
+
+      // モックをクリーンアップ
+      mockNow.mockRestore();
+
+      // エミュレーターモードを元に戻す
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
+    });
+
+    it('未認証セッション状態での初期待機ローディング', async () => {
       // エミュレーターモードを無効化
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
 
@@ -730,10 +772,8 @@ describe('TodoWrapper', () => {
       );
       render(<TodoWrapper />, { withTodoProvider: false });
 
-      // 未認証状態ではエラーメッセージが表示される
-      expect(
-        screen.getByText('認証されていません。ログインしてください。'),
-      ).toBeInTheDocument();
+      // 未認証状態では待機時間中はローディング画面が表示される
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
 
       // エミュレーターモードを元に戻す
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');

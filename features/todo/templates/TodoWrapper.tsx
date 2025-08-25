@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
@@ -119,6 +119,20 @@ const TodoContent = (): React.ReactElement => {
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
 
+  // セッション待機状態の管理
+  const [sessionWaitTime, setSessionWaitTime] = useState<number | null>(null);
+
+  // セッション待機タイマーの設定
+  useEffect(() => {
+    if (!emulatorMode && status === 'unauthenticated') {
+      // unauthenticated状態になった時点で待機開始
+      setSessionWaitTime(Date.now());
+    } else if (status === 'authenticated') {
+      // 認証完了時に待機状態をリセット
+      setSessionWaitTime(null);
+    }
+  }, [emulatorMode, status]);
+
   // 安全な事前読み込み（クライアントサイドのみ）
   useEffect(() => {
     if (shouldFetch) {
@@ -173,8 +187,14 @@ const TodoContent = (): React.ReactElement => {
   if (!emulatorMode && status === 'loading') return <TodosLoading />;
 
   // 本番環境で未認証の場合は認証ページへリダイレクト
+  // セッション同期の待機時間を設ける（2秒）
   if (!emulatorMode && status === 'unauthenticated') {
     if (typeof window !== 'undefined') {
+      // 待機時間中はローディング表示
+      if (sessionWaitTime && Date.now() - sessionWaitTime < 2000) {
+        return <TodosLoading />;
+      }
+      // 待機時間経過後はエラー表示
       return (
         <ErrorDisplay message="認証されていません。ログインしてください。" />
       );
