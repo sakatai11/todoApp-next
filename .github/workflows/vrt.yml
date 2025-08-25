@@ -1,0 +1,220 @@
+name: Visual Regression Testing
+
+on:
+  pull_request:
+    branches: [main, develop-v2]
+    paths:
+      - 'app/**'
+      - 'features/**'
+      - 'public/**'
+      - 'styles/**'
+      - '**/*.tsx'
+      - '**/*.ts'
+      - '**/*.css'
+      # Optional: VRT のみの変更でも起動したい場合
+      - 'tests/vrt/**'
+      - 'playwright.vrt.config.ts'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  vrt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run VRT
+        id: vrt
+        run: npm run test:vrt
+        env:
+          CI: true
+          NEXTAUTH_SECRET: vrt-ci-secret-for-testing
+          NODE_ENV: test
+          FIREBASE_PROJECT_ID: todoapp-vrt-test
+          NEXT_PUBLIC_EMULATOR_MODE: true
+        continue-on-error: true
+
+      - name: Generate VRT snapshots on first run
+        if: ${{ always() && steps.vrt.outcome == 'failure' }}
+        run: npm run test:vrt:update
+        env:
+          CI: true
+          NEXTAUTH_SECRET: vrt-ci-secret-for-testing
+          NODE_ENV: test
+          FIREBASE_PROJECT_ID: todoapp-vrt-test
+          NEXT_PUBLIC_EMULATOR_MODE: true
+
+      - name: Check for visual differences
+        if: ${{ always() }}
+        id: check_diff
+        run: |
+          DIFFS=$(find test-results tests/vrt -type f -name '*-diff.png' 2>/dev/null | wc -l)
+          if [ "$DIFFS" -gt 0 ]; then
+            echo "has_diff=true" >> $GITHUB_OUTPUT
+            echo "diff_count=$DIFFS" >> $GITHUB_OUTPUT
+          else
+            echo "has_diff=false" >> $GITHUB_OUTPUT
+            echo "diff_count=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Auto-update snapshots on visual differences
+        if: always() && steps.check_diff.outputs.has_diff == 'true'
+        run: npm run test:vrt:update
+        env:
+          CI: true
+          NEXTAUTH_SECRET: vrt-ci-secret-for-testing
+          NODE_ENV: test
+          FIREBASE_PROJECT_ID: todoapp-vrt-test
+          NEXT_PUBLIC_EMULATOR_MODE: true
+
+      - name: Upload test results
+        if: ${{ always() && steps.check_diff.outputs.has_diff == 'true' && github.event.pull_request.head.repo.fork == false }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-results-${{ github.run_id }}
+          path: |
+            test-results/
+            tests/vrt/*-test-results/
+            playwright-report/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Comment PR with VRT results
+        if: ${{ always() && steps.check_diff.outputs.has_diff == 'true' && github.event.pull_request.head.repo.fork == false }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // テスト結果ディレクトリから差分画像を探す
+            const testResultsDir = 'test-results';
+            let screenshotComment = '## 🖼️ Visual Regression Testing Results\n\n';
+            screenshotComment += 'UI changes detected! Please review the visual differences:\n\n';
+
+            try {
+              if (fs.existsSync(testResultsDir)) {
+                const files = fs.readdirSync(testResultsDir, { recursive: true });
+                const diffImages = files.filter(file => file.toString().includes('-diff.png'));
+                
+                if (diffImages.length > 0) {
+                  screenshotComment += '### Screenshots (Before/After/Diff)\n\n';
+                  screenshotComment += `Found ${diffImages.length} visual difference(s):\n\n`;
+                  diffImages.forEach(diffImage => {
+                    const testName = diffImage.toString().replace('-diff.png', '');
+                    screenshotComment += `- **${testName}**: Visual changes detected\n`;
+                  });
+                  screenshotComment += `\n📥 [Download VRT Results Artifact](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}) to view detailed comparison images.\n`;
+                } else {
+                  screenshotComment += 'Test results directory found but no visual differences detected.\n';
+                }
+              } else {
+                screenshotComment += 'No test results directory found.\n';
+              }
+            } catch (error) {
+              screenshotComment += `Error reading test results: ${error.message}\n`;
+            }
+
+            screenshotComment += '\n---\n';
+            screenshotComment += '> 🤖 This comment was automatically generated by the VRT workflow.\n';
+            screenshotComment += '> Click the link above to download artifacts and view the detailed comparison images.';
+
+            // PRにコメントを投稿
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: screenshotComment
+              });
+            } catch (error) {
+              console.error('Failed to post comment:', error);
+            }
+
+      - name: Comment PR with no visual differences
+        if: always() && steps.check_diff.outputs.has_diff == 'false' && github.event.pull_request.head.repo.fork == false
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = '## 🖼️ Visual Regression Testing Results\n\n' +
+              '✅ **UI差分は検出されませんでした**\n\n' +
+              'すべてのページで視覚的変更はありません。\n\n' +
+              '---\n' +
+              '> 🤖 このコメントはVRTワークフローによって自動生成されました。';
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Update PR template with screenshots
+        if: always() && steps.check_diff.outputs.has_diff == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const artifactUrl = process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID;
+              const screenshotSection = '## スクリーンショット（必要に応じて）\n\n' +
+                '### 🖼️ Visual Changes Detected\n\n' +
+                'UI変更が検出されました。詳細な比較画像は[VRTアーティファクト](' + artifactUrl + ')からダウンロードできます。\n\n' +
+                '#### Before/After Comparison\n' +
+                '- ダウンロードしたアーティファクトの `test-results` フォルダ内の画像をご確認ください\n' +
+                '- `-actual.png`: 変更後の画像\n' +
+                '- `-expected.png`: 変更前の基準画像\n' +
+                '- `-diff.png`: 差分を示す画像\n\n' +
+                '---\n' +
+                '> 🤖 このセクションはVRTワークフローによって自動生成されました。\n';
+              
+              // PRの本文を取得
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number
+              });
+              
+              let body = pr.body || '';
+              
+              // スクリーンショットセクションを更新または追加
+              const screenshotRegex = /## スクリーンショット（必要に応じて）[\s\S]*?(?=##|$)/;
+              if (screenshotRegex.test(body)) {
+                body = body.replace(screenshotRegex, screenshotSection);
+              } else {
+                // セクションが存在しない場合は追加
+                body += '\n\n' + screenshotSection;
+              }
+              
+              // PRの本文を更新
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                body: body
+              });
+            } catch (error) {
+              console.error('Failed to update PR body:', error);
+            }

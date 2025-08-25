@@ -51,7 +51,7 @@ firestore.indexes.json
 firestore.rules
 firestore.test.rules
 CLAUDE.local.md
-.github
+# .github
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
 .serena
 .claude
@@ -65,6 +65,13 @@ firebase-emulator-data/
 # Firebase Emulator Logs
 firebase-debug.log
 firestore-debug.log
+
+# Visual Regression Testing
+# ベースラインスクリーンショットはコミットし、テスト結果は除外
+/test-results/
+/tests/vrt/*-test-results/
+# /tests/vrt/*-snapshots/ # ベースラインスクリーンショットはコミットする
+playwright-report/
 
 # Submodule
 todoApp-submodule
