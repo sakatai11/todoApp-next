@@ -111,12 +111,11 @@ const fetcher = async (url: string) => {
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();
   const { todos: todosApiUrl, lists: listsApiUrl } = useApiUrls();
-
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
 
@@ -128,16 +127,26 @@ const TodoContent = (): React.ReactElement => {
 
     if (status === 'unauthenticated') {
       // unauthenticated状態になった時点で短時間の待機開始
-      const timer = setTimeout(() => {
-        setSessionGraceOver(true);
-      }, 2000); // 2秒の猶予期間
+      const timer = setTimeout(async () => {
+        // 最後にセッション更新を試行
+        try {
+          await update();
+        } catch {
+          // セッション更新失敗は無視して継続
+        }
+
+        // 短時間待機後に最終確認
+        setTimeout(() => {
+          setSessionGraceOver(true);
+        }, 500);
+      }, 5000); // 5秒の猶予期間
 
       return () => clearTimeout(timer);
     } else {
       // 認証完了 or その他の状態に遷移したら待機状態をリセット
       setSessionGraceOver(false);
     }
-  }, [emulatorMode, status]);
+  }, [emulatorMode, status, update]);
 
   // 安全な事前読み込み（クライアントサイドのみ）
   useEffect(() => {
