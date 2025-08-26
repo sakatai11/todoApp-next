@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/tests/test-utils';
+import { render, screen, act } from '@/tests/test-utils';
 import { useSession } from 'next-auth/react';
 
 // Mock next-auth/react
@@ -714,7 +714,46 @@ describe('TodoWrapper', () => {
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
     });
 
-    it('未認証セッション状態を正常に処理する', async () => {
+    it('未認証セッション状態を正常に処理する（待機時間後のエラー表示）', async () => {
+      // エミュレーターモードを無効化
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
+
+      // タイマーをモック化
+      vi.useFakeTimers();
+
+      // セッション状態をunauthenticatedに設定
+      vi.mocked(useSession).mockReturnValue({
+        data: null,
+        status: 'unauthenticated',
+      } as never);
+
+      // モック適用後にTodoWrapperを動的インポート
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
+      render(<TodoWrapper />, { withTodoProvider: false });
+
+      // 初回レンダリング時は待機中のためローディング画面が表示
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
+
+      // 2秒経過させる（実装の猶予期間を超過）
+      act(() => {
+        vi.advanceTimersByTime(2100);
+      });
+
+      // 待機時間経過後はエラーメッセージが表示される
+      expect(
+        screen.getByText('認証されていません。ログインしてください。'),
+      ).toBeInTheDocument();
+
+      // タイマーモックをクリーンアップ
+      vi.useRealTimers();
+
+      // エミュレーターモードを元に戻す
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
+    });
+
+    it('未認証セッション状態での初期待機ローディング', async () => {
       // エミュレーターモードを無効化
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
 
@@ -730,10 +769,8 @@ describe('TodoWrapper', () => {
       );
       render(<TodoWrapper />, { withTodoProvider: false });
 
-      // 未認証状態ではエラーメッセージが表示される
-      expect(
-        screen.getByText('認証されていません。ログインしてください。'),
-      ).toBeInTheDocument();
+      // 未認証状態では待機時間中はローディング画面が表示される
+      expect(screen.getByTestId('loading')).toBeInTheDocument();
 
       // エミュレーターモードを元に戻す
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
