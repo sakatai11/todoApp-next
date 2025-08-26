@@ -119,17 +119,22 @@ const TodoContent = (): React.ReactElement => {
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
 
-  // セッション待機状態の管理
-  const [sessionWaitTime, setSessionWaitTime] = useState<number | null>(null);
+  const [sessionGraceOver, setSessionGraceOver] = useState(false);
 
-  // セッション待機タイマーの設定
+  // セッション待機の設定
   useEffect(() => {
-    if (!emulatorMode && status === 'unauthenticated') {
-      // unauthenticated状態になった時点で待機開始
-      setSessionWaitTime(Date.now());
-    } else if (status === 'authenticated') {
-      // 認証完了時に待機状態をリセット
-      setSessionWaitTime(null);
+    if (emulatorMode || typeof window === 'undefined') return;
+
+    if (status === 'unauthenticated') {
+      // unauthenticated状態になった時点で短時間の待機開始
+      const timer = setTimeout(() => {
+        setSessionGraceOver(true);
+      }, 2000); // 2秒の猶予期間
+
+      return () => clearTimeout(timer);
+    } else {
+      // 認証完了 or その他の状態に遷移したら待機状態をリセット
+      setSessionGraceOver(false);
     }
   }, [emulatorMode, status]);
 
@@ -187,19 +192,14 @@ const TodoContent = (): React.ReactElement => {
   if (!emulatorMode && status === 'loading') return <TodosLoading />;
 
   // 本番環境で未認証の場合は認証ページへリダイレクト
-  // セッション同期の待機時間を設ける（2秒）
+  // セッション同期の待機フラグを設ける
   if (!emulatorMode && status === 'unauthenticated') {
-    if (typeof window !== 'undefined') {
-      // 待機時間中はローディング表示
-      if (sessionWaitTime && Date.now() - sessionWaitTime < 2000) {
-        return <TodosLoading />;
-      }
-      // 待機時間経過後はエラー表示
-      return (
-        <ErrorDisplay message="認証されていません。ログインしてください。" />
-      );
+    if (typeof window !== 'undefined' && !sessionGraceOver) {
+      return <TodosLoading />;
     }
-    return <TodosLoading />;
+    return (
+      <ErrorDisplay message="認証されていません。ログインしてください。" />
+    );
   }
 
   // セッションはあるがcustomTokenがない場合（認証が不完全）

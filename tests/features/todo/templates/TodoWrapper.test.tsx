@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/tests/test-utils';
+import { render, screen, act } from '@/tests/test-utils';
 import { useSession } from 'next-auth/react';
 
 // Mock next-auth/react
@@ -718,39 +718,36 @@ describe('TodoWrapper', () => {
       // エミュレーターモードを無効化
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
 
+      // タイマーをモック化
+      vi.useFakeTimers();
+
       // セッション状態をunauthenticatedに設定
       vi.mocked(useSession).mockReturnValue({
         data: null,
         status: 'unauthenticated',
       } as never);
 
-      // 待機時間を模擬するため、Date.nowをモック
-      const mockNow = vi.spyOn(Date, 'now');
-      const initialTime = 1000000; // 初期時間
-      mockNow.mockReturnValue(initialTime);
-
       // モック適用後にTodoWrapperを動的インポート
       const { default: TodoWrapper } = await import(
         '@/features/todo/templates/TodoWrapper'
       );
-      const { rerender } = render(<TodoWrapper />, { withTodoProvider: false });
+      render(<TodoWrapper />, { withTodoProvider: false });
 
       // 初回レンダリング時は待機中のためローディング画面が表示
       expect(screen.getByTestId('loading')).toBeInTheDocument();
 
-      // 2秒経過後を模擬
-      mockNow.mockReturnValue(initialTime + 3000); // 3秒後
-
-      // 再レンダリングを強制実行
-      rerender(<TodoWrapper />);
+      // 2秒経過させる（実装の猶予期間を超過）
+      act(() => {
+        vi.advanceTimersByTime(2100);
+      });
 
       // 待機時間経過後はエラーメッセージが表示される
       expect(
         screen.getByText('認証されていません。ログインしてください。'),
       ).toBeInTheDocument();
 
-      // モックをクリーンアップ
-      mockNow.mockRestore();
+      // タイマーモックをクリーンアップ
+      vi.useRealTimers();
 
       // エミュレーターモードを元に戻す
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
