@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
@@ -120,6 +120,25 @@ const TodoContent = (): React.ReactElement => {
   const shouldFetch =
     emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
 
+  const [sessionGraceOver, setSessionGraceOver] = useState(false);
+
+  // セッション待機の設定
+  useEffect(() => {
+    if (emulatorMode || typeof window === 'undefined') return;
+
+    if (status === 'unauthenticated') {
+      // unauthenticated状態になった時点で短時間の待機開始
+      const timer = setTimeout(() => {
+        setSessionGraceOver(true);
+      }, 2000); // 2秒の猶予期間
+
+      return () => clearTimeout(timer);
+    } else {
+      // 認証完了 or その他の状態に遷移したら待機状態をリセット
+      setSessionGraceOver(false);
+    }
+  }, [emulatorMode, status]);
+
   // 安全な事前読み込み（クライアントサイドのみ）
   useEffect(() => {
     if (shouldFetch) {
@@ -174,13 +193,14 @@ const TodoContent = (): React.ReactElement => {
   if (!emulatorMode && status === 'loading') return <TodosLoading />;
 
   // 本番環境で未認証の場合は認証ページへリダイレクト
+  // セッション同期の待機フラグを設ける
   if (!emulatorMode && status === 'unauthenticated') {
-    if (typeof window !== 'undefined') {
-      return (
-        <ErrorDisplay message="認証されていません。ログインしてください。" />
-      );
+    if (typeof window !== 'undefined' && !sessionGraceOver) {
+      return <TodosLoading />;
     }
-    return <TodosLoading />;
+    return (
+      <ErrorDisplay message="認証されていません。ログインしてください。" />
+    );
   }
 
   // セッションはあるがcustomTokenがない場合（認証が不完全）
