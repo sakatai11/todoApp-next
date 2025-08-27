@@ -129,9 +129,14 @@ const TodoContent = (): React.ReactElement => {
       // unauthenticated状態になったら即座にセッション更新を試行
       const updateSession = async () => {
         try {
-          await update();
-        } catch {
+          const updated = await update();
+          // update() が resolve しても未認証のまま（Session が null / user.id 不在）の場合はエラーへ
+          if (!updated || !updated?.user?.id) {
+            setSessionGraceOver(true);
+          }
+        } catch (error) {
           // セッション更新失敗時はエラー表示へ
+          console.error('セッションの更新に失敗しました:', error);
           setSessionGraceOver(true);
         }
       };
