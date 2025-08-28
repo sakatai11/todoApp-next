@@ -126,22 +126,22 @@ const TodoContent = (): React.ReactElement => {
     if (emulatorMode || typeof window === 'undefined') return;
 
     if (status === 'unauthenticated') {
-      // unauthenticated状態になった時点で短時間の待機開始
-      const timer = setTimeout(async () => {
-        // 最後にセッション更新を試行
+      // unauthenticated状態になったら即座にセッション更新を試行
+      const updateSession = async () => {
         try {
-          await update();
-        } catch {
-          // セッション更新失敗は無視して継続
-        }
-
-        // 短時間待機後に最終確認
-        setTimeout(() => {
+          const updated = await update();
+          // update() が resolve しても未認証のまま（Session が null / user.id 不在）の場合はエラーへ
+          if (!updated || !updated?.user?.id) {
+            setSessionGraceOver(true);
+          }
+        } catch (error) {
+          // セッション更新失敗時はエラー表示へ
+          console.error('セッションの更新に失敗しました:', error);
           setSessionGraceOver(true);
-        }, 500);
-      }, 5000); // 5秒の猶予期間
+        }
+      };
 
-      return () => clearTimeout(timer);
+      updateSession();
     } else {
       // 認証完了 or その他の状態に遷移したら待機状態をリセット
       setSessionGraceOver(false);
