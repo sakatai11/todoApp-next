@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act } from '@/tests/test-utils';
+import { render, screen, waitFor } from '@/tests/test-utils';
 import { useSession } from 'next-auth/react';
 
 // Mock next-auth/react
@@ -714,17 +714,18 @@ describe('TodoWrapper', () => {
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
     });
 
-    it('未認証セッション状態を正常に処理する（待機時間後のエラー表示）', async () => {
+    it('未認証セッション状態を正常に処理する（セッション更新失敗時のエラー表示）', async () => {
       // エミュレーターモードを無効化
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
 
-      // タイマーをモック化
-      vi.useFakeTimers();
+      // update関数のモック（失敗をシミュレート）
+      const mockUpdate = vi.fn().mockRejectedValue(new Error('Update failed'));
 
       // セッション状態をunauthenticatedに設定
       vi.mocked(useSession).mockReturnValue({
         data: null,
         status: 'unauthenticated',
+        update: mockUpdate,
       } as never);
 
       // モック適用後にTodoWrapperを動的インポート
@@ -736,18 +737,15 @@ describe('TodoWrapper', () => {
       // 初回レンダリング時は待機中のためローディング画面が表示
       expect(screen.getByTestId('loading')).toBeInTheDocument();
 
-      // 2秒経過させる（実装の猶予期間を超過）
-      act(() => {
-        vi.advanceTimersByTime(2100);
+      // セッション更新失敗後はエラーメッセージが表示される
+      await waitFor(() => {
+        expect(
+          screen.getByText('認証されていません。ログインしてください。'),
+        ).toBeInTheDocument();
       });
 
-      // 待機時間経過後はエラーメッセージが表示される
-      expect(
-        screen.getByText('認証されていません。ログインしてください。'),
-      ).toBeInTheDocument();
-
-      // タイマーモックをクリーンアップ
-      vi.useRealTimers();
+      // update関数が呼ばれたことを確認
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
 
       // エミュレーターモードを元に戻す
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
@@ -757,10 +755,17 @@ describe('TodoWrapper', () => {
       // エミュレーターモードを無効化
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
 
+      // update関数のモック（成功をシミュレート、但し遅延させる）
+      const mockUpdate = vi.fn().mockImplementation(async () => {
+        // 短時間の遅延を発生させてローディング期間を確保
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+
       // セッション状態をunauthenticatedに設定
       vi.mocked(useSession).mockReturnValue({
         data: null,
         status: 'unauthenticated',
+        update: mockUpdate,
       } as never);
 
       // モック適用後にTodoWrapperを動的インポート
@@ -769,7 +774,7 @@ describe('TodoWrapper', () => {
       );
       render(<TodoWrapper />, { withTodoProvider: false });
 
-      // 未認証状態では待機時間中はローディング画面が表示される
+      // 未認証状態では初期表示時はローディング画面が表示される
       expect(screen.getByTestId('loading')).toBeInTheDocument();
 
       // エミュレーターモードを元に戻す
