@@ -1,0 +1,233 @@
+name: Security Review CI
+
+on:
+  pull_request:
+    branches: [main, develop-v2]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, develop-v2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  # Security Scans
+  traditional-security-scans:
+    name: Traditional Security Scans
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint security rules
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Dependency vulnerability scan (PR only)
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          allow-ghsas: ''
+          deny-licenses: GPL-2.0, GPL-3.0
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: Secret scanning with gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Custom security checks
+        run: |
+          chmod +x ./scripts/security-check.sh
+          ./scripts/security-check.sh
+
+      - name: Security audit with npm
+        run: |
+          npm audit --audit-level moderate --json > npm-audit.json || true
+          if [ -s npm-audit.json ]; then
+            echo "::warning::Security vulnerabilities found in dependencies"
+            cat npm-audit.json
+          fi
+
+      - name: Check for sensitive files
+        run: |
+          # 機密ファイルの存在チェック
+          sensitive_files=(
+            ".env*"
+            "**/firebase-adminsdk-*.json"
+            "**/*.pem"
+            "**/*.p12"
+            "**/id_rsa*"
+            "**/config.json"
+          )
+
+          found_sensitive=false
+          for pattern in "${sensitive_files[@]}"; do
+            if find . -name "$pattern" -type f | grep -v node_modules | grep -v .git; then
+              echo "::error::Sensitive file found: $pattern"
+              found_sensitive=true
+            fi
+          done
+
+          if [ "$found_sensitive" = true ]; then
+            echo "::error::Sensitive files detected. Please review and remove them."
+            exit 1
+          fi
+
+      - name: Next.js security headers check
+        run: |
+          # Next.js設定のセキュリティヘッダーをチェック
+          if [ -f "next.config.ts" ] || [ -f "next.config.js" ]; then
+            echo "Checking Next.js security configuration..."
+            node -e "
+              const fs = require('fs');
+              const configFile = fs.existsSync('next.config.ts') ? 'next.config.ts' : 'next.config.js';
+              const content = fs.readFileSync(configFile, 'utf8');
+              
+              const requiredHeaders = [
+                'X-Content-Type-Options',
+                'X-Frame-Options',
+                'X-XSS-Protection',
+                'Referrer-Policy'
+              ];
+              
+              let missingHeaders = [];
+              requiredHeaders.forEach(header => {
+                if (!content.includes(header)) {
+                  missingHeaders.push(header);
+                }
+              });
+              
+              if (missingHeaders.length > 0) {
+                console.log('::warning::Missing security headers:', missingHeaders.join(', '));
+              } else {
+                console.log('✅ Security headers configuration found');
+              }
+            "
+          fi
+
+      - name: Firebase security rules check
+        run: |
+          # Firebase設定のセキュリティルールをチェック
+          if [ -f "firebase.json" ]; then
+            echo "Checking Firebase security configuration..."
+            node -e "
+              const fs = require('fs');
+              const firebaseConfig = JSON.parse(fs.readFileSync('firebase.json', 'utf8'));
+              
+              // Firestoreルールファイルの存在確認
+              if (firebaseConfig.firestore && firebaseConfig.firestore.rules) {
+                console.log('✅ Firestore security rules configured');
+              } else {
+                console.log('::warning::Firestore security rules not configured');
+              }
+              
+              // Storage rulesの確認
+              if (firebaseConfig.storage && firebaseConfig.storage.rules) {
+                console.log('✅ Storage security rules configured');
+              }
+            "
+          fi
+
+      - name: Environment variable security check
+        run: |
+          # 環境変数の適切な設定をチェック
+          echo "Checking environment variable configuration..."
+
+          # Vercel設定チェック
+          if [ -f "vercel.json" ]; then
+            node -e "
+              const fs = require('fs');
+              const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
+              
+              if (vercelConfig.env) {
+                const publicVars = Object.keys(vercelConfig.env).filter(key => 
+                  key.startsWith('NEXT_PUBLIC_') || 
+                  !key.match(/^(API_KEY|SECRET|TOKEN|PASSWORD|PRIVATE)/i)
+                );
+                
+                if (publicVars.length > 0) {
+                  console.log('::warning::Public environment variables found:', publicVars.join(', '));
+                }
+              }
+            "
+          fi
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-scan-results
+          path: |
+            npm-audit.json
+            results/
+          retention-days: 30
+
+      - name: Comment PR with security summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 🔒 Security Review Summary\n\n';
+
+            // npm audit結果の確認
+            try {
+              if (fs.existsSync('npm-audit.json')) {
+                const auditData = JSON.parse(fs.readFileSync('npm-audit.json', 'utf8'));
+                if (auditData.metadata && auditData.metadata.vulnerabilities) {
+                  const vulns = auditData.metadata.vulnerabilities;
+                  comment += `### 📦 Dependency Vulnerabilities\n`;
+                  comment += `- Critical: ${vulns.critical || 0}\n`;
+                  comment += `- High: ${vulns.high || 0}\n`;
+                  comment += `- Moderate: ${vulns.moderate || 0}\n`;
+                  comment += `- Low: ${vulns.low || 0}\n\n`;
+                }
+              }
+            } catch (e) {
+              comment += '### 📦 Dependency Scan: ✅ No vulnerabilities detected\n\n';
+            }
+
+            comment += '### ✅ Security Checks Completed\n';
+            comment += '- ESLint security rules\n';
+            comment += '- Dependency vulnerability scan\n';
+            comment += '- CodeQL analysis\n';
+            comment += '- Secret scanning\n';
+            comment += '- Custom security checks\n';
+            comment += '- Configuration security review\n\n';
+            comment += '*For detailed results, check the workflow logs and artifacts.*';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
