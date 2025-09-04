@@ -56,10 +56,14 @@ fi
 echo "📋 2. Next.js security configuration check..."
 if [ -f "next.config.ts" ] || [ -f "next.config.js" ]; then
     config_file="next.config.ts"
-    [ -f "next.config.js" ] && config_file="next.config.js"
+    if [ -f "next.config.ts" ]; then
+        config_file="next.config.ts"
+    else
+        config_file="next.config.js"
+    fi
     
     # セキュリティヘッダーの確認
-    if ! grep -q "X-Content-Type-Options\|X-Frame-Options\|X-XSS-Protection" "$config_file"; then
+    if ! grep -qE "Content-Security-Policy|Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options|Referrer-Policy|Permissions-Policy" "$config_file"; then
         warning "Security headers not found in Next.js config"
     else
         success "Security headers configured in Next.js"
@@ -75,9 +79,12 @@ fi
 
 # 3. API Routes セキュリティチェック
 echo "📋 3. API routes security check..."
-api_files=$(find app/api -name "*.ts" -o -name "*.js" 2>/dev/null || true)
-if [ -n "$api_files" ]; then
-    for file in $api_files; do
+if [ ! -d "app/api" ]; then
+    warning "API routes directory 'app/api' not found"
+else
+    found_files=false
+    while IFS= read -r file; do
+        found_files=true
         # 認証チェックの存在確認
         if ! grep -q "auth\|session\|token\|verify" "$file"; then
             warning "Potential missing authentication in $file"
@@ -91,22 +98,23 @@ if [ -n "$api_files" ]; then
         if grep -i "api_key.*=.*['\"].*['\"]" "$file"; then
             error "Hardcoded API key found in $file"
         fi
-    done
-    success "API routes security check completed"
-else
-    warning "No API route files found"
+    done < <(find app/api \( -name "*.ts" -o -name "*.js" \))
+
+    if [ "$found_files" = true ]; then
+        success "API routes security check completed"
+    else
+        warning "No API route files found in 'app/api'"
+    fi
 fi
 
 # 4. 環境変数の使用パターンチェック
 echo "📋 4. Environment variable usage check..."
-ts_files=$(find . -name "*.ts" -o -name "*.tsx" | grep -v node_modules | grep -v .git || true)
-if [ -n "$ts_files" ]; then
-    for file in $ts_files; do
+while IFS= read -r file; do
         # process.env の不適切な使用をチェック
-        if grep -n "process\.env\.[A-Z_]*[^_PUBLIC]" "$file" | grep -v "process\.env\.NODE_ENV" | grep -v "NEXT_PUBLIC_"; then
-            warning "Non-public environment variable used in client-side file: $file"
+        if grep -nP 'process\.env\.(?!NEXT_PUBLIC_)(?!NODE_ENV\b)[A-Z][A-Z0-9_]+' "$file" >/dev/null; then
+            warning "Non-public environment variable used: $file"
         fi
-    done
+    done < <(find . -path ./node_modules -prune -o -path ./.git -prune -o \( -name "*.ts" -o -name "*.tsx" \) -print)
     success "Environment variable usage check completed"
 fi
 
@@ -163,7 +171,7 @@ if [ -f "package.json" ]; then
     fi
     
     # devDependenciesの本番環境混入チェック
-    if grep -A 50 "\"dependencies\"" package.json | grep -q "eslint\|prettier\|vitest"; then
+    if jq -e '.dependencies | keys[] | test("eslint|prettier|vitest")' package.json >/dev/null; then
         warning "Development dependencies may be in production dependencies"
     fi
     
@@ -197,7 +205,7 @@ if [ -f ".gitignore" ]; then
     required_ignores=(".env" "*.pem" "*.p12" "firebase-adminsdk-*.json" "node_modules")
     
     for ignore_pattern in "${required_ignores[@]}"; do
-        if ! grep -q "$ignore_pattern" .gitignore; then
+        if ! grep -Fq "$ignore_pattern" .gitignore; then
             warning ".gitignore missing pattern: $ignore_pattern"
         fi
     done

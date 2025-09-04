@@ -80,24 +80,20 @@ jobs:
       - name: Check for sensitive files
         run: |
           # 機密ファイルの存在チェック
-          sensitive_files=(
-            ".env*"
-            "**/firebase-adminsdk-*.json"
-            "**/*.pem"
-            "**/*.p12"
-            "**/id_rsa*"
-            "**/config.json"
-          )
+          set -euo pipefail
+                    found=0
+          # node_modules/.git配下は除外
+          matches=$(find . -type f \( -name ".env*" -o -name "firebase-adminsdk-*.json" -o -name "*.pem" -o -name "*.p12" -o -name "id_rsa*" -o -name "config.json" \) \
+                    -not -path "./node_modules/*" -not -path "./.git/*")
 
-          found_sensitive=false
-          for pattern in "${sensitive_files[@]}"; do
-            if find . -name "$pattern" -type f | grep -v node_modules | grep -v .git; then
-              echo "::error::Sensitive file found: $pattern"
-              found_sensitive=true
-            fi
-          done
+          if [ -n "$matches" ]; then
+            echo "$matches" | while read -r f; do
+              echo "::error::Sensitive file found: ${f}"
+            done
+            found=1
+          fi
 
-          if [ "$found_sensitive" = true ]; then
+          if [ "$found" -eq 1 ]; then
             echo "::error::Sensitive files detected. Please review and remove them."
             exit 1
           fi
@@ -189,6 +185,7 @@ jobs:
           path: |
             npm-audit.json
             results/
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Comment PR with security summary

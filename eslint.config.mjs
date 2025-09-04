@@ -60,8 +60,9 @@ const eslintConfig = [
       'no-restricted-syntax': [
         'error',
         {
-          selector: 'CallExpression[callee.name="dangerouslySetInnerHTML"]',
-          message: 'Use of dangerouslySetInnerHTML should be avoided for security reasons.',
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+          message:
+            'Use of dangerouslySetInnerHTML should be avoided for security reasons. It can lead to XSS vulnerabilities.',
         },
       ],
       // Next.js特有のセキュリティルール
