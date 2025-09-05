@@ -110,13 +110,19 @@ fi
 # 4. 環境変数の使用パターンチェック
 echo "📋 4. Environment variable usage check..."
 while IFS= read -r file; do
-        # process.env の不適切な使用をチェック
-        if grep -nP 'process\.env\.(?!NEXT_PUBLIC_)(?!NODE_ENV\b)[A-Z][A-Z0-9_]+' "$file" >/dev/null; then
-            warning "Non-public environment variable used: $file"
-        fi
-    done < <(find . -path ./node_modules -prune -o -path ./.git -prune -o \( -name "*.ts" -o -name "*.tsx" \) -print)
+       # クライアントコンポーネント判定（先頭に "use client"）
+       if ! grep -qE '^[[:space:]]*"use client"' "$file"; then
+           continue
+       fi
+       # process.env の不適切な使用をチェック（NEXT_PUBLIC_/NODE_ENV を除外）
+       if grep -nP 'process\.env\.(?!NEXT_PUBLIC_)(?!NODE_ENV\b)[A-Z][A-Z0-9_]+' "$file" >/dev/null; then
+           warning "Non-public environment variable used: $file"
+       fi
+   done < <(find . \
+       -path ./node_modules -prune -o -path ./.git -prune -o \
+       -path ./app/api -prune -o -path ./pages/api -prune -o \
+       \( -name "*.ts" -o -name "*.tsx" \) -type f -print)
     success "Environment variable usage check completed"
-fi
 
 # 5.認証設定のチェック
 echo "📋 5. Authentication configuration check..."

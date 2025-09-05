@@ -34,6 +34,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate shell scripts
+        run: |
+          echo "🔍 Validating shell script syntax..."
+          bash -n scripts/security-check.sh
+          if command -v shellcheck >/dev/null 2>&1; then
+            echo "🔍 Running ShellCheck..."
+            shellcheck -x scripts/security-check.sh
+          else
+            echo "⚠️  ShellCheck not available, skipping static analysis"
+          fi
+
+      - name: Run ESLint security rules
+        run: npm run lint
+        continue-on-error: true
+
       - name: Run ESLint security rules
         run: npm run lint
         continue-on-error: true
@@ -109,10 +124,12 @@ jobs:
               const content = fs.readFileSync(configFile, 'utf8');
               
               const requiredHeaders = [
+                'Content-Security-Policy',
+                'Strict-Transport-Security',
                 'X-Content-Type-Options',
                 'X-Frame-Options',
-                'X-XSS-Protection',
-                'Referrer-Policy'
+                'Referrer-Policy',
+                'Permissions-Policy'
               ];
               
               let missingHeaders = [];
@@ -164,15 +181,13 @@ jobs:
               const fs = require('fs');
               const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
               
-              if (vercelConfig.env) {
-                const publicVars = Object.keys(vercelConfig.env).filter(key => 
-                  key.startsWith('NEXT_PUBLIC_') || 
-                  !key.match(/^(API_KEY|SECRET|TOKEN|PASSWORD|PRIVATE)/i)
-                );
-                
-                if (publicVars.length > 0) {
-                  console.log('::warning::Public environment variables found:', publicVars.join(', '));
-                }
+              const env = (vercelConfig && vercelConfig.env) || {};
+              const publicSensitive = Object.keys(env).filter(key =>
+                key.startsWith('NEXT_PUBLIC_') &&
+                /API_KEY|SECRET|TOKEN|PASSWORD|PRIVATE/i.test(key)
+              );
+              if (publicSensitive.length > 0) {
+                console.log('::warning::Potentially sensitive public env vars found:', publicSensitive.join(', '));
               }
             "
           fi
