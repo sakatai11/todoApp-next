@@ -55,9 +55,9 @@ jobs:
 
       - name: Enhanced dependency security check (PR only)
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         run: |
           echo "🔍 Running enhanced dependency security check..."
-          continue-on-error: true
 
           # 依存脆弱性チェック（JSON保存→後段で集計→最後にゲート）
           echo "📋 Checking for vulnerabilities (saving JSON)..."
