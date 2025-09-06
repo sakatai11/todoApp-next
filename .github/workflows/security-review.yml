@@ -339,12 +339,15 @@ jobs:
       - name: Enforce sensitive-files gate
         if: always()
         run: |
-          if [ -s results/sensitive-files.txt ]; then
-            echo "::error::Sensitive files were found:"
-            cat results/sensitive-files.txt
-            echo "Contents of results/sensitive-files.txt for debugging:"
-            ls -la results/
-            exit 1
+          if [ -f results/sensitive-files.txt ] && [ -s results/sensitive-files.txt ]; then
+            file_content=$(cat results/sensitive-files.txt | tr -d '\n' | tr -d ' ')
+            if [ -n "$file_content" ]; then
+              echo "::error::Sensitive files were found:"
+              cat results/sensitive-files.txt
+              exit 1
+            else
+              echo "::notice::No sensitive files detected - security check passed"
+            fi
           else
             echo "::notice::No sensitive files detected - security check passed"
           fi
