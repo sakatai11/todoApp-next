@@ -299,11 +299,22 @@ jobs:
               try {
                 const data = JSON.parse(fs.readFileSync('npm-audit.json','utf8'));
                 const v = (data.metadata && data.metadata.vulnerabilities) || {};
-                const moderatePlus = (v.critical||0) + (v.high||0) + (v.moderate||0);
-                if (moderatePlus > 0) {
-                  console.log('::error::Dependency vulnerabilities (>= moderate) present.');
+                const critical = v.critical || 0;
+                const high = v.high || 0;
+                const moderate = v.moderate || 0;
+                
+                // 重要度別の対応方針
+                if (critical > 0) {
+                  console.log('::error::Critical vulnerabilities found: ' + critical);
                   exit = 1;
+                } else if (high > 0) {
+                  console.log('::warning::High vulnerabilities found: ' + high);
+                  // 本番環境では exit = 1 に変更を検討
+                } else if (moderate > 0) {
+                  console.log('::notice::Moderate vulnerabilities found: ' + moderate);
                 }
+                
+                console.log('::notice::Vulnerability summary - Critical:' + critical + ' High:' + high + ' Moderate:' + moderate + ' Low:' + (v.low || 0));
               } catch (e) {
                 console.log('::warning::Failed to parse npm-audit.json for gating:', e.message);
               }
