@@ -49,7 +49,13 @@ if [ -f "firebase.json" ]; then
         warning "Firebase emulator configuration detected - ensure this is not deployed to production"
     fi
 else
-    warning "Firebase configuration not found"
+    # .gitignoreでFirebase設定が除外されているかチェック
+    if [ -f ".gitignore" ] && grep -q "firebase.json" .gitignore; then
+        echo "ℹ️  Firebase configuration intentionally excluded via .gitignore (security best practice)"
+        success "Firebase files properly excluded from version control"
+    else
+        warning "Firebase configuration not found"
+    fi
 fi
 
 # 2. Next.js設定のセキュリティチェック
