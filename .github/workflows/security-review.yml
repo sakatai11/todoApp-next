@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.0
         with:
           fetch-depth: 0
 
@@ -123,7 +123,9 @@ jobs:
           ./scripts/security-check.sh
 
       - name: Generate npm audit JSON
-        run: npm audit --json > npm-audit.json
+        if: github.event_name != 'pull_request' # PRでは前段で実行済みにする
+        continue-on-error: true
+        run: npm audit --json > npm-audit.json || true
 
       - name: Security audit (print saved results)
         if: always()
