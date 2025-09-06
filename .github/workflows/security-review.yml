@@ -145,8 +145,8 @@ jobs:
           set -euo pipefail
           mkdir -p results
           found=0
-          # node_modules/.git配下は除外
-          matches=$(find . \( -path "./node_modules" -o -path "./.git" \) -prune -false -o -type f \
+          # node_modules/.git/.next/.vercel/firebase-emulator-data配下は除外
+          matches=$(find . \( -path "./node_modules" -o -path "./.git" -o -path "./.next" -o -path "./.vercel" -o -path "./firebase-emulator-data" \) -prune -false -o -type f \
                     \( -name ".env*" -o -name "firebase-adminsdk-*.json" -o -name "*.pem" -o -name "*.p12" -o -name "*.p8" -o -name "*.jks" -o -name "id_rsa" -o -name "id_dsa" -o -name "config.json" \) \
                     ! -name ".env.example" ! -name "*.pub" -print)
 
