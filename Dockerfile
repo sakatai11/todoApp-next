@@ -5,8 +5,8 @@ FROM node:20-alpine
 RUN apk add --no-cache wget curl
 
 # nextjsユーザーを作成（セキュリティ向上のためnon-root実行）
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs nextjs
 
 # 作業ディレクトリ作成
 WORKDIR /app
@@ -20,6 +20,9 @@ COPY --chown=nextjs:nodejs . .
 
 # Next.jsのポートを開放
 EXPOSE 3000
+
+# アプリケーションファイルの所有権を再帰的に変更
+RUN chown -R nextjs:nodejs /app
 
 # nextjsユーザーに切り替え（non-root実行）
 USER nextjs
