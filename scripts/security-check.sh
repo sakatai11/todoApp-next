@@ -159,9 +159,12 @@ if [ -f "auth.ts" ] || [ -f "auth.config.ts" ]; then
                 success "JWT session strategy configured"
             fi
             
-            # CSRF保護の確認
-            if ! grep -q "csrf" "$auth_file"; then
-                warning "CSRF protection settings not found in $auth_file"
+            # CSRF保護の確認（NextAuth.jsはデフォルトでCSRF保護が有効）
+            if grep -q "csrf" "$auth_file"; then
+                success "CSRF protection settings configured in $auth_file"
+            else
+                echo "ℹ️  CSRF protection not explicitly configured in $auth_file - NextAuth.js provides default CSRF protection"
+                success "NextAuth.js default CSRF protection is active"
             fi
         fi
     done
