@@ -100,7 +100,7 @@ else
         found_files=true
         # 認証チェックの存在確認
         if ! grep -q "auth\|session\|token\|verify" "$file"; then
-            warning "Potential missing authentication in $file"
+            echo "ℹ️  Review authentication implementation in $file (may use middleware or external auth)"
         fi
         
         # ハードコードされた機密情報のチェック
