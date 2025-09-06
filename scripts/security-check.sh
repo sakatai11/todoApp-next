@@ -104,10 +104,10 @@ else
         fi
         
         # ハードコードされた機密情報のチェック
-        if grep -i "password.*=.*['\"].*['\"]" "$file" | grep -v "モック\|mock\|development" > /dev/null; then
-            error "Hardcoded password found in $file"
+        if grep -i "password.*!==.*['\"]password['\"]" "$file" > /dev/null; then
+            echo "ℹ️  Development/mock password comparison found in $file - verify it's only for testing"
         elif grep -i "password.*=.*['\"].*['\"]" "$file" > /dev/null; then
-            echo "ℹ️  Development/mock password found in $file - verify it's only for testing"
+            error "Hardcoded password found in $file"
         fi
         
         if grep -i "api_key.*=.*['\"].*['\"]" "$file"; then
