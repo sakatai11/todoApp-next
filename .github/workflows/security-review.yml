@@ -158,9 +158,12 @@ jobs:
             found=1
           fi
           echo "$matches" > results/sensitive-files.txt
+          echo "::debug::Sensitive file scan results: matches='$matches', found=$found"
           if [ "$found" -eq 1 ]; then
             echo "::error::Sensitive files detected. Please review and remove them."
             exit 1
+          else
+            echo "::notice::No sensitive files found in this scan"
           fi
 
       - name: Next.js security headers check
@@ -339,5 +342,9 @@ jobs:
           if [ -s results/sensitive-files.txt ]; then
             echo "::error::Sensitive files were found:"
             cat results/sensitive-files.txt
+            echo "Contents of results/sensitive-files.txt for debugging:"
+            ls -la results/
             exit 1
+          else
+            echo "::notice::No sensitive files detected - security check passed"
           fi
