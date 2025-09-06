@@ -139,10 +139,13 @@ jobs:
           fi
 
       - name: Check for sensitive files
+        id: sensitive_files
+        continue-on-error: true
         run: |
           # 機密ファイルの存在チェック
           set -euo pipefail
-                    found=0
+          mkdir -p results
+          found=0
           # node_modules/.git配下は除外
           matches=$(find . \( -path "./node_modules" -o -path "./.git" \) -prune -false -o -type f \
                     \( -name ".env*" -o -name "firebase-adminsdk-*.json" -o -name "*.pem" -o -name "*.p12" -o -name "*.p8" -o -name "*.jks" -o -name "id_rsa" -o -name "id_dsa" -o -name "config.json" \) \
@@ -152,9 +155,10 @@ jobs:
             echo "$matches" | while read -r f; do
               echo "::error::Sensitive file found: ${f}"
             done
+            
             found=1
           fi
-
+          echo "$matches" > results/sensitive-files.txt
           if [ "$found" -eq 1 ]; then
             echo "::error::Sensitive files detected. Please review and remove them."
             exit 1
@@ -329,3 +333,12 @@ jobs:
         run: |
           echo "::error::Gitleaks detected secrets."
           exit 1
+
+      - name: Enforce sensitive-files gate
+        if: always()
+        run: |
+          if [ -s results/sensitive-files.txt ]; then
+            echo "::error::Sensitive files were found:"
+            cat results/sensitive-files.txt
+            exit 1
+          fi
