@@ -58,28 +58,8 @@ jobs:
         run: |
           echo "🔍 Running enhanced dependency security check..."
 
-          # npm audit 結果を常にJSON保存（後段で集計して必要ならfail）
-          echo "📋 Checking for vulnerabilities..."
-          npm audit --json > npm-audit.json || true
-          node -e "
-            const fs = require('fs');
-            let exit = 0;
-            try {
-              const data = JSON.parse(fs.readFileSync('npm-audit.json','utf8'));
-              const v = (data.metadata && data.metadata.vulnerabilities) || {};
-              const critical = v.critical || 0, high = v.high || 0, moderate = v.moderate || 0;
-              const moderatePlus = critical + high + moderate;
-              if (moderatePlus > 0) {
-                console.log(\`::error::npm audit detected vulnerabilities - Critical:\${critical} High:\${high} Moderate:\${moderate}\`);
-                exit = 1;
-              } else {
-                console.log('✅ No moderate+ vulnerabilities');
-              }
-            } catch (e) {
-              console.log('::warning::Failed to parse npm-audit.json:', e.message);
-            }
-            process.exit(exit);
-          "
+          # 依存脆弱性チェックは下段ステップで一元的に実施（JSON保存→集計→必要に応じてfail）
+          echo "ℹ️ Dependency vulnerability audit is handled in the 'Security audit with npm' step."
 
           echo "📦 Analyzing package.json for security concerns..."
           node -e "
