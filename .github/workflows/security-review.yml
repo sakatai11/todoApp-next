@@ -101,6 +101,9 @@ jobs:
           languages: javascript-typescript
           queries: security-extended
 
+      - name: Clean build cache before analysis
+        run: rm -rf .next
+
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
 
