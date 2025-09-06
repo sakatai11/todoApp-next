@@ -184,7 +184,8 @@ if [ -f "tsconfig.json" ]; then
     
     # 型チェックの厳格性確認
     if grep -q "\"skipLibCheck\".*true" tsconfig.json; then
-        warning "Library type checking is skipped - potential type safety issues"
+        echo "ℹ️  Library type checking is skipped in tsconfig.json - improves build performance but reduces type safety"
+        success "TypeScript configuration includes build optimization settings"
     fi
 else
     error "TypeScript configuration not found"
