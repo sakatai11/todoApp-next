@@ -69,13 +69,16 @@ if [ -f "next.config.ts" ] || [ -f "next.config.js" ]; then
     fi
     
     # セキュリティヘッダーの確認
-    if grep -q "async headers()" "$config_file" && grep -qE "X-Content-Type-Options|X-Frame-Options|Referrer-Policy|Permissions-Policy" "$config_file"; then
+    if grep -q "async headers()" "$config_file" && \
+       grep -q "X-Content-Type-Options" "$config_file" && \
+       grep -q "X-Frame-Options" "$config_file" && \
+       grep -q "Referrer-Policy" "$config_file" && \
+       grep -q "Permissions-Policy" "$config_file"; then
         success "Security headers configured in Next.js"
     elif grep -qE "Content-Security-Policy|Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options|Referrer-Policy|Permissions-Policy" "$config_file"; then
         success "Some security headers configured in Next.js"
     else
-        echo "ℹ️  Security headers not configured in Next.js config - consider adding for production"
-        success "Next.js configuration found (security headers recommended for production)"
+        warning "Security headers not configured in Next.js config - consider adding for production"
     fi
     
     # 本番ビルドエラー無視設定のチェック
