@@ -49,10 +49,6 @@ jobs:
         run: npm run lint
         continue-on-error: true
 
-      - name: Run ESLint security rules
-        run: npm run lint
-        continue-on-error: true
-
       - name: Enhanced dependency security check (PR only)
         if: github.event_name == 'pull_request'
         continue-on-error: true

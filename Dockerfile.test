@@ -16,8 +16,8 @@ RUN npm ci --legacy-peer-deps
 # Playwrightブラウザをインストール
 RUN npx playwright install
 
-# アプリケーションコードをコピー（適切な所有権で）
-COPY --chown=nextjs:nodejs . .
+# アプリケーションコードをコピー
+COPY . .
 
 # 環境変数を設定
 ENV NODE_ENV=test

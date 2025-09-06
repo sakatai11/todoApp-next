@@ -4,9 +4,9 @@ FROM node:20-alpine
 # 必要なパッケージをインストール（health check用）
 RUN apk add --no-cache wget curl
 
-# nextjsユーザーを作成（セキュリティ向上のためnon-root実行）
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 --ingroup nodejs nextjs
+# nextjsユーザーを作成（Alpine BusyBox対応）
+RUN addgroup -S -g 1001 nodejs || addgroup -S nodejs && \
+    adduser -S -u 1001 -G nodejs -H -D nextjs || true
 
 # 作業ディレクトリ作成
 WORKDIR /app
@@ -15,8 +15,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# アプリケーションの全コードをコピー（適切な所有権で）
-COPY --chown=nextjs:nodejs . .
+# アプリケーションの全コードをコピー
+COPY . .
 
 # Next.jsのポートを開放
 EXPOSE 3000
