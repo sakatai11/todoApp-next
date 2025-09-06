@@ -1,5 +1,9 @@
 FROM mcr.microsoft.com/playwright:v1.54.1-focal
 
+# nextjsユーザーを作成（セキュリティ向上のためnon-root実行）
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
+
 # 作業ディレクトリを設定
 WORKDIR /app
 
@@ -12,12 +16,18 @@ RUN npm ci --legacy-peer-deps
 # Playwrightブラウザをインストール
 RUN npx playwright install
 
-# アプリケーションコードをコピー
-COPY . .
+# アプリケーションコードをコピー（適切な所有権で）
+COPY --chown=nextjs:nodejs . .
 
 # 環境変数を設定
 ENV NODE_ENV=test
 ENV CI=true
+
+# アプリケーションファイルの所有権を再帰的に変更
+RUN chown -R nextjs:nodejs /app
+
+# nextjsユーザーに切り替え（non-root実行）
+USER nextjs
 
 # E2Eテストを実行するコマンド
 CMD ["npm", "run", "test:e2e"]
