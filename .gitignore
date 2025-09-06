@@ -67,6 +67,9 @@ firebase-emulator-data/
 firebase-debug.log
 firestore-debug.log
 
+# Firebase Admin SDK Credentials
+firebase-adminsdk-*.json
+
 # Visual Regression Testing
 # ベースラインスクリーンショットはコミットし、テスト結果は除外
 /test-results/
