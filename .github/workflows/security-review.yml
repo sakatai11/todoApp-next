@@ -59,8 +59,23 @@ jobs:
           echo "🔍 Running enhanced dependency security check..."
           continue-on-error: true
 
-          # 依存脆弱性チェックは下段ステップで一元的に実施（JSON保存→集計→必要に応じてfail）
-          echo "ℹ️ Dependency vulnerability audit is handled in the 'Security audit with npm' step."
+          # 依存脆弱性チェック（JSON保存→後段で集計→最後にゲート）
+          echo "📋 Checking for vulnerabilities (saving JSON)..."
+          mkdir -p results
+          npm audit --json > npm-audit.json || true
+          node -e "
+            const fs = require('fs');
+            let summary = {critical:0,high:0,moderate:0,low:0};
+            try {
+              const d = JSON.parse(fs.readFileSync('npm-audit.json','utf8'));
+              const v = (d.metadata && d.metadata.vulnerabilities) || {};
+              summary = {critical:v.critical||0, high:v.high||0, moderate:v.moderate||0, low:v.low||0};
+              console.log(\`::notice::npm audit -> Critical:\${summary.critical} High:\${summary.high} Moderate:\${summary.moderate} Low:\${summary.low}\`);
+            } catch(e) {
+              console.log('::warning::Failed to parse npm-audit.json:', e.message);
+            }
+            fs.writeFileSync('results/audit-summary.json', JSON.stringify(summary));
+          "
 
           echo "📦 Analyzing package.json for security concerns..."
           node -e "
@@ -71,10 +86,10 @@ jobs:
             const concerningPackages = [
               'eval', 'vm2', 'serialize-javascript'  // 動的コード実行系
             ];
-            
+
             const allDeps = {...(packageJson.dependencies || {}), ...(packageJson.devDependencies || {})};
             const foundConcerning = concerningPackages.filter(pkg => allDeps[pkg]);
-            
+
             if (foundConcerning.length > 0) {
               console.log('⚠️  Potentially concerning packages found:', foundConcerning.join(', '));
             } else {
@@ -106,6 +121,9 @@ jobs:
         run: |
           chmod +x ./scripts/security-check.sh
           ./scripts/security-check.sh
+
+      - name: Generate npm audit JSON
+        run: npm audit --json > npm-audit.json
 
       - name: Security audit (print saved results)
         if: always()
