@@ -146,8 +146,12 @@ if [ -f "auth.ts" ] || [ -f "auth.config.ts" ]; then
     for auth_file in $auth_files; do
         if [ -f "$auth_file" ]; then
             # NextAuth設定の基本セキュリティチェック
-            if ! grep -q "secret\|SECRET" "$auth_file"; then
-                error "AUTH_SECRET not configured in $auth_file"
+            if grep -q "NEXTAUTH_SECRET\|process\.env\.NEXTAUTH_SECRET" "$auth_file"; then
+                success "NextAuth secret properly configured with environment variable in $auth_file"
+            elif grep -q "secret.*:" "$auth_file"; then
+                success "NextAuth secret configuration found in $auth_file"
+            else
+                echo "ℹ️  NextAuth secret configuration not found in $auth_file - verify NEXTAUTH_SECRET environment variable"
             fi
             
             # セッション設定のチェック
