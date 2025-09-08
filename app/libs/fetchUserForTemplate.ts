@@ -1,6 +1,19 @@
-// app/libs/mockDataFetcher.ts
-
+// app/libs/fetchUserForTemplate.ts
 export async function fetchUserForTemplate() {
+  // モック環境の場合
+  if (
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+  ) {
+    console.log('Using mock data for user in template');
+    const { user } = await import('@/todoApp-submodule/mocks/data');
+    const mockUserData = {
+      user: [...user], // 配列として返す
+    };
+    console.log('Mock user data:', mockUserData);
+    return mockUserData;
+  }
+
   try {
     // 本番環境の場合は通常のfetchを使用
     const { headers } = await import('next/headers');
