@@ -11,15 +11,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## テスト環境概要
 
-このディレクトリにはVitestベースのテスト環境が構築されています。
+このプロジェクトには、包括的なテスト戦略に基づく多層テスト環境が構築されています。
 
-### 単体テスト結果ステータス
+### テスト階層構造
 
-✅ **全テスト成功** - 高品質テストコードベース達成
+1. **ユニットテスト（UT）**: Vitestベースのコンポーネント・フック・関数単体テスト
+2. **統合テスト（IT）**: Docker + Firebase Emulator環境でのAPI統合テスト
+3. **E2Eテスト（E2E）**: Playwrightによる実ブラウザでの完全なユーザーフローテスト
+4. **MCP拡張E2Eテスト**: Playwright MCPによる高度なブラウザ自動化・詳細検証テスト
 
-- **単体テスト成功率**: 100% (413/413 passing)
+### テスト実行結果ステータス
+
+#### ✅ ユニットテスト（UT）- 100%成功達成
+- **成功率**: 100% (413/413 passing)
 - **カバレッジ**: 高カバレッジ - 全主要コンポーネント・フック・コンテキストをカバー
 - **品質**: ESLint準拠、TypeScript型安全性確保、表記統一ルール適用
+
+#### ✅ 統合テスト（IT）- Firebase Emulator環境で検証済み
+- **API統合テスト**: 7テスト実行 - 認証・権限・データベース操作を検証
+- **環境**: Docker + Firebase Emulator（ポート3002/4000/8080/9099）
+- **データ**: ユーザー分離型テストデータ（test-user-1/test-admin-1）
+
+#### ✅ E2Eテスト（E2E）- Playwright実ブラウザテスト
+- **標準E2Eテスト**: 6テストケース実装済み - 完全なユーザーフロー検証
+- **MCP拡張E2Eテスト**: 5テストケース実装済み - 高度なブラウザ自動化・詳細検証
+- **対応ブラウザ**: Chrome、Firefox、Safari、Mobile Chrome、Mobile Safari
+- **環境**: ローカル開発・Docker統合環境の両方対応
 
 ### テスト実行コマンド
 
@@ -34,6 +51,15 @@ npm run test:coverage     # カバレッジレポート付きでテスト実行
 npm run docker:test:run   # Docker + Firebase Emulator環境で統合テスト実行
 npm run docker:test       # テスト環境起動（手動確認用）
 npm run docker:test:down  # テスト環境停止
+
+# E2Eテスト関連コマンド
+npm run test:e2e          # 標準E2Eテスト実行（Playwright）
+npm run test:e2e:ui       # E2EテストUIモード実行
+npm run docker:e2e:run    # Docker環境でE2Eテスト実行
+
+# MCP拡張E2Eテスト関連コマンド
+npx playwright test tests/e2e/mcp-enhanced-todo.spec.ts  # MCP拡張テスト実行
+./tests/e2e/docker-mcp-test.sh                          # Docker環境でMCP統合テスト実行
 ```
 
 ## ディレクトリ構造
@@ -43,12 +69,23 @@ npm run docker:test:down  # テスト環境停止
 主要なテスト構成:
 
 - **tests/**: テスト環境設定とユーティリティ
+- **tests/e2e/**: E2Eテスト（Playwright）とMCP拡張テスト
+- **tests/utils/**: MCP支援ユーティリティとテストヘルパー
 
 ## テストファイルの命名規則
 
-- **ファイル名**: `{ComponentName}.test.tsx` or `{hookName}.test.ts` or `api.integration.test.ts`
+### ファイル名規則
+- **ユニットテスト**: `{ComponentName}.test.tsx` or `{hookName}.test.ts`
+- **統合テスト**: `api.integration.test.ts`
+- **E2Eテスト**: `{feature}-flow.spec.ts` (例: `todo-flow.spec.ts`)
+- **MCP拡張E2Eテスト**: `mcp-enhanced-{feature}.spec.ts`
+
+### テスト識別規則
 - **テストID**: `data-testid` 属性を使用してコンポーネント要素を識別
-- **describe構造**: UT:機能別にグループ化,IT:APIエンドポイント別・権限、認証別にグループ化
+- **describe構造**: 
+  - **UT**: 機能別にグループ化
+  - **IT**: APIエンドポイント別・権限、認証別にグループ化
+  - **E2E**: ユーザーフロー別にグループ化
 
 ## 設定ファイル詳細
 
@@ -143,15 +180,58 @@ http://localhost:3002               # Next.jsアプリ（テスト用）
 http://localhost:4000               # Firebase Emulator UI
 ```
 
+### E2Eテスト設定
+
+#### playwright.config.ts（ルートディレクトリ）
+
+**役割**: Playwrightテストの基本設定
+
+**含まれる設定**:
+
+- **testDir**: `./tests/e2e` - E2Eテストファイルの配置ディレクトリ
+- **baseURL**: テスト対象アプリケーションのベースURL（開発・本番切り替え対応）
+- **projects**: 複数ブラウザでのテスト実行設定（Chrome, Firefox, Safari, Mobile）
+- **webServer**: 開発サーバーの自動起動・停止設定
+- **globalSetup/Teardown**: テスト前後の環境セットアップ
+
+#### tests/e2e/global-setup.ts & global-teardown.ts
+
+**役割**: E2Eテスト用のグローバル環境設定
+
+**global-setup.ts**:
+- テスト用データベースの初期化
+- Firebase Emulator環境の準備
+- テスト用ユーザーアカウントの作成
+
+**global-teardown.ts**:
+- テスト後のデータベースクリーンアップ
+- 一時ファイルの削除
+
+#### tests/utils/mcp-test-helper.ts
+
+**役割**: MCP拡張E2Eテストの支援ユーティリティ
+
+**提供機能**:
+- MCPサーバーの起動・停止管理
+- 高度なページ要素検証（アクセシビリティ、パフォーマンス測定）
+- スクリーンショット取得・比較機能
+- 並行デバッグ機能（ブラウザ状態監視、ネットワーク活動記録）
+
 ## よく使用するテストパターン
 
-詳細なテストパターンについては [@todoApp-submodule/docs/tests/UT_TEST.md](../todoApp-submodule/docs/tests/UT_TEST.md),[@todoApp-submodule/docs/tests/IT_TEST.md](../todoApp-submodule/docs/tests/IT_TEST.md)を参照してください。
+詳細なテストパターンについては以下のドキュメントを参照してください：
+- [@todoApp-submodule/docs/tests/UT_TEST.md](../todoApp-submodule/docs/tests/UT_TEST.md) - ユニットテスト詳細
+- [@todoApp-submodule/docs/tests/IT_TEST.md](../todoApp-submodule/docs/tests/IT_TEST.md) - 統合テスト詳細
+- [@todoApp-submodule/docs/tests/E2E_TEST.md](../todoApp-submodule/docs/tests/E2E_TEST.md) - 標準E2Eテスト詳細
+- [@todoApp-submodule/docs/tests/E2E_MCP_TEST.md](../todoApp-submodule/docs/tests/E2E_MCP_TEST.md) - MCP拡張E2Eテスト詳細
 
 **基本的な使用例**:
 
-- **Context**: `renderHook`でプロバイダー付きテスト
-- **フック**: `act`で非同期処理をテスト
-- **コンポーネント**: カスタムレンダー関数でプロバイダー設定
+- **UT Context**: `renderHook`でプロバイダー付きテスト
+- **UT フック**: `act`で非同期処理をテスト
+- **UT コンポーネント**: カスタムレンダー関数でプロバイダー設定
+- **E2E Page操作**: `page.click()`, `page.fill()` でユーザーインタラクション
+- **MCP 拡張検証**: `mcpHelper.validatePageElements()` で詳細分析
 
 ## エラー対処とデバッグ
 
@@ -182,7 +262,23 @@ http://localhost:4000               # Firebase Emulator UI
 7. **tsx実行エラー**: TypeScript実行環境の問題
    - 解決: `npm install -g tsx` でtsxをグローバルインストール
 
+#### E2Eテスト関連
+
+8. **Playwright環境エラー**: Playwrightブラウザがインストールされていない
+   - 解決: `npx playwright install` でブラウザをインストール
+
+9. **MCPサーバー起動エラー**: Playwright MCPが正常に起動しない
+   - 解決: `npx @playwright/mcp@latest --help` でMCPパッケージ確認、ポート競合チェック
+
+10. **E2Eテスト実行時のタイムアウト**: テスト実行時間が長すぎる
+    - 解決: `playwright.config.ts`のタイムアウト設定を調整、ヘッドレスモードで実行
+
+11. **Docker環境でのE2Eエラー**: Docker環境でのPlaywright実行問題
+    - 解決: `./tests/e2e/docker-mcp-test.sh` スクリプトを使用、権限確認 `chmod +x`
+
 ### デバッグテクニック
+
+#### ユニットテスト・統合テストのデバッグ
 
 ```typescript
 // DOM構造の確認
@@ -197,7 +293,39 @@ const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 consoleSpy.mockRestore();
 ```
 
-## UTとITのテスト棲み分け基準
+#### E2Eテストのデバッグ
+
+```typescript
+// Playwrightデバッグモードで実行
+npx playwright test --debug
+
+// 特定のテストのみデバッグ
+npx playwright test tests/e2e/todo-flow.spec.ts --debug
+
+// ヘッドフルモードで実行（ブラウザを表示）
+npx playwright test --headed
+
+// スクリーンショット取得
+await page.screenshot({ path: 'debug-screenshot.png' });
+
+// ページの一時停止（デバッグ用）
+await page.pause();
+```
+
+#### MCP拡張E2Eテストのデバッグ
+
+```typescript
+// MCPサーバーログの確認
+console.log('MCPサーバーが正常に起動しました');
+
+// MCP機能の検証結果表示
+console.log('MCP拡張検証完了:', {
+  elementValidation: elementValidation.elements.length,
+  screenshotPath: screenshotResult.screenshotPath,
+});
+```
+
+## テスト種別の棲み分け基準
 
 ### 基本分類原則
 
@@ -243,6 +371,38 @@ consoleSpy.mockRestore();
 - **単純なコンポーネントレンダリング**: UTで十分カバー可能
 - **モックデータでの動作確認**: UTの範囲
 - **個別関数の単体動作**: UTで実施すべき内容
+
+#### E2Eテスト（E2E）の対象範囲
+
+**✅ E2Eで行うべきテスト:**
+
+- **完全なユーザーフロー**: ログイン→操作→結果確認の一連の流れ
+- **ブラウザ固有動作**: 実際のブラウザでの表示・操作確認
+- **複数ページ間の連携**: ページ遷移、セッション管理の検証
+- **レスポンシブデザイン**: 異なる画面サイズでの動作確認
+- **ドラッグ&ドロップ**: 実ブラウザでのマウス操作検証
+- **実環境での統合**: 本番相当の環境での動作確認
+
+**❌ E2Eで行うべきでないテスト:**
+
+- **単一コンポーネントの単体動作**: UTで実施すべき内容
+- **API単体の動作**: ITで実施すべき内容
+- **エラーハンドリングの詳細**: UTで細かく検証すべき内容
+
+#### MCP拡張E2Eテスト（MCP-E2E）の対象範囲
+
+**✅ MCP-E2Eで行うべきテスト:**
+
+- **高度なページ要素検証**: アクセシビリティ、パフォーマンス測定
+- **視覚的回帰テスト**: スクリーンショット比較、UI変更検知
+- **詳細なユーザーインタラクション分析**: 操作時間、動作品質の測定
+- **並行デバッグ**: テスト実行中の詳細情報収集・分析
+- **ブラウザ状態監視**: ネットワーク活動、コンソールログの記録
+
+**❌ MCP-E2Eで行うべきでないテスト:**
+
+- **基本的なE2Eフロー**: 標準E2Eテストで十分
+- **パフォーマンスが不要な基本動作**: 標準テストで実施
 
 ### 判断基準とガイドライン
 
@@ -476,6 +636,8 @@ it('ボタンクリック時に適切に動作する', () => {}); // → 「正�
 
 - [単体テスト詳細](../todoApp-submodule/docs/tests/UT_TEST.md) - 単体テスト実装ガイド
 - [統合テスト詳細](../todoApp-submodule/docs/tests/IT_TEST.md) - 統合テスト実装ガイド
+- [E2Eテスト詳細](../todoApp-submodule/docs/tests/E2E_TEST.md) - 標準E2Eテスト実装ガイド
+- [MCP拡張E2Eテスト](../todoApp-submodule/docs/tests/E2E_MCP_TEST.md) - Playwright MCP統合テストガイド
 - [Dockerテスト環境](../todoApp-submodule/docs/DOCKER_TESTING.md) - 環境構築詳細
 
 ### 外部参考資料
