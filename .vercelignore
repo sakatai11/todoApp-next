@@ -1,0 +1,30 @@
+# ---- テスト関連 ----
+tests/
+*.spec.*
+*.test.*
+vitest.*.config.ts
+playwright.config.ts
+docker-compose.test.yml
+Dockerfile.test
+firebase-emulator.test.Dockerfile
+firebase.test.json
+
+# ---- サブモジュール（モックAPI & ドキュメント）----
+todoApp-submodule/
+
+# ---- スクリプト関連（Firebase Emulator 用など本番不要）----
+scripts/
+
+# ---- ドキュメント関連 ----
+*.md
+docs/
+
+# ---- エディタや環境固有ファイル ----
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# ---- ローカル専用環境ファイル ----
+.env.local
+.env.development

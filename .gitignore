@@ -24,6 +24,7 @@
 # misc
 .DS_Store
 *.pem
+*.p12
 
 # debug
 npm-debug.log*
@@ -66,6 +67,16 @@ firebase-emulator-data/
 # Firebase Emulator Logs
 firebase-debug.log
 firestore-debug.log
+
+# Firebase Admin SDK Credentials
+firebase-adminsdk-*.json
+
+# Visual Regression Testing
+# ベースラインスクリーンショットはコミットし、テスト結果は除外
+/test-results/
+/tests/vrt/*-test-results/
+# /tests/vrt/*-snapshots/ # ベースラインスクリーンショットはコミットする
+playwright-report/
 
 # Submodule
 todoApp-submodule

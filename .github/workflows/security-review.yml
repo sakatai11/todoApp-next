@@ -1,0 +1,353 @@
+name: Security Review CI
+
+on:
+  pull_request:
+    branches: [main, develop-v2]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, develop-v2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  # Security Scans
+  traditional-security-scans:
+    name: Traditional Security Scans
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate shell scripts
+        run: |
+          echo "🔍 Validating shell script syntax..."
+          bash -n scripts/security-check.sh
+          if command -v shellcheck >/dev/null 2>&1; then
+            echo "🔍 Running ShellCheck..."
+            shellcheck -x scripts/security-check.sh
+          else
+            echo "⚠️  ShellCheck not available, skipping static analysis"
+          fi
+
+      - name: Run ESLint security rules
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Enhanced dependency security check (PR only)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          echo "🔍 Running enhanced dependency security check..."
+
+          # 依存脆弱性チェック（JSON保存→後段で集計→最後にゲート）
+          echo "📋 Checking for vulnerabilities (saving JSON)..."
+          mkdir -p results
+          npm audit --json > npm-audit.json || true
+          node -e "
+            const fs = require('fs');
+            let summary = {critical:0,high:0,moderate:0,low:0};
+            try {
+              const d = JSON.parse(fs.readFileSync('npm-audit.json','utf8'));
+              const v = (d.metadata && d.metadata.vulnerabilities) || {};
+              summary = {critical:v.critical||0, high:v.high||0, moderate:v.moderate||0, low:v.low||0};
+              console.log(\`::notice::npm audit -> Critical:\${summary.critical} High:\${summary.high} Moderate:\${summary.moderate} Low:\${summary.low}\`);
+            } catch(e) {
+              console.log('::warning::Failed to parse npm-audit.json:', e.message);
+            }
+            fs.writeFileSync('results/audit-summary.json', JSON.stringify(summary));
+          "
+
+          echo "📦 Analyzing package.json for security concerns..."
+          node -e "
+            const fs = require('fs');
+            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            
+            // 潜在的に問題のあるパッケージをチェック
+            const concerningPackages = [
+              'eval', 'vm2', 'serialize-javascript'  // 動的コード実行系
+            ];
+
+            const allDeps = {...(packageJson.dependencies || {}), ...(packageJson.devDependencies || {})};
+            const foundConcerning = concerningPackages.filter(pkg => allDeps[pkg]);
+
+            if (foundConcerning.length > 0) {
+              console.log('⚠️  Potentially concerning packages found:', foundConcerning.join(', '));
+            } else {
+              console.log('✅ No concerning packages detected');
+            }
+          "
+
+          echo "✅ Alternative dependency check completed"
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      - name: Clean build cache before analysis
+        run: rm -rf .next
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: Secret scanning with gitleaks
+        id: gitleaks
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Custom security checks
+        run: |
+          chmod +x ./scripts/security-check.sh
+          ./scripts/security-check.sh
+
+      - name: Generate npm audit JSON
+        if: github.event_name != 'pull_request' # PRでは前段で実行済みにする
+        continue-on-error: true
+        run: npm audit --json > npm-audit.json || true
+
+      - name: Security audit (print saved results)
+        if: always()
+        run: |
+          if [ -s npm-audit.json ]; then
+            echo "::group::npm-audit.json"
+            cat npm-audit.json
+            echo "::endgroup::"
+          fi
+
+      - name: Check for sensitive files
+        id: sensitive_files
+        continue-on-error: true
+        run: |
+          # 機密ファイルの存在チェック
+          set -euo pipefail
+          mkdir -p results
+          found=0
+          # 除外パターン：ビルド・デプロイ・開発環境ファイルは除外、実際の機密ファイルのみ検出
+          matches=$(find . \( -path "./node_modules" -o -path "./.git" -o -path "./.next" -o -path "./.vercel" -o -path "./firebase-emulator-data" \) -prune -false -o -type f \
+                    \( -name "firebase-adminsdk-*.json" -o -name "*.pem" -o -name "*.p12" -o -name "*.p8" -o -name "*.jks" -o -name "id_rsa" -o -name "id_dsa" \) \
+                    ! -name "*.pub" -print)
+
+          if [ -n "$matches" ]; then
+            echo "$matches" | while read -r f; do
+              echo "::error::Sensitive file found: ${f}"
+            done
+            
+            found=1
+          fi
+          echo "$matches" > results/sensitive-files.txt
+          echo "::debug::Sensitive file scan results: matches='$matches', found=$found"
+          if [ "$found" -eq 1 ]; then
+            echo "::error::Sensitive files detected. Please review and remove them."
+            exit 1
+          else
+            echo "::notice::No sensitive files found in this scan"
+          fi
+
+      - name: Next.js security headers check
+        run: |
+          # Next.js設定のセキュリティヘッダーをチェック
+          if [ -f "next.config.ts" ] || [ -f "next.config.js" ]; then
+            echo "Checking Next.js security configuration..."
+            node -e "
+              const fs = require('fs');
+              const configFile = fs.existsSync('next.config.ts') ? 'next.config.ts' : 'next.config.js';
+              const content = fs.readFileSync(configFile, 'utf8');
+              
+              const requiredHeaders = [
+                'Content-Security-Policy',
+                'Strict-Transport-Security',
+                'X-Content-Type-Options',
+                'X-Frame-Options',
+                'Referrer-Policy',
+                'Permissions-Policy'
+              ];
+              
+              let missingHeaders = [];
+              requiredHeaders.forEach(header => {
+                if (!content.includes(header)) {
+                  missingHeaders.push(header);
+                }
+              });
+              
+              if (missingHeaders.length > 0) {
+                console.log('::warning::Missing security headers:', missingHeaders.join(', '));
+              } else {
+                console.log('✅ Security headers configuration found');
+              }
+            "
+          fi
+
+      - name: Firebase security rules check
+        run: |
+          # Firebase設定のセキュリティルールをチェック
+          if [ -f "firebase.json" ]; then
+            echo "Checking Firebase security configuration..."
+            node -e "
+              const fs = require('fs');
+              const firebaseConfig = JSON.parse(fs.readFileSync('firebase.json', 'utf8'));
+              
+              // Firestoreルールファイルの存在確認
+              if (firebaseConfig.firestore && firebaseConfig.firestore.rules) {
+                console.log('✅ Firestore security rules configured');
+              } else {
+                console.log('::warning::Firestore security rules not configured');
+              }
+              
+              // Storage rulesの確認
+              if (firebaseConfig.storage && firebaseConfig.storage.rules) {
+                console.log('✅ Storage security rules configured');
+              }
+            "
+          fi
+
+      - name: Environment variable security check
+        run: |
+          # 環境変数の適切な設定をチェック
+          echo "Checking environment variable configuration..."
+
+          # Vercel設定チェック
+          if [ -f "vercel.json" ]; then
+            node -e "
+              const fs = require('fs');
+              const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
+              
+              const env = (vercelConfig && vercelConfig.env) || {};
+              const publicSensitive = Object.keys(env).filter(key =>
+                key.startsWith('NEXT_PUBLIC_') &&
+                /API_KEY|SECRET|TOKEN|PASSWORD|PRIVATE/i.test(key)
+              );
+              if (publicSensitive.length > 0) {
+                console.log('::warning::Potentially sensitive public env vars found:', publicSensitive.join(', '));
+              }
+            "
+          fi
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-scan-results
+          path: |
+            npm-audit.json
+            results/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Comment PR with security summary
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 🔒 Security Review Summary\n\n';
+
+            // npm audit結果の確認
+            try {
+              if (fs.existsSync('npm-audit.json')) {
+                const auditData = JSON.parse(fs.readFileSync('npm-audit.json', 'utf8'));
+                if (auditData.metadata && auditData.metadata.vulnerabilities) {
+                  const vulns = auditData.metadata.vulnerabilities;
+                  comment += `### 📦 Dependency Vulnerabilities\n`;
+                  comment += `- Critical: ${vulns.critical || 0}\n`;
+                  comment += `- High: ${vulns.high || 0}\n`;
+                  comment += `- Moderate: ${vulns.moderate || 0}\n`;
+                  comment += `- Low: ${vulns.low || 0}\n\n`;
+                }
+              }
+            } catch (e) {
+              comment += '### 📦 Dependency Scan: ⚠️ 結果を取得できませんでした（JSON未作成/解析失敗）\n\n';
+            }
+
+            comment += '### ✅ Security Checks Completed\n';
+            comment += '- ESLint security rules\n';
+            comment += '- Dependency vulnerability scan\n';
+            comment += '- CodeQL analysis\n';
+            comment += '- Secret scanning\n';
+            comment += '- Custom security checks\n';
+            comment += '- Configuration security review\n\n';
+            comment += '*For detailed results, check the workflow logs and artifacts.*';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Enforce security gates (fail at end)
+        if: always()
+        run: |
+          node -e "
+            const fs = require('fs');
+            let exit = 0;
+            if (fs.existsSync('npm-audit.json')) {
+              try {
+                const data = JSON.parse(fs.readFileSync('npm-audit.json','utf8'));
+                const v = (data.metadata && data.metadata.vulnerabilities) || {};
+                const critical = v.critical || 0;
+                const high = v.high || 0;
+                const moderate = v.moderate || 0;
+                
+                // 重要度別の対応方針
+                if (critical > 0) {
+                  console.log('::error::Critical vulnerabilities found: ' + critical);
+                  exit = 1;
+                } else if (high > 0) {
+                  console.log('::warning::High vulnerabilities found: ' + high);
+                  // 本番環境では exit = 1 に変更を検討
+                } else if (moderate > 0) {
+                  console.log('::notice::Moderate vulnerabilities found: ' + moderate);
+                }
+                
+                console.log('::notice::Vulnerability summary - Critical:' + critical + ' High:' + high + ' Moderate:' + moderate + ' Low:' + (v.low || 0));
+              } catch (e) {
+                console.log('::warning::Failed to parse npm-audit.json for gating:', e.message);
+              }
+            }
+            process.exit(exit);
+          "
+
+      - name: Enforce gitleaks gate
+        if: always() && steps.gitleaks.outcome == 'failure'
+        run: |
+          echo "::error::Gitleaks detected secrets."
+          exit 1
+
+      - name: Enforce sensitive-files gate
+        if: always()
+        run: |
+          if [ -f results/sensitive-files.txt ] && [ -s results/sensitive-files.txt ]; then
+            file_content=$(cat results/sensitive-files.txt | tr -d '\n' | tr -d ' ')
+            if [ -n "$file_content" ]; then
+              echo "::error::Sensitive files were found:"
+              cat results/sensitive-files.txt
+              exit 1
+            else
+              echo "::notice::No sensitive files detected - security check passed"
+            fi
+          else
+            echo "::notice::No sensitive files detected - security check passed"
+          fi
