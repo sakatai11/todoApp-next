@@ -52,10 +52,10 @@ firestore.indexes.json
 firestore.rules
 firestore.test.rules
 CLAUDE.local.md
-# .github
+.github/
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
-.serena
-.claude
+.serena/
+.claude/
 
 # MSW generated file
 public/mockServiceWorker.js
@@ -69,13 +69,6 @@ firestore-debug.log
 
 # Firebase Admin SDK Credentials
 firebase-adminsdk-*.json
-
-# Visual Regression Testing
-# ベースラインスクリーンショットはコミットし、テスト結果は除外
-/test-results/
-/tests/vrt/*-test-results/
-# /tests/vrt/*-snapshots/ # ベースラインスクリーンショットはコミットする
-playwright-report/
 
 # Submodule
 todoApp-submodule

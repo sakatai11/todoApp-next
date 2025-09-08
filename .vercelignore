@@ -16,8 +16,12 @@ todoApp-submodule/
 scripts/
 
 # ---- ドキュメント関連 ----
+.clinerules/
+.gemini/
+.github/
 *.md
-docs/
+# links.md は除外しない（残す）
+!data/links/links.md
 
 # ---- エディタや環境固有ファイル ----
 .vscode/
