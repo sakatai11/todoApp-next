@@ -71,6 +71,8 @@ firestore-debug.log
 # Firebase Admin SDK Credentials
 firebase-adminsdk-*.json
 
+playwright-report/
+
 # Submodule
 todoApp-submodule
 
