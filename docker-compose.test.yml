@@ -49,24 +49,6 @@ services:
       firebase-emulator-test:
         condition: service_healthy
 
-  # E2Eテスト実行用コンテナ
-  e2e-test:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    volumes:
-      - .:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=test
-      - PLAYWRIGHT_BASE_URL=http://nextjs-test:3000
-      - FIRESTORE_EMULATOR_HOST=firebase-emulator-test:8080
-      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
-    depends_on:
-      - nextjs-test
-      - firebase-emulator-test
-    profiles:
-      - test # プロファイルを使用してオプションで実行
 
 
   # ITテスト実行用コンテナ

@@ -3,7 +3,6 @@ tests/
 *.spec.*
 *.test.*
 vitest.*.config.ts
-playwright.config.ts
 docker-compose.test.yml
 Dockerfile.test
 firebase-emulator.test.Dockerfile
