@@ -14,13 +14,10 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
     "docker:dev": "docker-compose up -d",
     "docker:test": "docker-compose -f docker-compose.test.yml up -d",
     "docker:test:down": "docker-compose -f docker-compose.test.yml down",
     "docker:test:run": "docker-compose -f docker-compose.test.yml up --build firebase-emulator-test nextjs-test integration-test",
-    "docker:e2e:run": "docker-compose -f docker-compose.test.yml --profile test up --build e2e-test",
     "emulator:start": "firebase emulators:start --only=firestore,auth,ui",
     "emulator:test": "firebase emulators:start --config firebase.test.json --only=firestore,auth,ui"
   },
