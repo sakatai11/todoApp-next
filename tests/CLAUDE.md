@@ -34,6 +34,9 @@ npm run test:coverage     # カバレッジレポート付きでテスト実行
 npm run docker:test:run   # Docker + Firebase Emulator環境で統合テスト実行
 npm run docker:test       # テスト環境起動（手動確認用）
 npm run docker:test:down  # テスト環境停止
+
+# E2Eテスト（Playwright MCP）
+# Claude Code内でplaywright-e2e-testerサブエージェントを使用
 ```
 
 ## ディレクトリ構造
@@ -219,7 +222,7 @@ consoleSpy.mockRestore();
 - **複数システム間連携**: 認証→データベース→レスポンスの一連の流れ
 - **環境依存の動作**: 実際のネットワーク、ファイルシステム操作
 - **ブラウザ固有動作**: 実際のブラウザレンダリング、DOM操作
-- **E2Eユーザーフロー**: 画面遷移、複数ページをまたぐ操作
+- **E2Eユーザーフロー**: 画面遷移、複数ページをまたぐ操作（**Playwright MCP**で実行）
 - **React Testing Library環境制約**: jsdom環境でテスト困難な機能
   - SSR環境のシミュレーション: windowオブジェクトの削除がReact DOMレンダラーでエラーを引き起こす
   - ErrorBoundaryの実際の実行: React Error Boundaryの実際のエラーキャッチ・フォールバック実行が困難
@@ -476,6 +479,7 @@ it('ボタンクリック時に適切に動作する', () => {}); // → 「正�
 
 - [単体テスト詳細](../todoApp-submodule/docs/tests/UT_TEST.md) - 単体テスト実装ガイド
 - [統合テスト詳細](../todoApp-submodule/docs/tests/IT_TEST.md) - 統合テスト実装ガイド
+- [E2Eテスト詳細](../todoApp-submodule/docs/tests/E2E_TEST.md) - Playwright MCPテストガイド
 - [Dockerテスト環境](../todoApp-submodule/docs/DOCKER_TESTING.md) - 環境構築詳細
 
 ### 外部参考資料
