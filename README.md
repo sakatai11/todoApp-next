@@ -37,7 +37,6 @@ TodoApp-Nextは、Next.jsをベースにしたタスク管理アプリケーシ�
 - **型定義**: TypeScript
 - **バリデーション**: Zod
 - **テストフレームワーク**: Vitest, React Testing Library
-- **モックサーバー**: MSW (Mock Service Worker)
 - **Lint/フォーマット**: ESLint, Prettier
 - **デプロイ**: Vercel
 
@@ -87,16 +86,6 @@ todoApp-next/
 │   │   ├── hooks/              # タスク用カスタムフック
 │   │   └── templates/          # タスク用テンプレート
 │   └── utils/                  # 機能共通ユーティリティ
-├── tests/                      # テストファイル
-│   ├── setup.ts                # テスト環境設定
-│   ├── test-utils.tsx          # テストユーティリティ
-│   └── features/               # 機能別テストコード
-│       └── todo/               # タスク管理機能のテスト
-├── todoApp-submodule/          # サブモジュール（テスト用モックデータ・ドキュメント）
-│   ├── docs/                   # プロジェクト詳細ドキュメント
-│   └── mocks/                  # MSW用モックデータとAPIハンドラー
-│       ├── data/               # テスト用モックデータ定義
-│       └── handlers/           # API モックハンドラー定義
 ├── data/                       # 静的データとリンク定義
 ├── public/                     # 静的アセット、画像関連
 └── types/                      # TypeScript型定義
