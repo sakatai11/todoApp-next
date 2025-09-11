@@ -85,9 +85,9 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ### 状態管理
 
-- **Local State**: React Context（TodoContext）
-- **Server State**: SWR（データフェッチング・キャッシュ）
-- **楽観的更新**: UI即座反映による良好なUX
+- **Local State**: React Context（TodoContext）- Todo・リスト操作のメイン状態管理
+- **Server State**: SWR 2.3.3（初期データフェッチング・認証連携）- TodoWrapperでの初期データ取得のみ
+- **データフロー**: SWR→初期データ取得→TodoContext→useState/useReducerベース状態管理
 
 ### API開発
 
@@ -105,7 +105,7 @@ npm run msw:init        # Mock Service Workerを初期化
 ### テスト環境
 
 - **Unit/Integration**: Vitest + React Testing Library + MSW
-- **E2E**: Playwright
+- **E2E**: Playwright MCP
 - **統合テスト**: `npm run docker:test:run`（Firebase Emulator + Docker）
 
 ## テストガイドライン
