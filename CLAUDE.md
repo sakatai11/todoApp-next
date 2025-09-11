@@ -104,14 +104,14 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ### テスト環境
 
-- **Unit/Integration**: Vitest + React Testing Library + MSW
-- **E2E**: Playwright MCP
-- **統合テスト**: `npm run docker:test:run`（Firebase Emulator + Docker）
+- **単体テスト**: Vitest 2.1.8 + React Testing Library 14.3.1 + MSW 2.8.7
+- **統合テスト**: `npm run docker:test:run`（Vitest + Firebase Emulator + Docker + tsx）
+- **E2E**: Playwright 1.54.1 MCP（自然言語テスト仕様）
 
 ## テストガイドライン
 
 - **フレームワーク**: Vitest + React Testing Library + MSW + Playwright
-- **カバレッジ**: 100%達成済み（413テスト成功）
+- **UTカバレッジ**: 100%達成済み（413テスト成功）
 - **統合テスト**: Docker + Firebase Emulator（ポート3002/4000/8080/9099）
 - **品質基準**: ESLint準拠、表記統一ルール、サブモジュールデータ統一
 - **詳細ガイド**: [@tests/CLAUDE.md](tests/CLAUDE.md)参照
