@@ -22,12 +22,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    // モック環境または統合テスト環境の場合
+    // 開発環境のみモック認証を使用
     if (
-      (process.env.NODE_ENV === 'development' &&
-        process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') ||
-      (process.env.NODE_ENV === 'test' &&
-        process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true')
+      process.env.NODE_ENV === 'development' &&
+      process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
     ) {
       // モックユーザーの認証
       const { mockUser } = await import('@/todoApp-submodule/mocks/data/user');

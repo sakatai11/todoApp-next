@@ -23,35 +23,8 @@ vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
 }));
 
-// NextAuth.js の実際の動作に近いモック（統合テスト用）
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(() => ({
-    data: {
-      user: {
-        id: 'test-user-1',
-        email: 'test@example.com',
-        role: 'user',
-      },
-    },
-    status: 'authenticated',
-  })),
-  signIn: vi.fn(),
-  signOut: vi.fn(),
-  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-
-// NextAuth.js サーバーサイド認証のモック
-vi.mock('@/auth', () => ({
-  auth: vi.fn(() =>
-    Promise.resolve({
-      user: {
-        id: 'test-user-1',
-        email: 'test@example.com',
-        role: 'user',
-      },
-    }),
-  ),
-}));
+// NextAuth.js を実際のFirebase認証で動作させる（モック削除）
+// 統合テスト環境では実際のNextAuth.js + Firebase Emulator認証を使用
 
 // 統合テスト環境用のブラウザAPIモック
 Object.defineProperty(window, 'matchMedia', {
