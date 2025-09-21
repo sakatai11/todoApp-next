@@ -82,10 +82,8 @@ describe('Todo API 統合テスト', () => {
 
   describe('GET /api/todos', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
-      // テスト用の認証ヘッダー（X-User-IDヘッダー認証のみ）
-      const authHeaders = {
-        'X-User-ID': 'test-user-1',
-      };
+      // NextAuth.js セッション認証を使用（X-User-IDヘッダーは不要）
+      const authHeaders = {};
 
       const response = await apiRequest(
         'GET',
@@ -110,9 +108,8 @@ describe('Todo API 統合テスト', () => {
 
   describe('POST /api/todos', () => {
     it('新しいTodoを正常に作成する', async () => {
-      const authHeaders = {
-        'X-User-ID': 'test-user-1',
-      };
+      // NextAuth.js セッション認証を使用（ヘッダー不要）
+      const authHeaders = {};
 
       const newTodo = {
         text: '統合テスト用の新しいTodo',
@@ -130,9 +127,8 @@ describe('Todo API 統合テスト', () => {
     });
 
     it('無効なデータで400エラーを返す', async () => {
-      const authHeaders = {
-        'X-User-ID': 'test-user-1',
-      };
+      // NextAuth.js セッション認証を使用（ヘッダー不要）
+      const authHeaders = {};
 
       const invalidTodo = {
         // textフィールドが欠けている
@@ -153,9 +149,8 @@ describe('Todo API 統合テスト', () => {
 
   describe('PUT /api/todos', () => {
     it('既存のTodoを正常に更新する', async () => {
-      const authHeaders = {
-        'X-User-ID': 'test-user-1',
-      };
+      // NextAuth.js セッション認証を使用（ヘッダー不要）
+      const authHeaders = {};
 
       // まずTodoを取得して既存のIDを確認
       const getTodosResponse = await apiRequest(
@@ -188,9 +183,8 @@ describe('Todo API 統合テスト', () => {
 
   describe('DELETE /api/todos', () => {
     it('既存のTodoを正常に削除する', async () => {
-      const authHeaders = {
-        'X-User-ID': 'test-user-1',
-      };
+      // NextAuth.js セッション認証を使用（ヘッダー不要）
+      const authHeaders = {};
 
       // まずTodoを取得して既存のIDを確認
       const getTodosResponse = await apiRequest(
@@ -230,9 +224,8 @@ describe('Lists API 統合テスト', () => {
 
   describe('GET /api/lists', () => {
     it('認証されたユーザーのリストを正常に取得する', async () => {
-      const authHeaders = {
-        'X-User-ID': 'test-user-1',
-      };
+      // NextAuth.js セッション認証を使用（ヘッダー不要）
+      const authHeaders = {};
 
       const response = await apiRequest(
         'GET',

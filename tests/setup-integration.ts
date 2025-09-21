@@ -23,12 +23,12 @@ vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
 }));
 
-// Mock next-auth/react
+// NextAuth.js の実際の動作に近いモック（統合テスト用）
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(() => ({
     data: {
       user: {
-        id: 'test-user-id',
+        id: 'test-user-1',
         email: 'test@example.com',
         role: 'user',
       },
@@ -38,6 +38,19 @@ vi.mock('next-auth/react', () => ({
   signIn: vi.fn(),
   signOut: vi.fn(),
   SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// NextAuth.js サーバーサイド認証のモック
+vi.mock('@/auth', () => ({
+  auth: vi.fn(() =>
+    Promise.resolve({
+      user: {
+        id: 'test-user-1',
+        email: 'test@example.com',
+        role: 'user',
+      },
+    }),
+  ),
 }));
 
 // 統合テスト環境用のブラウザAPIモック
