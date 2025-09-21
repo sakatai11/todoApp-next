@@ -377,7 +377,6 @@ describe('Todo API 統合テスト', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
       // Firebase Emulator環境での実API通信テスト
       const authHeaders = {
-        Authorization: 'Bearer test-token',
         'X-User-ID': 'test-user-1',
       };
       // 実際のAPI呼び出しと検証

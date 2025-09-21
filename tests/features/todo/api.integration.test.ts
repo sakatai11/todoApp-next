@@ -82,9 +82,8 @@ describe('Todo API 統合テスト', () => {
 
   describe('GET /api/todos', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
-      // テスト用の認証ヘッダー（実際の実装に合わせて調整）
+      // テスト用の認証ヘッダー（X-User-IDヘッダー認証のみ）
       const authHeaders = {
-        Authorization: 'Bearer test-token',
         'X-User-ID': 'test-user-1',
       };
 
@@ -112,7 +111,6 @@ describe('Todo API 統合テスト', () => {
   describe('POST /api/todos', () => {
     it('新しいTodoを正常に作成する', async () => {
       const authHeaders = {
-        Authorization: 'Bearer test-token',
         'X-User-ID': 'test-user-1',
       };
 
@@ -133,7 +131,6 @@ describe('Todo API 統合テスト', () => {
 
     it('無効なデータで400エラーを返す', async () => {
       const authHeaders = {
-        Authorization: 'Bearer test-token',
         'X-User-ID': 'test-user-1',
       };
 
@@ -157,7 +154,6 @@ describe('Todo API 統合テスト', () => {
   describe('PUT /api/todos', () => {
     it('既存のTodoを正常に更新する', async () => {
       const authHeaders = {
-        Authorization: 'Bearer test-token',
         'X-User-ID': 'test-user-1',
       };
 
@@ -193,7 +189,6 @@ describe('Todo API 統合テスト', () => {
   describe('DELETE /api/todos', () => {
     it('既存のTodoを正常に削除する', async () => {
       const authHeaders = {
-        Authorization: 'Bearer test-token',
         'X-User-ID': 'test-user-1',
       };
 
@@ -236,7 +231,6 @@ describe('Lists API 統合テスト', () => {
   describe('GET /api/lists', () => {
     it('認証されたユーザーのリストを正常に取得する', async () => {
       const authHeaders = {
-        Authorization: 'Bearer test-token',
         'X-User-ID': 'test-user-1',
       };
 
