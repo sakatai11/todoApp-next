@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    // 開発環境のみモック認証を使用
+    // ローカル環境のみモック認証を使用
     if (
       process.env.NODE_ENV === 'development' &&
       process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
