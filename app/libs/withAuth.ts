@@ -10,8 +10,13 @@ export async function withAuthenticatedUser<T, R>(
 ) {
   let uid: string | undefined;
 
-  // 統合テスト環境では X-Test-User-ID ヘッダー認証を使用
-  if (process.env.NODE_ENV === 'test' && process.env.FIRESTORE_EMULATOR_HOST) {
+  // Dockerテスト環境では X-Test-User-ID ヘッダー認証を使用
+  // USE_TEST_DB_DATAでDockerテスト環境のみに限定（Docker開発環境はUSE_DEV_DB_DATA）
+  if (
+    process.env.FIRESTORE_EMULATOR_HOST &&
+    process.env.NEXT_PUBLIC_API_MOCKING === 'disabled' &&
+    process.env.USE_TEST_DB_DATA === 'true'
+  ) {
     uid = req.headers.get('X-Test-User-ID') || undefined;
   }
   // ローカル開発環境（npm run dev）でのみ X-User-ID ヘッダー認証を使用
