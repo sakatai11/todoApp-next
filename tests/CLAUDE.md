@@ -214,7 +214,6 @@ consoleSpy.mockRestore();
 - **統合テスト（IT）**: Firebase Emulator環境での実API通信とデータベース操作の検証
 - **E2Eテスト**: Playwright MCPでの本番同等認証フローとユーザーシナリオの検証
 
-
 ## ベストプラクティス
 
 ### データ一貫性の維持
@@ -245,7 +244,7 @@ const customMockData = [
 
 // APIテスト時の認証ヘッダー例
 const headers = {
-  'X-User-ID': 'test-user-1',
+  'X-Test-User-ID': 'test-user-1',
   'Content-Type': 'application/json',
 };
 ```
@@ -311,7 +310,7 @@ describe('Todo API 統合テスト', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
       // Firebase Emulator環境での実API通信テスト
       const authHeaders = {
-        'X-User-ID': 'test-user-1',
+        'X-Test-User-ID': 'test-user-1',
       };
       // 実際のAPI呼び出しと検証
     });
