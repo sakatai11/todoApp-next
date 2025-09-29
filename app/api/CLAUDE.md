@@ -100,12 +100,12 @@ API の主要構成:
 
 詳細は [@withAuth.md](../../todoApp-submodule/docs/app/libs/withAuth.md#3-環境別認証処理) を参照してください。
 
-| 環境                     | 認証方式                  | 条件                                                      |
-| ------------------------ | ------------------------- | --------------------------------------------------------- |
-| **本番環境**             | NextAuth.js セッション    | `NODE_ENV=production`                                     |
-| **Docker開発環境**       | NextAuth.js セッション    | `NODE_ENV=development` + `FIRESTORE_EMULATOR_HOST`        |
-| **Docker統合テスト環境** | `X-Test-User-ID` ヘッダー | `NODE_ENV=test` + `FIRESTORE_EMULATOR_HOST`               |
-| **ローカル開発**         | `X-User-ID` ヘッダー      | `NODE_ENV=development` + `NEXT_PUBLIC_EMULATOR_MODE=true` |
+| 環境                     | 認証方式                  | 条件                                                       |
+| ------------------------ | ------------------------- | ---------------------------------------------------------- |
+| **本番環境**             | NextAuth.js セッション    | `NODE_ENV=production`                                      |
+| **Docker開発環境**       | NextAuth.js セッション    | `NODE_ENV=development` + `FIRESTORE_EMULATOR_HOST`         |
+| **Docker統合テスト環境** | `X-Test-User-ID` ヘッダー | `NODE_ENV=test` + `FIRESTORE_EMULATOR_HOST`                |
+| **ローカル開発環境**     | `X-User-ID` ヘッダー      | `NODE_ENV=development` + `NEXT_PUBLIC_API_MOCKING=enabled` |
 
 ### withAuthenticatedUser使用例
 
