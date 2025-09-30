@@ -39,6 +39,7 @@ services:
       - NEXT_PUBLIC_EMULATOR_MODE=true
       - NEXTAUTH_SECRET=test-secret-for-docker-testing
       - NEXTAUTH_URL=http://localhost:3002
+      - NEXT_PUBLIC_APP_URL=http://nextjs-test:3000
       - NEXT_PUBLIC_TEST_USER_UID=test-user-1
       - NEXT_PUBLIC_TEST_ADMIN_UID=test-admin-1
       - FIREBASE_PROJECT_ID=todoapp-test
@@ -48,8 +49,6 @@ services:
     depends_on:
       firebase-emulator-test:
         condition: service_healthy
-
-
 
   # ITテスト実行用コンテナ
   integration-test:
@@ -63,6 +62,7 @@ services:
       - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulator-test:9099
       - FIREBASE_PROJECT_ID=todoapp-test
       - NEXT_PUBLIC_APP_URL=http://nextjs-test:3000
+      - NEXT_PUBLIC_EMULATOR_MODE=true
     depends_on:
       firebase-emulator-test:
         condition: service_healthy

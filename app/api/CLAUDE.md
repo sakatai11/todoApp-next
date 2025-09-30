@@ -76,22 +76,53 @@ API の主要構成:
 ### エラーレスポンス形式
 
 ```typescript
+// 基本エラーレスポンス
 {
   error: string;
-  message: string;
-  statusCode: number;
+}
+
+// 詳細なエラー情報が必要な場合
+{
+  error: string;
+  details?: any;
 }
 ```
 
 ### 認証要件
 
+- **環境別認証方式**: 本番/テスト/開発環境で異なる認証処理
 - **JWTトークン検証**: Firebase Admin SDKで検証
 - **ロール確認**: 管理者エンドポイントでロールチェック
 - **期限切れトークン処理**: 適切な期限切れハンドリング
 - **レート制限**: 必要に応じて実装
 
-### withAuth使用例
+#### 環境別認証方式
+
+詳細は [@withAuth.md](../../todoApp-submodule/docs/app/libs/withAuth.md#3-環境別認証処理) を参照してください。
+
+| 環境                     | 認証方式                  | 条件                                                       |
+| ------------------------ | ------------------------- | ---------------------------------------------------------- |
+| **本番環境**             | NextAuth.js セッション    | `NODE_ENV=production`                                      |
+| **Docker開発環境**       | NextAuth.js セッション    | `NODE_ENV=development` + `FIRESTORE_EMULATOR_HOST`         |
+| **Docker統合テスト環境** | `X-Test-User-ID` ヘッダー | `NODE_ENV=test` + `FIRESTORE_EMULATOR_HOST`                |
+
+### withAuthenticatedUser使用例
 
 ```typescript
-export default withAuth(handler, { requireAdmin: true });
+import { withAuthenticatedUser } from '@/app/libs/withAuth';
+
+export async function POST(req: Request) {
+  return withAuthenticatedUser<TodoPayload, TodoResponse>(
+    req,
+    async (uid, body) => {
+      // 認証済みユーザーの処理
+      const { text, status } = body;
+
+      // Firebase Firestoreへの保存処理
+      // ...
+
+      return NextResponse.json(result);
+    },
+  );
+}
 ```

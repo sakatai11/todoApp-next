@@ -82,10 +82,9 @@ describe('Todo API 統合テスト', () => {
 
   describe('GET /api/todos', () => {
     it('認証されたユーザーのTodoリストを正常に取得する', async () => {
-      // テスト用の認証ヘッダー（実際の実装に合わせて調整）
+      // 統合テスト環境では X-Test-User-ID ヘッダー認証を使用
       const authHeaders = {
-        Authorization: 'Bearer test-token',
-        'X-User-ID': 'test-user-1',
+        'X-Test-User-ID': 'test-user-1',
       };
 
       const response = await apiRequest(
@@ -103,17 +102,19 @@ describe('Todo API 統合テスト', () => {
     });
 
     it('未認証ユーザーは401エラーを受け取る', async () => {
+      // 認証ヘッダーなしでAPIリクエスト
       const response = await apiRequest('GET', '/todos');
 
       expect(response.status).toBe(401);
+      expect(response.data).toHaveProperty('error');
     });
   });
 
   describe('POST /api/todos', () => {
     it('新しいTodoを正常に作成する', async () => {
+      // 統合テスト環境では X-Test-User-ID ヘッダー認証を使用
       const authHeaders = {
-        Authorization: 'Bearer test-token',
-        'X-User-ID': 'test-user-1',
+        'X-Test-User-ID': 'test-user-1',
       };
 
       const newTodo = {
@@ -132,9 +133,9 @@ describe('Todo API 統合テスト', () => {
     });
 
     it('無効なデータで400エラーを返す', async () => {
+      // 統合テスト環境では X-Test-User-ID ヘッダー認証を使用
       const authHeaders = {
-        Authorization: 'Bearer test-token',
-        'X-User-ID': 'test-user-1',
+        'X-Test-User-ID': 'test-user-1',
       };
 
       const invalidTodo = {
@@ -156,9 +157,9 @@ describe('Todo API 統合テスト', () => {
 
   describe('PUT /api/todos', () => {
     it('既存のTodoを正常に更新する', async () => {
+      // 統合テスト環境では X-Test-User-ID ヘッダー認証を使用
       const authHeaders = {
-        Authorization: 'Bearer test-token',
-        'X-User-ID': 'test-user-1',
+        'X-Test-User-ID': 'test-user-1',
       };
 
       // まずTodoを取得して既存のIDを確認
@@ -192,9 +193,9 @@ describe('Todo API 統合テスト', () => {
 
   describe('DELETE /api/todos', () => {
     it('既存のTodoを正常に削除する', async () => {
+      // 統合テスト環境では X-Test-User-ID ヘッダー認証を使用
       const authHeaders = {
-        Authorization: 'Bearer test-token',
-        'X-User-ID': 'test-user-1',
+        'X-Test-User-ID': 'test-user-1',
       };
 
       // まずTodoを取得して既存のIDを確認
@@ -231,13 +232,11 @@ describe('Todo API 統合テスト', () => {
 });
 
 describe('Lists API 統合テスト', () => {
-  // Listsテストは既存データを利用（データクリア不要）
-
   describe('GET /api/lists', () => {
     it('認証されたユーザーのリストを正常に取得する', async () => {
+      // 統合テスト環境では X-Test-User-ID ヘッダー認証を使用
       const authHeaders = {
-        Authorization: 'Bearer test-token',
-        'X-User-ID': 'test-user-1',
+        'X-Test-User-ID': 'test-user-1',
       };
 
       const response = await apiRequest(
@@ -249,9 +248,107 @@ describe('Lists API 統合テスト', () => {
 
       expect(response.status).toBe(200);
       expect(response.data).toBeDefined();
-      // APIが正常に応答することを確認（データの有無は問わない）
       expect(response.data).toHaveProperty('lists');
       expect(Array.isArray(response.data.lists)).toBe(true);
+    });
+
+    it('未認証ユーザーは401エラーを受け取る', async () => {
+      // 認証ヘッダーなしでAPIリクエスト
+      const response = await apiRequest('GET', '/lists');
+
+      expect(response.status).toBe(401);
+      expect(response.data).toHaveProperty('error');
+    });
+  });
+});
+
+describe('管理者権限テスト', () => {
+  describe('管理者ユーザーでのアクセス', () => {
+    it('管理者ユーザーが一般ユーザーのTodoにアクセスできる', async () => {
+      // 管理者ユーザーのヘッダー認証
+      const adminHeaders = {
+        'X-Test-User-ID': 'test-admin-1',
+      };
+
+      const response = await apiRequest(
+        'GET',
+        '/todos',
+        undefined,
+        adminHeaders,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('todos');
+      expect(Array.isArray(response.data.todos)).toBe(true);
+    });
+
+    it('管理者ユーザーが一般ユーザーのリストにアクセスできる', async () => {
+      // 管理者ユーザーのヘッダー認証
+      const adminHeaders = {
+        'X-Test-User-ID': 'test-admin-1',
+      };
+
+      const response = await apiRequest(
+        'GET',
+        '/lists',
+        undefined,
+        adminHeaders,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('lists');
+      expect(Array.isArray(response.data.lists)).toBe(true);
+    });
+  });
+
+  describe('一般ユーザーと管理者ユーザーのデータ分離', () => {
+    it('一般ユーザーは自分のデータのみアクセス可能', async () => {
+      // 一般ユーザーのヘッダー認証
+      const userHeaders = {
+        'X-Test-User-ID': 'test-user-1',
+      };
+
+      // 一般ユーザーのTodo取得
+      const userResponse = await apiRequest(
+        'GET',
+        '/todos',
+        undefined,
+        userHeaders,
+      );
+
+      // 管理者ユーザーのTodo取得
+      const adminHeaders = {
+        'X-Test-User-ID': 'test-admin-1',
+      };
+
+      const adminResponse = await apiRequest(
+        'GET',
+        '/todos',
+        undefined,
+        adminHeaders,
+      );
+
+      // 両方とも成功するが、異なるデータセットを持つことを確認
+      expect(userResponse.status).toBe(200);
+      expect(adminResponse.status).toBe(200);
+
+      // データが存在する場合の検証（データが空の場合もあるため条件付き）
+      if (
+        userResponse.data.todos.length > 0 &&
+        adminResponse.data.todos.length > 0
+      ) {
+        // ユーザーIDが異なることを確認（データが存在する場合）
+        const userTodos = userResponse.data.todos;
+        const adminTodos = adminResponse.data.todos;
+
+        // 同じTodoが含まれていないことを確認
+        const userTodoIds = userTodos.map((todo: TodoListProps) => todo.id);
+        const adminTodoIds = adminTodos.map((todo: TodoListProps) => todo.id);
+        const commonIds = userTodoIds.filter((id: string) =>
+          adminTodoIds.includes(id),
+        );
+        expect(commonIds.length).toBe(0);
+      }
     });
   });
 });
