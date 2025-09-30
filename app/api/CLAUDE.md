@@ -105,7 +105,6 @@ API の主要構成:
 | **本番環境**             | NextAuth.js セッション    | `NODE_ENV=production`                                      |
 | **Docker開発環境**       | NextAuth.js セッション    | `NODE_ENV=development` + `FIRESTORE_EMULATOR_HOST`         |
 | **Docker統合テスト環境** | `X-Test-User-ID` ヘッダー | `NODE_ENV=test` + `FIRESTORE_EMULATOR_HOST`                |
-| **ローカル開発環境**     | `X-User-ID` ヘッダー      | `NODE_ENV=development` + `NEXT_PUBLIC_API_MOCKING=enabled` |
 
 ### withAuthenticatedUser使用例
 

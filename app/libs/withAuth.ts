@@ -19,13 +19,6 @@ export async function withAuthenticatedUser<T, R>(
   ) {
     uid = req.headers.get('X-Test-User-ID') || undefined;
   }
-  // ローカル開発環境（npm run dev）は X-User-ID ヘッダー認証を使用
-  else if (
-    process.env.NEXT_PUBLIC_API_MOCKING === 'enabled' &&
-    process.env.NODE_ENV === 'development'
-  ) {
-    uid = req.headers.get('X-User-ID') || undefined;
-  }
   // 本番環境・Docker開発環境では NextAuth.js セッション認証
   else {
     const session = await auth();
