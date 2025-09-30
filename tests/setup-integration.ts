@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom';
 import { vi, beforeAll, afterEach, afterAll } from 'vitest';
-import React from 'react';
 
 // 統合テスト用セットアップ - MSWを使用せず、Firebase Emulatorと直接通信
 
