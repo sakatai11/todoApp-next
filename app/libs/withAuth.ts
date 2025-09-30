@@ -17,7 +17,7 @@ export async function withAuthenticatedUser<T, R>(
     process.env.NEXT_PUBLIC_API_MOCKING === 'disabled' &&
     process.env.USE_TEST_DB_DATA === 'true'
   ) {
-    uid = req.headers.get('X-Test-User-ID') || undefined;
+    uid = req.headers.get('X-Test-User-ID')?.trim() || undefined;
   }
   // 本番環境・Docker開発環境では NextAuth.js セッション認証
   else {
