@@ -63,10 +63,7 @@ export async function POST(req: Request) {
     // Firestore から role を取得
     let userRole: string | undefined = undefined;
     try {
-      const userDoc = await adminDB
-        .collection('users')
-        .doc(uid)
-        .get();
+      const userDoc = await adminDB.collection('users').doc(uid).get();
       userRole = userDoc.data()?.role;
 
       // Emulator環境でユーザーロールが存在しない場合のデフォルト値設定

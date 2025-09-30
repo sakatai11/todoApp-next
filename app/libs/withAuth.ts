@@ -10,14 +10,17 @@ export async function withAuthenticatedUser<T, R>(
 ) {
   let uid: string | undefined;
 
-  // テスト環境・開発環境では X-User-ID ヘッダーから認証情報を取得
+  // Dockerテスト環境では X-Test-User-ID ヘッダー認証を使用
+  // USE_TEST_DB_DATAでDockerテスト環境のみに限定
   if (
-    process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true' &&
-    process.env.NODE_ENV !== 'production'
+    process.env.FIRESTORE_EMULATOR_HOST &&
+    process.env.NEXT_PUBLIC_API_MOCKING === 'disabled' &&
+    process.env.USE_TEST_DB_DATA === 'true'
   ) {
-    uid = req.headers.get('X-User-ID') || undefined;
-  } else {
-    // 本番環境では通常のセッション認証
+    uid = req.headers.get('X-Test-User-ID')?.trim() || undefined;
+  }
+  // 本番環境・Docker開発環境では NextAuth.js セッション認証
+  else {
     const session = await auth();
     uid = session?.user?.id;
   }
