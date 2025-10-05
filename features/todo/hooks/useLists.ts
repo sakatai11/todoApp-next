@@ -21,7 +21,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
   });
 
   //
-  // ***** getters ******
+  // ***** helpers ******
   //
   // 重複するカテゴリが存在するかチェックする関数
   const checkDuplicateCategory = useCallback(
