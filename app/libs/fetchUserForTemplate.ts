@@ -7,11 +7,9 @@ export async function fetchUserForTemplate() {
   ) {
     console.log('Using mock data for user in template');
     const { user } = await import('@/todoApp-submodule/mocks/data');
-    const mockUserData = {
-      user: [...user], // 配列として返す
-    };
-    console.log('Mock user data:', mockUserData);
-    return mockUserData;
+
+    console.log('Mock user data:', user);
+    return { user };
   }
 
   try {
@@ -68,9 +66,9 @@ export async function fetchUserForTemplate() {
       return { user: null };
     }
 
-    const userData = await response.json();
+    const { user } = await response.json();
     console.log('Successfully fetched user data for template');
-    return userData;
+    return { user };
   } catch (error) {
     console.warn('Error fetching user for template:', error);
     // エラーが発生した場合もnullユーザーを返す
