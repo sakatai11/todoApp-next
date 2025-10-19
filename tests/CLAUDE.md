@@ -35,8 +35,11 @@ npm run docker:test:run   # Docker + Firebase Emulator環境で統合テスト�
 npm run docker:test       # テスト環境起動（手動確認用）
 npm run docker:test:down  # テスト環境停止
 
-# E2Eテスト（Playwright MCP）
-# Claude Code内でplaywright-e2e-testerサブエージェントを使用
+# E2Eテスト（Playwright）
+npm run test:e2e        # Playwright E2Eテスト
+npm run test:e2e:ui     # Playwright UIモードでE2Eテスト
+npm run test:e2e:debug  # Playwright デバッグモードでE2Eテスト
+npm run test:e2e:headed # Playwright ヘッドモード（ブラウザを表示）でE2Eテスト
 ```
 
 ## ディレクトリ構造
