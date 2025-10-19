@@ -19,7 +19,11 @@
     "docker:test:down": "docker-compose -f docker-compose.test.yml down",
     "docker:test:run": "docker-compose -f docker-compose.test.yml up --build firebase-emulator-test nextjs-test integration-test",
     "emulator:start": "firebase emulators:start --only=firestore,auth,ui",
-    "emulator:test": "firebase emulators:start --config firebase.test.json --only=firestore,auth,ui"
+    "emulator:test": "firebase emulators:start --config firebase.test.json --only=firestore,auth,ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -45,6 +49,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@eslint/eslintrc": "^3.2.0",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.5.2",
