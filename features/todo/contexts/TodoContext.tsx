@@ -8,6 +8,8 @@ import { useLists } from '@/features/todo/hooks/useLists';
 import { useUpdateStatusAndCategory } from '@/features/todo/hooks/useUpdateStatusAndCategory';
 import { useDeleteList } from '@/features/todo/hooks/useDeleteList';
 import { TodoContextType } from '@/types/components';
+import { ErrorProvider } from '@/features/todo/contexts/ErrorContext';
+import { ErrorSnackbar } from '@/features/todo/components/elements/Error/ErrorSnackbar';
 
 const TodoContext = createContext<TodoContextType | null>(null);
 
@@ -45,15 +47,18 @@ export const TodoProvider = ({
   });
 
   return (
-    <TodoContext.Provider
-      value={{
-        todoHooks,
-        listHooks,
-        updateStatusAndCategoryHooks,
-        deleteListHooks,
-      }}
-    >
-      {children}
-    </TodoContext.Provider>
+    <ErrorProvider>
+      <TodoContext.Provider
+        value={{
+          todoHooks,
+          listHooks,
+          updateStatusAndCategoryHooks,
+          deleteListHooks,
+        }}
+      >
+        {children}
+        <ErrorSnackbar />
+      </TodoContext.Provider>
+    </ErrorProvider>
   );
 };

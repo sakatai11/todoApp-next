@@ -10,7 +10,7 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 const EditModal = React.memo(
   ({ todo, id, modalIsOpen, setModalIsOpen }: ModalPropType) => {
     const { todoHooks, listHooks } = useTodoContext();
-    const { addTodo, setInput, setEditId, setError, saveTodo, error, input } =
+    const { addTodo, setInput, setEditId, setValidationError, saveTodo, validationError, input } =
       todoHooks;
 
     const statusPull = listHooks.lists;
@@ -18,10 +18,10 @@ const EditModal = React.memo(
 
     const handleClose = useCallback(() => {
       setModalIsOpen(false);
-      setError({ listPushArea: false, listModalArea: false }); // エラーリセット
+      setValidationError({ listPushArea: false, listModalArea: false }); // バリデーションエラーリセット
       setEditId(null);
       setInput({ text: '', status: '' }); // リセットする
-    }, [setModalIsOpen, setError, setEditId, setInput]);
+    }, [setModalIsOpen, setValidationError, setEditId, setInput]);
 
     return (
       <Modal
@@ -74,12 +74,12 @@ const EditModal = React.memo(
               error={
                 !input.text
                   ? isPushContainer
-                    ? error.listPushArea
-                    : error.listModalArea
+                    ? validationError.listPushArea
+                    : validationError.listModalArea
                   : false
               }
               helperText={
-                !input.text && (error.listPushArea || error.listModalArea)
+                !input.text && (validationError.listPushArea || validationError.listModalArea)
                   ? '内容を入力してください'
                   : null
               }
@@ -91,7 +91,7 @@ const EditModal = React.memo(
               // statusプルダウン
               pullDownList={statusPull}
               input={{ ...input, status: input.status }} // input.statusを渡す
-              error={isPushContainer ? error.listPushArea : error.listModalArea}
+              validationError={isPushContainer ? validationError.listPushArea : validationError.listModalArea}
               setInput={(statusInput) =>
                 setInput({ ...input, status: statusInput.status })
               }
