@@ -159,8 +159,8 @@ const TodoContent = (): React.ReactElement => {
   // 共通のSWRオプション
   const swrOptions = {
     revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
+    revalidateOnFocus: true,  // ✅ タブ切り替え時に最新データ取得
+    revalidateOnReconnect: true,  // ✅ オフライン復帰時に再取得
     suspense: false,
     shouldRetryOnError: (err: Error) => {
       // FetchErrorの場合はステータスコードでチェック
