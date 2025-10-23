@@ -159,8 +159,10 @@ const TodoContent = (): React.ReactElement => {
   // 共通のSWRオプション
   const swrOptions = {
     revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
+    revalidateOnFocus: true, // タブ切り替え時に最新データ取得
+    revalidateOnReconnect: true, // オフライン復帰時に再取得
+    dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
+    focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
     suspense: false,
     shouldRetryOnError: (err: Error) => {
       // FetchErrorの場合はステータスコードでチェック
@@ -243,7 +245,12 @@ const TodoErrorBoundary = ({ error }: { error: Error }) => {
 // メインラッパーコンポーネント
 const TodoWrapper = (): React.ReactElement => {
   return (
-    <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
+    <SWRConfig
+      value={{
+        dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
+        focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
+      }}
+    >
       <ErrorBoundary FallbackComponent={TodoErrorBoundary}>
         <TodoContent />
       </ErrorBoundary>
