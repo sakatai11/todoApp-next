@@ -279,6 +279,9 @@ describe('TodoWrapper', () => {
     });
   });
 
+  // createFetchErrorとisFetchErrorは内部ヘルパー関数として
+  // fetcher関数のテストで間接的にカバーされているため、直接テストは不要
+
   describe('fetcher関数', () => {
     it('fetch成功時にJSONデータを返す', async () => {
       // fetchをモック
