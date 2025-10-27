@@ -25,7 +25,7 @@ export default defineConfig({
 
   // 共通設定
   use: {
-    // ベースURL（開発サーバー）
+    // ベースURL（Docker開発環境）
     baseURL: 'http://localhost:3000',
 
     // トレース設定（失敗時のみ）
@@ -66,11 +66,12 @@ export default defineConfig({
     // },
   ],
 
-  // 開発サーバー設定（テスト実行前に自動起動）
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2分
-  },
+  // 開発サーバー設定（Docker開発環境）
+  // 注意: Docker環境をすでに起動している場合は以下をwebServerオブジェクトをコメントアウトしてください
+  // webServer: {
+  //   command: 'npm run docker:dev',
+  //   url: 'http://localhost:3000',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000, // 2分
+  // },
 });
