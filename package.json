@@ -20,6 +20,7 @@
     "docker:test:run": "docker-compose -f docker-compose.test.yml up --build firebase-emulator-test nextjs-test integration-test",
     "emulator:start": "firebase emulators:start --only=firestore,auth,ui",
     "emulator:test": "firebase emulators:start --config firebase.test.json --only=firestore,auth,ui",
+    "cleanup:test-users": "FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 FIREBASE_PROJECT_ID=todoapp-next-dev tsx scripts/cleanup-test-users.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
