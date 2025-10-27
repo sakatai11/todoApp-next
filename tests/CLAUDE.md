@@ -215,7 +215,7 @@ consoleSpy.mockRestore();
 
 - **ユニットテスト（UT）**: MSWモック環境での個別コンポーネント・フック・コンテキストの動作検証
 - **統合テスト（IT）**: Firebase Emulator環境での実API通信とデータベース操作の検証
-- **E2Eテスト**: Playwright MCPでの本番同等認証フローとユーザーシナリオの検証
+- **E2Eテスト**: Playwright での本番同等認証フローとユーザーシナリオの検証
 
 ## ベストプラクティス
 
@@ -414,7 +414,7 @@ it('ボタンクリック時に適切に動作する', () => {}); // → 「正�
 
 - [単体テスト詳細](../todoApp-submodule/docs/tests/UT_TEST.md) - 単体テスト実装ガイド
 - [統合テスト詳細](../todoApp-submodule/docs/tests/IT_TEST.md) - 統合テスト実装ガイド
-- [E2Eテスト詳細](../todoApp-submodule/docs/tests/E2E_TEST.md) - Playwright MCPテストガイド
+- [E2Eテスト詳細](../todoApp-submodule/docs/tests/E2E_TEST.md) - E2Eテストガイド
 - [Dockerテスト環境](../todoApp-submodule/docs/DOCKER_TESTING.md) - 環境構築詳細
 
 ### 外部参考資料
