@@ -21,7 +21,8 @@ export const useTodoContext = () => {
   return context;
 };
 
-export const TodoProvider = ({
+// 内部プロバイダー（ErrorProvider内で実行される）
+const TodoProviderInner = ({
   children,
   initialTodos,
   initialLists,
@@ -47,18 +48,38 @@ export const TodoProvider = ({
   });
 
   return (
+    <TodoContext.Provider
+      value={{
+        todoHooks,
+        listHooks,
+        updateStatusAndCategoryHooks,
+        deleteListHooks,
+      }}
+    >
+      {children}
+      <ErrorSnackbar />
+    </TodoContext.Provider>
+  );
+};
+
+// 外部プロバイダー（ErrorProviderでラップ）
+export const TodoProvider = ({
+  children,
+  initialTodos,
+  initialLists,
+}: {
+  children: React.ReactNode;
+  initialTodos: TodoListProps[];
+  initialLists: StatusListProps[];
+}) => {
+  return (
     <ErrorProvider>
-      <TodoContext.Provider
-        value={{
-          todoHooks,
-          listHooks,
-          updateStatusAndCategoryHooks,
-          deleteListHooks,
-        }}
+      <TodoProviderInner
+        initialTodos={initialTodos}
+        initialLists={initialLists}
       >
         {children}
-        <ErrorSnackbar />
-      </TodoContext.Provider>
+      </TodoProviderInner>
     </ErrorProvider>
   );
 };

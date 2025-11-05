@@ -5,30 +5,19 @@ import { createContext, useContext, useState, useCallback } from 'react';
 type ErrorContextType = {
   error: string | null;
   showError: (message: string) => void;
-  clearError: () => void;
 };
 
 const ErrorContext = createContext<ErrorContextType | undefined>(undefined);
 
-export const ErrorProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
 
   const showError = useCallback((message: string) => {
     setError(message);
-    // 自動的に5秒後にクリア
-    setTimeout(() => setError(null), 5000);
-  }, []);
-
-  const clearError = useCallback(() => {
-    setError(null);
   }, []);
 
   return (
-    <ErrorContext.Provider value={{ error, showError, clearError }}>
+    <ErrorContext.Provider value={{ error, showError }}>
       {children}
     </ErrorContext.Provider>
   );
