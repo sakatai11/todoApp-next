@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useError } from '@/features/todo/contexts/ErrorContext';
 
 export const ErrorSnackbar = () => {
-  const { error } = useError();
+  const { error, clearError } = useError();
   const router = useRouter();
 
   const handleBackToTop = () => {
+    clearError();
     router.push('/');
   };
 

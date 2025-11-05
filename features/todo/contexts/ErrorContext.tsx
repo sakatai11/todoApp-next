@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useCallback } from 'react';
 type ErrorContextType = {
   error: string | null;
   showError: (message: string) => void;
+  clearError: () => void;
 };
 
 const ErrorContext = createContext<ErrorContextType | undefined>(undefined);
@@ -16,8 +17,12 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
     setError(message);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return (
-    <ErrorContext.Provider value={{ error, showError }}>
+    <ErrorContext.Provider value={{ error, showError, clearError }}>
       {children}
     </ErrorContext.Provider>
   );
