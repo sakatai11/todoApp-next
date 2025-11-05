@@ -6,6 +6,7 @@ import { apiRequest } from '@/features/libs/apis';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useError } from '@/features/todo/contexts/ErrorContext';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 export const useLists = (initialLists: StatusListProps[]) => {
   //
@@ -88,7 +89,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
       return true; // 成功時に true を返す
     } catch (error) {
       console.error('Error adding list:', error);
-      showError('リストの追加に失敗しました'); // グローバルエラー表示
+      showError(ERROR_MESSAGES.LIST.ADD_FAILED);
       return false;
     }
   }, [input.status, lists, checkDuplicateCategory, showError]);
@@ -131,7 +132,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
           console.error('Error dragEnd list:', error);
           // ロールバック
           setLists(previousLists);
-          showError('リストの並び替えに失敗しました'); // グローバルエラー表示
+          showError(ERROR_MESSAGES.LIST.SORT_FAILED);
         }
       }
     },
@@ -186,7 +187,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
         console.error('Error ButtonMove list:', error);
         // ロールバック
         setLists(previousLists);
-        showError('リストの移動に失敗しました'); // グローバルエラー表示
+        showError(ERROR_MESSAGES.LIST.MOVE_FAILED);
       }
     },
     [lists, showError],

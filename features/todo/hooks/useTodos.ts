@@ -5,6 +5,7 @@ import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
 import { apiRequest } from '@/features/libs/apis';
 import { getTime } from '@/features/utils/dateUtils';
 import { useError } from '@/features/todo/contexts/ErrorContext';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 export const useTodos = (initialTodos: TodoListProps[]) => {
   //
@@ -61,39 +62,45 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         });
       });
       setInput({ text: '', status: '' });
-      setValidationError((prevError) => ({ ...prevError, listPushArea: false })); // バリデーションエラーをリセット
+      setValidationError((prevError) => ({
+        ...prevError,
+        listPushArea: false,
+      })); // バリデーションエラーをリセット
       return true; // 成功時に true を返す
     } catch (error) {
       console.error('Error adding todo:', error);
-      showError('Todoの追加に失敗しました'); // グローバルエラー表示
+      showError(ERROR_MESSAGES.TODO.ADD_FAILED);
       return false;
     }
   }, [input.text, input.status, showError]);
 
   // todo削除
-  const deleteTodo = useCallback(async (id: string) => {
-    // ロールバック用に現在のデータを保存
-    const previousTodos = todos;
+  const deleteTodo = useCallback(
+    async (id: string) => {
+      // ロールバック用に現在のデータを保存
+      const previousTodos = todos;
 
-    try {
-      // client（楽観的更新）
-      setTodos((prevTodos: TodoListProps[]) =>
-        prevTodos.filter((todo) => todo.id !== id),
-      ); // todo.id が id と一致しない todo だけを残す新しい配列を作成
+      try {
+        // client（楽観的更新）
+        setTodos((prevTodos: TodoListProps[]) =>
+          prevTodos.filter((todo) => todo.id !== id),
+        ); // todo.id が id と一致しない todo だけを残す新しい配列を作成
 
-      // server side
-      await apiRequest<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
-        '/api/todos',
-        'DELETE',
-        { id },
-      );
-    } catch (error) {
-      console.error('Error deleting todo:', error);
-      // ロールバック
-      setTodos(previousTodos);
-      showError('Todoの削除に失敗しました'); // グローバルエラー表示
-    }
-  }, [todos, showError]);
+        // server side
+        await apiRequest<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
+          '/api/todos',
+          'DELETE',
+          { id },
+        );
+      } catch (error) {
+        console.error('Error deleting todo:', error);
+        // ロールバック
+        setTodos(previousTodos);
+        showError(ERROR_MESSAGES.TODO.DELETE_FAILED);
+      }
+    },
+    [todos, showError],
+  );
 
   // 編集（モーダル内）
   const editTodo = useCallback(
@@ -140,7 +147,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
           console.error('Error puting toggle:', error);
           // ロールバック
           setTodos(previousTodos);
-          showError('Todo状態の切り替えに失敗しました'); // グローバルエラー表示
+          showError(ERROR_MESSAGES.TODO.TOGGLE_FAILED);
         }
       }
     },
@@ -155,7 +162,10 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
       // バリデーション
       if (!todoToUpdate || !input.text || !input.status) {
-        setValidationError((prevError) => ({ ...prevError, listModalArea: true }));
+        setValidationError((prevError) => ({
+          ...prevError,
+          listModalArea: true,
+        }));
         return;
       }
 
@@ -202,12 +212,15 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
         setInput({ text: '', status: '' });
         setEditId(null);
-        setValidationError((prevError) => ({ ...prevError, listModalArea: false })); // バリデーションエラーをリセット
+        setValidationError((prevError) => ({
+          ...prevError,
+          listModalArea: false,
+        })); // バリデーションエラーをリセット
       } catch (error) {
         console.error('Error saving todo:', error);
         // ロールバック
         setTodos(previousTodos);
-        showError('Todoの保存に失敗しました'); // グローバルエラー表示
+        showError(ERROR_MESSAGES.TODO.UPDATE_FAILED);
       }
     }
   }, [editId, input.text, input.status, todos, showError]);
