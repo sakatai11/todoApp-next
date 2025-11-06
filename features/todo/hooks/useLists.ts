@@ -36,9 +36,9 @@ export const useLists = (initialLists: StatusListProps[]) => {
   //
   // list追加
   const addList = useCallback(async () => {
-    if (input.status) {
+    if (input.status.trim()) {
       // 重複チェック
-      if (checkDuplicateCategory(input.status)) {
+      if (checkDuplicateCategory(input.status.trim())) {
         setError((prevError) => ({
           ...prevError,
           addListNull: false,

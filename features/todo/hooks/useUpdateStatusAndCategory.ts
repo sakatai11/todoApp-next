@@ -37,7 +37,7 @@ export const useUpdateStatusAndCategory = ({
       oldCategory: string,
       initialTitle: string,
     ) => {
-      const finalCategory = newCategory || initialTitle;
+      const finalCategory = (newCategory.trim() || initialTitle).trim();
 
       if (isDuplicateCategory(lists, finalCategory, id)) {
         alert('リスト名が重複しています');

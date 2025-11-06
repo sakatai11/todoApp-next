@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
       const { category, number } = body;
 
-      if (!category || !number) {
+      if (!category || !category.trim() || !number) {
         return NextResponse.json(
           { error: 'Category and Number are required' },
           { status: 400 },
@@ -106,7 +106,7 @@ export async function PUT(req: Request) {
         // editList
         if (payload.type === 'update') {
           const { id } = payload;
-          if (!id || !payload.data?.category) {
+          if (!id || !payload.data?.category || !payload.data.category.trim()) {
             return NextResponse.json(
               { error: 'ID and category are required' },
               { status: 400 },

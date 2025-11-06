@@ -32,7 +32,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   //
   // todo追加
   const addTodo = useCallback(async () => {
-    if (input.text && input.status) {
+    if (input.text.trim() && input.status.trim()) {
       const newTodo = {
         text: input.text,
         bool: false,
@@ -136,7 +136,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
     if (editId !== null) {
       // trueの場合
       const todoToUpdate = todos.find((todo) => todo.id === editId);
-      if (todoToUpdate && input.text && input.status) {
+      if (todoToUpdate && input.text.trim() && input.status.trim()) {
         // 更新が必要か確認
         if (
           todoToUpdate.text === input.text &&
