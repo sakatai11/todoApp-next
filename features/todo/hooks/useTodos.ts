@@ -155,7 +155,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   );
 
   // 保存
-  const saveTodo = useCallback(async () => {
+  const saveTodo = useCallback(async (): Promise<boolean> => {
     if (editId !== null) {
       // trueの場合
       const todoToUpdate = todos.find((todo) => todo.id === editId);
@@ -166,7 +166,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
           ...prevError,
           listModalArea: true,
         }));
-        return;
+        return false;
       }
 
       // 更新が必要か確認
@@ -177,7 +177,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         // 不要な場合はtext,statusともに''に処理を終了する
         setInput({ text: '', status: '' });
         setEditId(null);
-        return;
+        return false;
       }
 
       const updateTodo = {
@@ -216,13 +216,16 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
           ...prevError,
           listModalArea: false,
         })); // バリデーションエラーをリセット
+        return true;
       } catch (error) {
         console.error('Error saving todo:', error);
         // ロールバック
         setTodos(previousTodos);
         showError(ERROR_MESSAGES.TODO.UPDATE_FAILED);
+        return false;
       }
     }
+    return false;
   }, [editId, input.text, input.status, todos, showError]);
 
   return {
