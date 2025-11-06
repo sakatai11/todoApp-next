@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 
       const { text, status } = body;
 
-      if (text && status) {
+      if (text && text.trim() && status && status.trim()) {
         const currentTime = Timestamp.now();
         const newTodo = {
           updateTime: currentTime,
@@ -129,6 +129,14 @@ export async function PUT(req: Request) {
 
         if ('id' in payload && 'text' in payload && 'status' in payload) {
           const { id, text, status } = payload;
+
+          if (!text.trim() || !status.trim()) {
+            return NextResponse.json(
+              { error: 'Text and status cannot be empty or whitespace only' },
+              { status: 400 },
+            );
+          }
+
           const currentTime = Timestamp.now();
 
           const updateData: {
