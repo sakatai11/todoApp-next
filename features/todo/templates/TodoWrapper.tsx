@@ -11,6 +11,7 @@ import TodosLoading from '@/app/(dashboards)/loading';
 import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useSession } from 'next-auth/react';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 type TodoDataProps = {
   todos: TodoListProps[];
@@ -209,16 +210,12 @@ const TodoContent = (): React.ReactElement => {
     if (typeof window !== 'undefined' && !sessionGraceOver) {
       return <TodosLoading />;
     }
-    return (
-      <ErrorDisplay message="認証されていません。ログインしてください。" />
-    );
+    return <ErrorDisplay message={ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED} />;
   }
 
   // セッションはあるがcustomTokenがない場合（認証が不完全）
   if (!emulatorMode && status === 'authenticated' && !session?.user?.id) {
-    return (
-      <ErrorDisplay message="認証情報が不完全です。再ログインしてください。" />
-    );
+    return <ErrorDisplay message={ERROR_MESSAGES.AUTH.INCOMPLETE_AUTH} />;
   }
 
   if (error) return <ErrorDisplay message={error.message} />;

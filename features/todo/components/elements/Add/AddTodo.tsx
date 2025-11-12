@@ -11,11 +11,11 @@ const AddTodo = ({ status }: AddTodoProps) => {
   const { todoHooks } = useTodoContext();
   const {
     input,
-    error,
+    validationError,
     addTodoOpenStatus,
     addTodo,
     setInput,
-    setError,
+    setValidationError,
     setAddTodoOpenStatus,
   } = todoHooks;
 
@@ -51,8 +51,8 @@ const AddTodo = ({ status }: AddTodoProps) => {
               width: '100%',
             }}
             value={input.text}
-            error={error.listPushArea}
-            helperText={error.listPushArea && '入力してください'}
+            error={validationError.listPushArea}
+            helperText={validationError.listPushArea && '入力してください'}
             onChange={(e) =>
               setInput({ ...input, text: e.target.value, status: status })
             }
@@ -77,7 +77,7 @@ const AddTodo = ({ status }: AddTodoProps) => {
               onClick={() => {
                 setAddTodoOpenStatus(null);
                 setInput({ ...input, text: '', status: '' });
-                setError({ ...error, listPushArea: false });
+                setValidationError({ ...validationError, listPushArea: false });
               }}
             >
               戻る
@@ -93,7 +93,7 @@ const AddTodo = ({ status }: AddTodoProps) => {
             // 別のAddTodoを開く前に入力値をリセット
             setInput({ ...input, text: '', status: '' });
             setAddTodoOpenStatus(status);
-            setError({ ...error, listPushArea: false });
+            setValidationError({ ...validationError, listPushArea: false });
           }}
         >
           TODOを追加する

@@ -27,10 +27,10 @@ export type TodoPropsType = {
 };
 
 // StatusPullList
-// setErrorの型定義を除外
+// setValidationErrorの型定義を除外
 export type PullDownPropsType = Omit<
   BaseHookType<{ status: string }, boolean>,
-  'setError'
+  'setValidationError'
 > & {
   pullDownList: StatusType[];
 };

@@ -3,10 +3,19 @@ import { renderHook, act } from '@testing-library/react';
 import { useTodos } from '@/features/todo/hooks/useTodos';
 import { TodoListProps } from '@/types/todos';
 import { mockTodos } from '@/tests/test-utils';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 // Mock apiRequest
 vi.mock('@/features/libs/apis', () => ({
   apiRequest: vi.fn(),
+}));
+
+// Mock useError
+const mockShowError = vi.fn();
+vi.mock('@/features/todo/contexts/ErrorContext', () => ({
+  useError: () => ({
+    showError: mockShowError,
+  }),
 }));
 
 // Get the mocked function
@@ -28,7 +37,7 @@ describe('useTodos', () => {
       expect(result.current.todos).toEqual(mockInitialTodos);
       expect(result.current.input).toEqual({ text: '', status: '' });
       expect(result.current.editId).toBe(null);
-      expect(result.current.error).toEqual({
+      expect(result.current.validationError).toEqual({
         listPushArea: false,
         listModalArea: false,
       });
@@ -110,7 +119,7 @@ describe('useTodos', () => {
       );
       expect(result.current.todos).toHaveLength(3);
       expect(result.current.input).toEqual({ text: '', status: '' });
-      expect(result.current.error.listPushArea).toBe(false);
+      expect(result.current.validationError.listPushArea).toBe(false);
     });
 
     it('入力が空の場合はエラーになる', async () => {
@@ -122,7 +131,7 @@ describe('useTodos', () => {
       });
 
       expect(addResult).toBe(false);
-      expect(result.current.error.listPushArea).toBe(true);
+      expect(result.current.validationError.listPushArea).toBe(true);
       expect(mockApiRequest).not.toHaveBeenCalled();
     });
 
@@ -145,7 +154,9 @@ describe('useTodos', () => {
       });
 
       expect(addResult).toBe(false);
-      expect(result.current.error.listPushArea).toBe(true);
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.TODO.ADD_FAILED,
+      );
 
       consoleSpy.mockRestore();
     });
@@ -182,7 +193,7 @@ describe('useTodos', () => {
       expect(result.current.todos).toHaveLength(2);
     });
 
-    it('API呼び出しが失敗した場合でもクライアント側の削除は実行される', async () => {
+    it('API呼び出しが失敗した場合はロールバックされる', async () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -195,11 +206,14 @@ describe('useTodos', () => {
         await result.current.deleteTodo('todo-1');
       });
 
-      // クライアント側では削除が実行される（楽観的更新）
-      expect(result.current.todos).toHaveLength(1);
+      // API失敗時はロールバックされる
+      expect(result.current.todos).toHaveLength(2);
       expect(
         result.current.todos.find((todo) => todo.id === 'todo-1'),
-      ).toBeUndefined();
+      ).toBeDefined();
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.TODO.DELETE_FAILED,
+      );
 
       consoleSpy.mockRestore();
     });
@@ -267,7 +281,7 @@ describe('useTodos', () => {
       expect(mockApiRequest).not.toHaveBeenCalled();
     });
 
-    it('API呼び出しが失敗した場合でもクライアント側の更新は実行される', async () => {
+    it('API呼び出しが失敗した場合はロールバックされる', async () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -279,16 +293,20 @@ describe('useTodos', () => {
       const originalTodo = mockInitialTodos.find(
         (todo) => todo.id === 'todo-1',
       );
-      const expectedBool = !originalTodo?.bool;
+      const originalBool = originalTodo?.bool;
 
       await act(async () => {
         await result.current.toggleSelected('todo-1');
       });
 
+      // API失敗時はロールバックされる
       const updatedTodo = result.current.todos.find(
         (todo) => todo.id === 'todo-1',
       );
-      expect(updatedTodo?.bool).toBe(expectedBool);
+      expect(updatedTodo?.bool).toBe(originalBool);
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.TODO.TOGGLE_FAILED,
+      );
 
       consoleSpy.mockRestore();
     });
@@ -317,10 +335,12 @@ describe('useTodos', () => {
         });
       });
 
+      let saveResult: boolean = false;
       await act(async () => {
-        await result.current.saveTodo();
+        saveResult = await result.current.saveTodo();
       });
 
+      expect(saveResult).toBe(true);
       expect(mockApiRequest).toHaveBeenCalledWith('/api/todos', 'PUT', {
         id: 'todo-1',
         text: 'Updated Todo',
@@ -343,10 +363,12 @@ describe('useTodos', () => {
         result.current.editTodo('todo-1');
       });
 
+      let saveResult: boolean = true;
       await act(async () => {
-        await result.current.saveTodo();
+        saveResult = await result.current.saveTodo();
       });
 
+      expect(saveResult).toBe(false);
       expect(mockApiRequest).not.toHaveBeenCalled();
       expect(result.current.editId).toBe(null);
       expect(result.current.input).toEqual({ text: '', status: '' });
@@ -360,12 +382,14 @@ describe('useTodos', () => {
         result.current.setInput({ text: '', status: '' });
       });
 
+      let saveResult: boolean = true;
       await act(async () => {
-        await result.current.saveTodo();
+        saveResult = await result.current.saveTodo();
       });
 
+      expect(saveResult).toBe(false);
       expect(mockApiRequest).not.toHaveBeenCalled();
-      expect(result.current.error.listModalArea).toBe(true);
+      expect(result.current.validationError.listModalArea).toBe(true);
     });
 
     it('API呼び出しが失敗した場合はエラー状態になる', async () => {
@@ -385,17 +409,21 @@ describe('useTodos', () => {
         });
       });
 
+      let saveResult: boolean = true;
       await act(async () => {
-        await result.current.saveTodo();
+        saveResult = await result.current.saveTodo();
       });
 
+      expect(saveResult).toBe(false);
       expect(mockApiRequest).toHaveBeenCalledWith('/api/todos', 'PUT', {
         id: 'todo-1',
         text: 'Updated Todo',
         status: 'in_progress',
       });
 
-      expect(result.current.error.listModalArea).toBe(true);
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.TODO.UPDATE_FAILED,
+      );
 
       const updatedTodo = result.current.todos.find(
         (todo) => todo.id === 'todo-1',

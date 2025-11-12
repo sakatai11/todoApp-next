@@ -5,7 +5,7 @@ import { PullDownPropsType } from '@/types/components';
 const StatusPullList = ({
   pullDownList,
   input,
-  error,
+  validationError,
   setInput,
 }: PullDownPropsType) => {
   const [label, setLabel] = useState(input.status);
@@ -27,9 +27,9 @@ const StatusPullList = ({
         <TextField
           {...options}
           label={label}
-          error={!label && error}
+          error={!label && validationError}
           helperText={
-            !input.status && error ? 'ステータスを選択してください' : null
+            !input.status && validationError ? 'ステータスを選択してください' : null
           }
         />
       )}

@@ -7,7 +7,7 @@ describe('StatusPullList', () => {
   const defaultProps = {
     pullDownList: mockLists,
     input: { status: '' },
-    error: false,
+    validationError: false,
     setInput: vi.fn(),
   };
 
@@ -141,7 +141,7 @@ describe('StatusPullList', () => {
         <StatusPullList
           {...defaultProps}
           input={{ status: '' }}
-          error={true}
+          validationError={true}
         />,
       );
 
@@ -155,7 +155,7 @@ describe('StatusPullList', () => {
         <StatusPullList
           {...defaultProps}
           input={{ status: 'todo' }}
-          error={true}
+          validationError={true}
         />,
       );
 
@@ -169,7 +169,7 @@ describe('StatusPullList', () => {
         <StatusPullList
           {...defaultProps}
           input={{ status: '' }}
-          error={false}
+          validationError={false}
         />,
       );
 
@@ -183,7 +183,7 @@ describe('StatusPullList', () => {
         <StatusPullList
           {...defaultProps}
           input={{ status: '' }}
-          error={true}
+          validationError={true}
         />,
       );
 
@@ -198,7 +198,7 @@ describe('StatusPullList', () => {
         <StatusPullList
           {...defaultProps}
           input={{ status: '' }}
-          error={false}
+          validationError={false}
         />,
       );
 
