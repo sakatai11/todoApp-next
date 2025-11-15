@@ -27,9 +27,11 @@ const StatusPullList = ({
         <TextField
           {...options}
           label={label}
-          error={!label && validationError}
+          error={!input.status && validationError}
           helperText={
-            !input.status && validationError ? 'ステータスを選択してください' : null
+            !input.status && validationError
+              ? 'ステータスを選択してください'
+              : null
           }
         />
       )}
