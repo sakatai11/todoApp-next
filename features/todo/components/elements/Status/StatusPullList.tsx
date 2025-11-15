@@ -22,7 +22,7 @@ const StatusPullList = ({
       renderInput={(options) => (
         <TextField
           {...options}
-          label={input.status || 'ステータス'}
+          label={input.status}
           error={!input.status && validationError}
           helperText={
             !input.status && validationError
