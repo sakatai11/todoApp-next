@@ -185,9 +185,6 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         status: input.status,
       };
 
-      // ロールバック用に現在のデータを保存
-      const previousTodos = todos;
-
       try {
         // server side
         const result = await apiRequest<
@@ -219,14 +216,13 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         return true;
       } catch (error) {
         console.error('Error saving todo:', error);
-        // ロールバック
-        setTodos(previousTodos);
+        // エラー時は状態更新していないためロールバック不要
         showError(ERROR_MESSAGES.TODO.UPDATE_FAILED);
         return false;
       }
     }
     return false;
-  }, [editId, input.text, input.status, todos, showError]);
+  }, [editId, input.text, input.status, todos, setTodos, showError]);
 
   return {
     todos,
