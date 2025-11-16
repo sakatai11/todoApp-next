@@ -10,8 +10,15 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 const EditModal = React.memo(
   ({ todo, id, modalIsOpen, setModalIsOpen }: ModalPropType) => {
     const { todoHooks, listHooks } = useTodoContext();
-    const { addTodo, setInput, setEditId, setValidationError, saveTodo, validationError, input } =
-      todoHooks;
+    const {
+      addTodo,
+      setInput,
+      setEditId,
+      setValidationError,
+      saveTodo,
+      validationError,
+      input,
+    } = todoHooks;
 
     const statusPull = listHooks.lists;
     const isPushContainer = id === 'pushContainer' ? true : false;
@@ -79,7 +86,10 @@ const EditModal = React.memo(
                   : false
               }
               helperText={
-                !input.text && (validationError.listPushArea || validationError.listModalArea)
+                !input.text &&
+                (isPushContainer
+                  ? validationError.listPushArea
+                  : validationError.listModalArea)
                   ? '内容を入力してください'
                   : null
               }
@@ -91,7 +101,11 @@ const EditModal = React.memo(
               // statusプルダウン
               pullDownList={statusPull}
               input={{ ...input, status: input.status }} // input.statusを渡す
-              validationError={isPushContainer ? validationError.listPushArea : validationError.listModalArea}
+              validationError={
+                isPushContainer
+                  ? validationError.listPushArea
+                  : validationError.listModalArea
+              }
               setInput={(statusInput) =>
                 setInput({ ...input, status: statusInput.status })
               }
