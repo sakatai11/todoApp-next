@@ -7,11 +7,20 @@
 
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import readline from 'readline';
+import * as readline from 'readline/promises';
 
 // Firebase Admin SDKの初期化
-if (!process.env.FIRESTORE_EMULATOR_HOST) {
-  console.error('❌ FIRESTORE_EMULATOR_HOST環境変数が設定されていません');
+const requiredEnvVars = [
+  'FIRESTORE_EMULATOR_HOST',
+  'FIREBASE_AUTH_EMULATOR_HOST',
+];
+
+const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.error(
+    `❌ 必要な環境変数が設定されていません: ${missingVars.join(', ')}`,
+  );
   console.log('💡 Docker環境で実行してください: npm run docker:dev');
   process.exit(1);
 }
@@ -59,11 +68,12 @@ async function cleanupTestUsers() {
       output: process.stdout,
     });
 
-    rl.question('', async (answer: string) => {
+    try {
+      const answer = await rl.question('');
+
       if (answer.toLowerCase() !== 'y') {
         console.log('❌ キャンセルしました');
-        rl.close();
-        process.exit(0);
+        return;
       }
 
       console.log('\n🧹 テストユーザーを削除中...');
@@ -87,10 +97,9 @@ async function cleanupTestUsers() {
       if (errorCount > 0) {
         console.log(`  - 削除失敗: ${errorCount}件`);
       }
-
+    } finally {
       rl.close();
-      process.exit(0);
-    });
+    }
   } catch (error) {
     console.error('❌ エラーが発生しました:', error);
     process.exit(1);
