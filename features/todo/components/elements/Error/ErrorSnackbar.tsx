@@ -1,23 +1,20 @@
 'use client';
 
 import { Snackbar, Alert, Button, Box } from '@mui/material';
-import { useRouter } from 'next/navigation';
 import { useError } from '@/features/todo/contexts/ErrorContext';
 
 export const ErrorSnackbar = () => {
   const { error, clearError } = useError();
-  const router = useRouter();
 
-  const handleBackToTop = () => {
+  const handleReload = () => {
     clearError();
-    router.push('/');
+    window.location.reload();
   };
 
   return (
     <Snackbar
       open={!!error}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      autoHideDuration={6000}
       onClose={(event, reason) => {
         if (reason !== 'clickaway') {
           clearError();
@@ -41,7 +38,7 @@ export const ErrorSnackbar = () => {
             <Button
               color="inherit"
               size="small"
-              onClick={handleBackToTop}
+              onClick={handleReload}
               sx={{
                 backgroundColor: 'white',
                 color: '#d32f2f',
@@ -52,7 +49,7 @@ export const ErrorSnackbar = () => {
                 width: 140,
               }}
             >
-              トップへ戻る
+              再読み込み
             </Button>
           </Box>
         </Box>

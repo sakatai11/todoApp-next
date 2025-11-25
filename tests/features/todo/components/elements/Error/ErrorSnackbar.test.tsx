@@ -4,13 +4,12 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ErrorSnackbar } from '@/features/todo/components/elements/Error/ErrorSnackbar';
 import { ErrorProvider, useError } from '@/features/todo/contexts/ErrorContext';
 
-// Mock useRouter
-const mockPush = vi.fn();
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
+// Mock window.location.reload
+const mockReload = vi.fn();
+Object.defineProperty(window, 'location', {
+  value: { reload: mockReload },
+  writable: true,
+});
 
 // Wrapper component for testing
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -67,7 +66,7 @@ describe('ErrorSnackbar', () => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
 
-    it('「トップへ戻る」ボタンが正常に表示される', () => {
+    it('「再読み込み」ボタンが正常に表示される', () => {
       render(
         <TestWrapper>
           <ErrorTrigger message="エラーメッセージ" />
@@ -75,12 +74,12 @@ describe('ErrorSnackbar', () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText('トップへ戻る')).toBeInTheDocument();
+      expect(screen.getByText('再読み込み')).toBeInTheDocument();
     });
   });
 
   describe('インタラクション', () => {
-    it('「トップへ戻る」ボタンをクリックするとエラーが正常にクリアされる', async () => {
+    it('「再読み込み」ボタンをクリックするとエラーが正常にクリアされる', async () => {
       render(
         <TestWrapper>
           <ErrorTrigger message="エラーメッセージ" />
@@ -88,7 +87,7 @@ describe('ErrorSnackbar', () => {
         </TestWrapper>,
       );
 
-      const button = screen.getByText('トップへ戻る');
+      const button = screen.getByText('再読み込み');
 
       await act(async () => {
         fireEvent.click(button);
@@ -98,7 +97,7 @@ describe('ErrorSnackbar', () => {
       expect(screen.queryByText('エラーメッセージ')).not.toBeInTheDocument();
     });
 
-    it('「トップへ戻る」ボタンをクリックするとルーターが正常にトップページに遷移する', async () => {
+    it('「再読み込み」ボタンをクリックするとページが正常にリロードされる', async () => {
       render(
         <TestWrapper>
           <ErrorTrigger message="エラーメッセージ" />
@@ -106,17 +105,16 @@ describe('ErrorSnackbar', () => {
         </TestWrapper>,
       );
 
-      const button = screen.getByText('トップへ戻る');
+      const button = screen.getByText('再読み込み');
 
       await act(async () => {
         fireEvent.click(button);
       });
 
-      expect(mockPush).toHaveBeenCalledWith('/');
-      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(mockReload).toHaveBeenCalledTimes(1);
     });
 
-    it('ボタンクリック時にエラークリアとルーター遷移が正常に実行される', async () => {
+    it('ボタンクリック時にエラークリアとページリロードが正常に実行される', async () => {
       render(
         <TestWrapper>
           <ErrorTrigger message="エラーメッセージ" />
@@ -124,7 +122,7 @@ describe('ErrorSnackbar', () => {
         </TestWrapper>,
       );
 
-      const button = screen.getByText('トップへ戻る');
+      const button = screen.getByText('再読み込み');
 
       await act(async () => {
         fireEvent.click(button);
@@ -132,8 +130,8 @@ describe('ErrorSnackbar', () => {
 
       // エラーがクリアされる
       expect(screen.queryByText('エラーメッセージ')).not.toBeInTheDocument();
-      // ルーター遷移が実行される
-      expect(mockPush).toHaveBeenCalledWith('/');
+      // ページリロードが実行される
+      expect(mockReload).toHaveBeenCalledTimes(1);
     });
   });
 
