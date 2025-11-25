@@ -56,11 +56,8 @@ test.describe('認証フロー（Critical）', () => {
     // 3. "サインイン"ボタンをクリック
     await page.click('button[type="submit"]');
 
-    // 4. 認証処理が完了するまで待機（認証処理は時間がかかる場合がある）
-    await page.waitForURL('/todo', { timeout: 30000 });
-
-    // 5. Todoページ（/todo）にリダイレクトされることを確認
-    await expect(page).toHaveURL('/todo');
+    // 4. 認証処理が完了するまで待機、Todoページ（/todo）にリダイレクトされることを確認
+    await expect(page).toHaveURL('/todo', { timeout: 30000 });
 
     // ページヘッダーにログアウトボタンが表示される
     // ユーザーアイコンをクリックしてナビゲーションを開く
@@ -144,11 +141,8 @@ test.describe('認証フロー（Critical）', () => {
     await page.fill('input[name="password"]', TEST_USER.password);
     await page.click('button[type="submit"]');
 
-    // /todo へのリダイレクトを待機（認証処理は時間がかかる場合がある）
-    await page.waitForURL('/todo', { timeout: 30000 });
-
-    // 1. Todoページ（/todo）が表示されている状態
-    await expect(page).toHaveURL('/todo');
+    // 1. todo へのリダイレクトを待機、Todoページ（/todo）が表示されている状態
+    await expect(page).toHaveURL('/todo', { timeout: 30000 });
 
     // 2. ヘッダーのログアウトボタンをクリック
     // ユーザーアイコンをクリックしてナビゲーションを開く
@@ -198,19 +192,15 @@ test.describe('認証フロー（Critical）', () => {
     }
 
     // 5. サインインページ（/signin）にリダイレクトされることを確認
-    await page.waitForURL(/\/signin/, { timeout: 30000 });
-    await expect(page).toHaveURL(/\/signin/);
+    await expect(page).toHaveURL(new RegExp('/signin'), { timeout: 30000 });
 
     // 6. 作成したアカウントでログインできることを確認
     await page.fill('input[name="email"]', newEmail);
     await page.fill('input[name="password"]', 'newpassword123');
     await page.click('button[type="submit"]');
 
-    // /todo へのリダイレクトを待機（認証処理は時間がかかる場合がある）
-    await page.waitForURL('/todo', { timeout: 30000 });
-
-    // ログイン成功後、Todoページにリダイレクトされる
-    await expect(page).toHaveURL('/todo');
+    // リダイレクトを待機、ログイン成功後、Todoページにリダイレクトされる
+    await expect(page).toHaveURL('/todo', { timeout: 30000 });
   });
 
   test('1.7 サインアップ（異常系：既存メールアドレス）', async ({ page }) => {
