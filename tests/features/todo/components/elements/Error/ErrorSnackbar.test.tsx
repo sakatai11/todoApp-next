@@ -195,20 +195,27 @@ describe('ErrorSnackbar', () => {
 
   describe('複数のエラー', () => {
     it('後から表示されたエラーが正常に優先される', () => {
+      // 固定のwrapper関数を定義して同一コンテキストを維持
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <ErrorProvider>{children}</ErrorProvider>
+      );
+
       const { rerender } = render(
-        <TestWrapper>
+        <>
           <ErrorTrigger message="最初のエラー" />
           <ErrorSnackbar />
-        </TestWrapper>,
+        </>,
+        { wrapper },
       );
 
       expect(screen.getByText('最初のエラー')).toBeInTheDocument();
 
+      // 同じwrapperを使用してrerenderし、同一コンテキスト内での検証
       rerender(
-        <TestWrapper>
+        <>
           <ErrorTrigger message="2番目のエラー" />
           <ErrorSnackbar />
-        </TestWrapper>,
+        </>,
       );
 
       expect(screen.getByText('2番目のエラー')).toBeInTheDocument();
