@@ -17,9 +17,16 @@ export const ErrorSnackbar = () => {
     <Snackbar
       open={!!error}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      autoHideDuration={6000}
+      onClose={(event, reason) => {
+        if (reason !== 'clickaway') {
+          clearError();
+        }
+      }}
     >
       <Alert
         severity="error"
+        onClose={clearError}
         sx={{
           width: '100%',
           minWidth: '300px',
