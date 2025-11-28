@@ -8,6 +8,9 @@ export default defineConfig({
   // テストディレクトリ
   testDir: './tests/e2e',
 
+  // グローバルティアダウン（E2Eテスト完了後のクリーンアップ）
+  globalTeardown: require.resolve('./tests/e2e/global-teardown'),
+
   // 並列実行設定
   fullyParallel: true,
 
