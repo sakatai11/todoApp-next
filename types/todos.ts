@@ -56,7 +56,7 @@ export type TodoHookType<T extends EditDataProps> = T &
     addTodo: () => Promise<boolean>;
     deleteTodo: (id: string) => void;
     editTodo: (id: string) => void;
-    saveTodo: () => void;
+    saveTodo: () => Promise<boolean>;
     toggleSelected: (id: string) => void;
     setAddTodoOpenStatus: (status: string | null) => void;
   };

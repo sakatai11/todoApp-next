@@ -11,6 +11,7 @@ import TodosLoading from '@/app/(dashboards)/loading';
 import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useSession } from 'next-auth/react';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 type TodoDataProps = {
   todos: TodoListProps[];
@@ -159,8 +160,10 @@ const TodoContent = (): React.ReactElement => {
   // 共通のSWRオプション
   const swrOptions = {
     revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
+    revalidateOnFocus: true, // タブ切り替え時に最新データ取得
+    revalidateOnReconnect: true, // オフライン復帰時に再取得
+    dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
+    focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
     suspense: false,
     shouldRetryOnError: (err: Error) => {
       // FetchErrorの場合はステータスコードでチェック
@@ -207,16 +210,12 @@ const TodoContent = (): React.ReactElement => {
     if (typeof window !== 'undefined' && !sessionGraceOver) {
       return <TodosLoading />;
     }
-    return (
-      <ErrorDisplay message="認証されていません。ログインしてください。" />
-    );
+    return <ErrorDisplay message={ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED} />;
   }
 
   // セッションはあるがcustomTokenがない場合（認証が不完全）
   if (!emulatorMode && status === 'authenticated' && !session?.user?.id) {
-    return (
-      <ErrorDisplay message="認証情報が不完全です。再ログインしてください。" />
-    );
+    return <ErrorDisplay message={ERROR_MESSAGES.AUTH.INCOMPLETE_AUTH} />;
   }
 
   if (error) return <ErrorDisplay message={error.message} />;
@@ -243,7 +242,12 @@ const TodoErrorBoundary = ({ error }: { error: Error }) => {
 // メインラッパーコンポーネント
 const TodoWrapper = (): React.ReactElement => {
   return (
-    <SWRConfig value={{ suspense: true, revalidateOnFocus: false }}>
+    <SWRConfig
+      value={{
+        dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
+        focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
+      }}
+    >
       <ErrorBoundary FallbackComponent={TodoErrorBoundary}>
         <TodoContent />
       </ErrorBoundary>

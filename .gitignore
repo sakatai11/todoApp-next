@@ -54,6 +54,7 @@ firestore.rules
 firestore.test.rules
 CLAUDE.local.md
 .github/
+test-results/
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
 .serena/
 .claude/
