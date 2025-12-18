@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { StatusListProps, ListPayload, ListResponse } from '@/types/lists';
 import { apiRequest } from '@/features/libs/apis';
+import { trimAllSpaces } from '@/features/utils/validationUtils';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useError } from '@/features/todo/contexts/ErrorContext';
@@ -40,7 +41,9 @@ export const useLists = (initialLists: StatusListProps[]) => {
   // list追加
   const addList = useCallback(async () => {
     // バリデーション: 空入力チェック（半角・全角スペースのみも含む）
-    if (!input.status.trim()) {
+    const trimmedStatus = trimAllSpaces(input.status);
+
+    if (!trimmedStatus) {
       setValidationError((prevError) => ({
         ...prevError,
         addListNull: true,
@@ -50,7 +53,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
     }
 
     // バリデーション: 重複チェック
-    if (checkDuplicateCategory(input.status.trim())) {
+    if (checkDuplicateCategory(trimmedStatus)) {
       setValidationError((prevError) => ({
         ...prevError,
         addListNull: false,
@@ -66,7 +69,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
     }));
 
     const newList = {
-      category: input.status.trim(),
+      category: trimmedStatus,
       number: updatedLists.length + 1,
     };
 

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { ListPayload, StatusListProps, ListResponse } from '@/types/lists';
 import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
+import { trimAllSpaces } from '@/features/utils/validationUtils';
 import {
   isDuplicateCategory,
   updateListsAndTodos,
@@ -37,7 +38,8 @@ export const useUpdateStatusAndCategory = ({
       oldCategory: string,
       initialTitle: string,
     ) => {
-      const finalCategory = (newCategory.trim() || initialTitle).trim();
+      const finalCategory =
+        trimAllSpaces(newCategory) || trimAllSpaces(initialTitle);
 
       if (isDuplicateCategory(lists, finalCategory, id)) {
         alert('リスト名が重複しています');
