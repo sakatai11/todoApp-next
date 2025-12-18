@@ -21,9 +21,9 @@ export type IsModalWithDeleteType = {
 // Hooks型の共通プロパティをコンポーネント化
 export type BaseHookType<TInput, TError> = {
   input: TInput;
-  error: TError;
+  validationError: TError;
   setInput: (input: TInput) => void;
-  setError: (error: TError) => void;
+  setValidationError: (error: TError) => void;
 };
 
 // statusのプルダウンの型

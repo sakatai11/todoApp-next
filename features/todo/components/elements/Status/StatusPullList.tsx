@@ -1,15 +1,12 @@
-import { useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 import { PullDownPropsType } from '@/types/components';
 
 const StatusPullList = ({
   pullDownList,
   input,
-  error,
+  validationError,
   setInput,
 }: PullDownPropsType) => {
-  const [label, setLabel] = useState(input.status);
-
   return (
     <Autocomplete
       disablePortal
@@ -20,16 +17,17 @@ const StatusPullList = ({
         // _はeventの略
         if (newValue) {
           setInput({ ...input, status: newValue.category });
-          setLabel(newValue.category);
         }
       }}
       renderInput={(options) => (
         <TextField
           {...options}
-          label={label}
-          error={!label && error}
+          label={input.status}
+          error={!input.status && validationError}
           helperText={
-            !input.status && error ? 'ステータスを選択してください' : null
+            !input.status && validationError
+              ? 'ステータスを選択してください'
+              : null
           }
         />
       )}

@@ -3,10 +3,19 @@ import { renderHook, act } from '@testing-library/react';
 import { useLists } from '@/features/todo/hooks/useLists';
 import { StatusListProps } from '@/types/lists';
 import { mockLists } from '@/tests/test-utils';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 // Mock apiRequest
 vi.mock('@/features/libs/apis', () => ({
   apiRequest: vi.fn(),
+}));
+
+// Mock useError
+const mockShowError = vi.fn();
+vi.mock('@/features/todo/contexts/ErrorContext', () => ({
+  useError: () => ({
+    showError: mockShowError,
+  }),
 }));
 
 // Mock @dnd-kit/sortable
@@ -49,7 +58,7 @@ describe('useLists', () => {
 
       expect(result.current.lists).toEqual(mockInitialLists);
       expect(result.current.input).toEqual({ status: '' });
-      expect(result.current.error).toEqual({
+      expect(result.current.validationError).toEqual({
         addListNull: false,
         addListSame: false,
       });
@@ -95,14 +104,14 @@ describe('useLists', () => {
       const { result } = renderHook(() => useLists(mockInitialLists));
 
       act(() => {
-        result.current.setError({
+        result.current.setValidationError({
           addListNull: true,
           addListSame: false,
         });
       });
 
-      expect(result.current.error.addListNull).toBe(true);
-      expect(result.current.error.addListSame).toBe(false);
+      expect(result.current.validationError.addListNull).toBe(true);
+      expect(result.current.validationError.addListSame).toBe(false);
     });
   });
 
@@ -158,8 +167,8 @@ describe('useLists', () => {
       );
       expect(result.current.lists).toHaveLength(4);
       expect(result.current.input).toEqual({ status: '' });
-      expect(result.current.error.addListNull).toBe(false);
-      expect(result.current.error.addListSame).toBe(false);
+      expect(result.current.validationError.addListNull).toBe(false);
+      expect(result.current.validationError.addListSame).toBe(false);
     });
 
     it('入力が空の場合はエラーになる', async () => {
@@ -171,8 +180,8 @@ describe('useLists', () => {
       });
 
       expect(addResult).toBe(false);
-      expect(result.current.error.addListNull).toBe(true);
-      expect(result.current.error.addListSame).toBe(false);
+      expect(result.current.validationError.addListNull).toBe(true);
+      expect(result.current.validationError.addListSame).toBe(false);
       expect(mockApiRequest).not.toHaveBeenCalled();
     });
 
@@ -189,8 +198,8 @@ describe('useLists', () => {
       });
 
       expect(addResult).toBe(false);
-      expect(result.current.error.addListNull).toBe(false);
-      expect(result.current.error.addListSame).toBe(true);
+      expect(result.current.validationError.addListNull).toBe(false);
+      expect(result.current.validationError.addListSame).toBe(true);
       expect(mockApiRequest).not.toHaveBeenCalled();
     });
 
@@ -213,8 +222,9 @@ describe('useLists', () => {
       });
 
       expect(addResult).toBe(false);
-      expect(result.current.error.addListNull).toBe(true);
-      expect(result.current.error.addListSame).toBe(true);
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.LIST.ADD_FAILED,
+      );
 
       consoleSpy.mockRestore();
     });

@@ -6,7 +6,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 
 const AddList = () => {
   const { listHooks } = useTodoContext();
-  const { input, error, addList, setInput, setError } = listHooks;
+  const { input, validationError, addList, setInput, setValidationError } = listHooks;
 
   const [addBtn, setAddBtn] = useState(false);
 
@@ -33,11 +33,11 @@ const AddList = () => {
               width: '100%',
             }}
             value={input.status}
-            error={error.addListNull || error.addListSame}
+            error={validationError.addListNull || validationError.addListSame}
             helperText={
-              error.addListNull
+              validationError.addListNull
                 ? 'リスト名を入力してください'
-                : error.addListSame
+                : validationError.addListSame
                   ? '同じリスト名が存在します'
                   : null
             }
@@ -63,7 +63,7 @@ const AddList = () => {
               onClick={() => {
                 setAddBtn(false);
                 setInput({ status: '' });
-                setError({ addListNull: false, addListSame: false });
+                setValidationError({ addListNull: false, addListSame: false });
               }}
             >
               戻る
@@ -77,7 +77,7 @@ const AddList = () => {
           endIcon={<AddBoxIcon color="primary" />}
           onClick={() => {
             setAddBtn(true);
-            setError({ addListNull: false, addListSame: false });
+            setValidationError({ addListNull: false, addListSame: false });
           }}
         >
           リストを追加する
