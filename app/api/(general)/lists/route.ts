@@ -2,6 +2,7 @@ import { adminDB } from '@/app/libs/firebaseAdmin';
 import { ListPayload, ListResponse, StatusListProps } from '@/types/lists';
 import { NextResponse } from 'next/server';
 import { withAuthenticatedUser } from '@/app/libs/withAuth';
+import { trimAllSpaces } from '@/app/utils/validationUtils';
 
 /**
  * 認証されたユーザーのリストを取得します。
@@ -53,7 +54,9 @@ export async function POST(req: Request) {
 
       const { category, number } = body;
 
-      if (!category || !number) {
+      const trimmedCategory = trimAllSpaces(category);
+
+      if (!trimmedCategory || !number) {
         return NextResponse.json(
           { error: 'Category and Number are required' },
           { status: 400 },
@@ -61,7 +64,7 @@ export async function POST(req: Request) {
       }
 
       const newList = {
-        category,
+        category: trimmedCategory,
         number,
       };
 
@@ -106,7 +109,7 @@ export async function PUT(req: Request) {
         // editList
         if (payload.type === 'update') {
           const { id } = payload;
-          if (!id || !payload.data?.category) {
+          if (!id || !payload.data?.category?.trim()) {
             return NextResponse.json(
               { error: 'ID and category are required' },
               { status: 400 },

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getValidationStatus,
   getErrorMessage,
+  trimAllSpaces,
 } from '@/features/utils/validationUtils';
 import { messageType } from '@/data/form';
 
@@ -293,6 +294,90 @@ describe('validationUtils', () => {
           fieldType: 'email',
         });
         expect(result).toBe(true);
+      });
+    });
+  });
+
+  describe('trimAllSpaces', () => {
+    describe('半角スペースのトリミング', () => {
+      it('前後の半角スペースを除去する', () => {
+        expect(trimAllSpaces('  test  ')).toBe('test');
+      });
+
+      it('前のみの半角スペースを除去する', () => {
+        expect(trimAllSpaces('  test')).toBe('test');
+      });
+
+      it('後のみの半角スペースを除去する', () => {
+        expect(trimAllSpaces('test  ')).toBe('test');
+      });
+
+      it('半角スペースのみの場合は空文字を返す', () => {
+        expect(trimAllSpaces('   ')).toBe('');
+      });
+    });
+
+    describe('全角スペースのトリミング', () => {
+      it('前後の全角スペース（U+3000）を除去する', () => {
+        expect(trimAllSpaces('　test　')).toBe('test');
+      });
+
+      it('前のみの全角スペースを除去する', () => {
+        expect(trimAllSpaces('　test')).toBe('test');
+      });
+
+      it('後のみの全角スペースを除去する', () => {
+        expect(trimAllSpaces('test　')).toBe('test');
+      });
+
+      it('全角スペースのみの場合は空文字を返す', () => {
+        expect(trimAllSpaces('　　　')).toBe('');
+      });
+    });
+
+    describe('半角・全角混在のトリミング', () => {
+      it('半角と全角スペースが混在した前後を除去する', () => {
+        expect(trimAllSpaces(' 　test　 ')).toBe('test');
+      });
+
+      it('タブと全角スペースの混在を除去する', () => {
+        expect(trimAllSpaces('\t　test　\t')).toBe('test');
+      });
+
+      it('改行と全角スペースの混在を除去する', () => {
+        expect(trimAllSpaces('\n　test　\n')).toBe('test');
+      });
+    });
+
+    describe('中間のスペースは保持', () => {
+      it('文字列中間の半角スペースは保持される', () => {
+        expect(trimAllSpaces('  hello world  ')).toBe('hello world');
+      });
+
+      it('文字列中間の全角スペースは保持される', () => {
+        expect(trimAllSpaces('　hello　world　')).toBe('hello　world');
+      });
+    });
+
+    describe('エッジケース', () => {
+      it('空文字の場合は空文字を返す', () => {
+        expect(trimAllSpaces('')).toBe('');
+      });
+
+      it('スペースなしの文字列はそのまま返す', () => {
+        expect(trimAllSpaces('test')).toBe('test');
+      });
+
+      it('複数の連続した半角・全角スペースを除去する', () => {
+        expect(trimAllSpaces('   　　test　　   ')).toBe('test');
+      });
+
+      it('null値の場合は空文字を返す', () => {
+        expect(trimAllSpaces(null as unknown as string)).toBe('');
+      });
+
+      it('undefined値の場合は空文字を返す', () => {
+        expect(trimAllSpaces(undefined as unknown as string)).toBe('');
       });
     });
   });
