@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { TodoResponse } from '@/types/todos';
 import { Timestamp } from 'firebase-admin/firestore';
+import { trimAllSpaces } from '@/app/utils/validationUtils';
 
 /**
  * 認証されたユーザーのtodoリストを取得します。
@@ -59,14 +60,17 @@ export async function POST(req: Request) {
 
       const { text, status } = body;
 
-      if (text && status) {
+      const trimmedText = trimAllSpaces(text);
+      const trimmedStatus = trimAllSpaces(status);
+
+      if (trimmedText && trimmedStatus) {
         const currentTime = Timestamp.now();
         const newTodo = {
           updateTime: currentTime,
           createdTime: currentTime,
-          text,
+          text: trimmedText,
           bool: false,
-          status,
+          status: trimmedStatus,
         };
 
         try {
@@ -129,6 +133,17 @@ export async function PUT(req: Request) {
 
         if ('id' in payload && 'text' in payload && 'status' in payload) {
           const { id, text, status } = payload;
+
+          const trimmedText = trimAllSpaces(text);
+          const trimmedStatus = trimAllSpaces(status);
+
+          if (!trimmedText || !trimmedStatus) {
+            return NextResponse.json(
+              { error: 'Text and status cannot be empty or whitespace only' },
+              { status: 400 },
+            );
+          }
+
           const currentTime = Timestamp.now();
 
           const updateData: {
@@ -137,8 +152,8 @@ export async function PUT(req: Request) {
             status: string;
           } = {
             updateTime: currentTime,
-            text,
-            status,
+            text: trimmedText,
+            status: trimmedStatus,
           };
 
           await todosCollection.doc(id).update(updateData);

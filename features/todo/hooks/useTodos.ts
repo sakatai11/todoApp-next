@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
 import { apiRequest } from '@/features/libs/apis';
 import { getTime } from '@/features/utils/dateUtils';
+import { trimAllSpaces } from '@/features/utils/validationUtils';
 import { useError } from '@/features/todo/contexts/ErrorContext';
 import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
@@ -35,16 +36,19 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   //
   // todo追加
   const addTodo = useCallback(async () => {
-    // バリデーション
-    if (!input.text || !input.status) {
+    // バリデーション（半角・全角スペースのみも含む）
+    const trimmedText = trimAllSpaces(input.text);
+    const trimmedStatus = trimAllSpaces(input.status);
+
+    if (!trimmedText || !trimmedStatus) {
       setValidationError((prevError) => ({ ...prevError, listPushArea: true }));
       return false;
     }
 
     const newTodo = {
-      text: input.text,
+      text: trimmedText,
       bool: false,
-      status: input.status,
+      status: trimmedStatus,
     };
 
     try {
@@ -160,8 +164,11 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       // trueの場合
       const todoToUpdate = todos.find((todo) => todo.id === editId);
 
-      // バリデーション
-      if (!todoToUpdate || !input.text || !input.status) {
+      // バリデーション（半角・全角スペースのみも含む）
+      const trimmedText = trimAllSpaces(input.text);
+      const trimmedStatus = trimAllSpaces(input.status);
+
+      if (!todoToUpdate || !trimmedText || !trimmedStatus) {
         setValidationError((prevError) => ({
           ...prevError,
           listModalArea: true,
@@ -171,8 +178,8 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
       // 更新が必要か確認
       if (
-        todoToUpdate.text === input.text &&
-        todoToUpdate.status === input.status
+        todoToUpdate.text === trimmedText &&
+        todoToUpdate.status === trimmedStatus
       ) {
         // 不要な場合はtext,statusともに''に処理を終了する
         setInput({ text: '', status: '' });
@@ -181,8 +188,8 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       }
 
       const updateTodo = {
-        text: input.text,
-        status: input.status,
+        text: trimmedText,
+        status: trimmedStatus,
       };
 
       try {
