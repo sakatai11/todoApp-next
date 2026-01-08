@@ -55,7 +55,6 @@ CLAUDE.local.md
 .github/
 test-results/
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
-.serena/
 .claude/
 
 # MSW generated file
