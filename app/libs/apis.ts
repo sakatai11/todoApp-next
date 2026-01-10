@@ -1,6 +1,6 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
 
-export const getServerApiRequest = async (email: string) => {
+export const getServerApiRequest = async (email: string): Promise<boolean> => {
   try {
     // Firestoreのusersコレクションからemailが一致するドキュメントを取得
     const querySnapshot = await adminDB
@@ -9,7 +9,7 @@ export const getServerApiRequest = async (email: string) => {
       .get();
 
     // もし1つでも一致するユーザーがいれば存在する
-    return !querySnapshot.empty ? true : null;
+    return !querySnapshot.empty;
   } catch (error) {
     console.error('API request error:', error);
     throw error; // 呼び出し元でエラーハンドリング
