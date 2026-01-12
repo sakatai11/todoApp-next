@@ -56,8 +56,9 @@ CLAUDE.local.md
 .github/
 test-results/
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
-.serena/
 .claude/
+.claude-pr-config.json
+
 
 # MSW generated file
 public/mockServiceWorker.js
