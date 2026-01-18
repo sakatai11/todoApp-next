@@ -55,7 +55,8 @@ CLAUDE.local.md
 .github/
 test-results/
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
-.claude/
+# Claude Code - ローカル設定のみ除外
+.claude/settings.local.json
 .claude-pr-config.json
 
 
