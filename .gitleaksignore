@@ -1,0 +1,8 @@
+# Gitleaks ignore file
+# False positives in documentation and examples
+
+# Playwright agent documentation - example password
+.claude/agents/playwright-test-generator.md:2:password 123456
+
+# Security rules documentation - example API key (intentionally wrong format)
+.claude/rules/security.md:190:sk-1234567890abcdef

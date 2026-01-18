@@ -187,6 +187,7 @@ const firebaseConfig = {
 };
 
 // ❌ ハードコード禁止
+// gitleaks:allow - This is an example of what NOT to do
 const apiKey = 'sk-1234567890abcdef'; // 絶対に禁止
 ```
 
