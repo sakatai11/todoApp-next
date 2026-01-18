@@ -4,6 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 必ず日本語で回答してください
 
+## 横断的ルール（自動読み込み）
+
+以下の`.claude/rules/`配下のルールが全て自動的に適用されます：
+
+- **コード品質**: @.claude/rules/code-quality.md
+- **セキュリティ**: @.claude/rules/security.md
+- **開発フロー**: @.claude/rules/development.md
+
+## 階層別の詳細指示（path-specificルール）
+
+作業ディレクトリに応じて、以下のpath-specificルールが自動的に適用されます：
+
+| ルールファイル | 適用パス | 主な内容 |
+|-------------|---------|---------|
+| @.claude/rules/app-router.md | `app/**/*.{ts,tsx}` | App Router固有、プライベートディレクトリ、プロバイダー構成 |
+| @.claude/rules/api-development.md | `app/api/**/*.{ts,tsx}` | API開発、認証ミドルウェア、エラーハンドリング |
+| @.claude/rules/features-shared.md | `features/shared/**/*.{ts,tsx}` | 共通コンポーネント設計、環境依存処理 |
+| @.claude/rules/features-todo.md | `features/todo/**/*.{ts,tsx}` | Todo機能、状態管理、カスタムフック |
+| @.claude/rules/testing.md | `tests/**/*.{ts,tsx}`, `**/*.{test,spec}.{ts,tsx}` | テスト戦略、環境設定、データ一貫性 |
+
 ## プロジェクト概要
 
 これは、App Routerとフィーチャーベースアーキテクチャを使用したNext.js 15のtodoアプリケーションです。
@@ -60,7 +80,7 @@ npm run msw:init        # Mock Service Workerを初期化
 - **ディレクトリ構造**: フィーチャーベース設計（`features/`内で機能自己完結）
 - **ルーティング**: Next.js App Router + ルートグループ`()`による整理
 - **API構造**: 管理者用`(admin)/`、一般用`(general)/`、認証用`auth/`に分離
-- **詳細構造**: [@todoApp-submodule/docs/PRODUCTS.md](todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)参照
+- **詳細構造**: [@todoApp-submodule/docs/PRODUCTS.md](../todoApp-submodule/docs/PRODUCTS.md#プロジェクト構造)参照
 
 ### 重要なプロジェクト注意事項
 
@@ -114,7 +134,7 @@ npm run msw:init        # Mock Service Workerを初期化
 - **UTカバレッジ**: 100%達成済み（413テスト成功）
 - **統合テスト**: Docker + Firebase Emulator（ポート3002/4000/8080/9099）
 - **品質基準**: ESLint準拠、表記統一ルール、サブモジュールデータ統一
-- **詳細ガイド**: [@tests/CLAUDE.md](tests/CLAUDE.md)参照
+- **詳細ガイド**: [@.claude/rules/testing.md](rules/testing.md)参照
 
 ## 開発時の重要なルール
 
