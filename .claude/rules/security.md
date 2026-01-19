@@ -14,51 +14,13 @@
 3. Firebase Admin SDKでサーバーサイド検証
 4. Role-based access control (admin/user)
 
-```typescript
-// 認証ミドルウェアの使用例
-import { withAuthenticatedUser } from '@/app/libs/withAuth';
-
-export async function POST(req: Request) {
-  return withAuthenticatedUser<TodoPayload, TodoResponse>(
-    req,
-    async (uid, body) => {
-      // 認証済みユーザーの処理
-      const { text, status } = body;
-
-      // Firebase Firestoreへの保存処理
-      // ...
-
-      return NextResponse.json(result);
-    },
-  );
-}
-```
-
-### 環境別認証方式
-
-詳細は `@app/api/CLAUDE.md` および `@todoApp-submodule/docs/app/libs/withAuth.md` を参照してください。
-
-| 環境 | 認証方式 | 条件 |
-|------|---------|------|
-| **本番環境** | NextAuth.js セッション | `NODE_ENV=production` |
-| **Docker開発環境** | NextAuth.js セッション | `NODE_ENV=development` + `FIRESTORE_EMULATOR_HOST` |
-| **Docker統合テスト環境** | `X-Test-User-ID` ヘッダー | `NODE_ENV=test` + `FIRESTORE_EMULATOR_HOST` |
+詳細は `@todoApp-submodule/docs/app/libs/withAuth.md` を参照してください。
 
 ### Role-Based Access Control (RBAC)
 
 - **管理者API**: `app/api/(admin)/` - 管理者ロール検証必須
 - **一般ユーザーAPI**: `app/api/(general)/` - ユーザー認証必須
 - **認証API**: `app/api/auth/` - 認証フロー処理
-
-```typescript
-// 管理者権限チェック例
-const userRecord = await admin.auth().getUser(uid);
-const isAdmin = userRecord.customClaims?.role === 'admin';
-
-if (!isAdmin) {
-  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-}
-```
 
 ## APIセキュリティ
 
@@ -68,34 +30,7 @@ if (!isAdmin) {
 - **入力検証**: ユーザー入力は信頼しない
 - **型安全性**: TypeScriptの型とZodスキーマの両方で保護
 
-```typescript
-import { z } from 'zod';
-
-const CreateTodoSchema = z.object({
-  text: z.string().min(1).max(500),
-  status: z.enum(['todo', 'in-progress', 'done']),
-  listId: z.string().uuid(),
-});
-
-export async function POST(req: Request) {
-  const body = await req.json();
-
-  // バリデーション
-  const result = CreateTodoSchema.safeParse(body);
-  if (!result.success) {
-    return NextResponse.json(
-      { error: 'Invalid request', details: result.error },
-      { status: 400 }
-    );
-  }
-
-  // 安全な処理
-  const { text, status, listId } = result.data;
-  // ...
-}
-```
-
-### HTTPステータスコードの適切な使用
+### HTTPステータスコード
 
 - **200 OK**: 成功レスポンス
 - **400 Bad Request**: バリデーションエラー
@@ -108,11 +43,6 @@ export async function POST(req: Request) {
 
 ```typescript
 // 基本エラーレスポンス
-{
-  error: string;
-}
-
-// 詳細なエラー情報が必要な場合
 {
   error: string;
   details?: unknown;
@@ -130,42 +60,14 @@ export async function POST(req: Request) {
 - **権限最小化**: 必要最小限の権限のみを付与
 
 ```typescript
-// サーバーサイドのみで使用
-import { adminAuth, adminDb } from '@/app/libs/firebaseAdmin';
-
 // ✅ API Route内での使用
 export async function GET(req: Request) {
   const user = await adminAuth.getUser(uid);
   const todos = await adminDb.collection('todos').where('userId', '==', uid).get();
-  // ...
 }
 
 // ❌ クライアントコンポーネントでの使用禁止
 'use client'; // このファイル内でFirebase Admin SDKを使用しない
-```
-
-### Firestoreセキュリティルール
-
-- **ルール適用**: Firestoreセキュリティルールを適切に設定
-- **ユーザー分離**: ユーザーは自分のデータのみアクセス可能
-- **管理者権限**: 管理者はカスタムクレームで識別
-
-```javascript
-// firestore.rules 例
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId}/todos/{todoId} {
-      allow read, write: if request.auth.uid == userId;
-    }
-
-    match /users/{userId} {
-      allow read: if request.auth.uid == userId
-                  || request.auth.token.role == 'admin';
-      allow write: if request.auth.uid == userId;
-    }
-  }
-}
 ```
 
 ## 機密情報管理
@@ -187,7 +89,6 @@ const firebaseConfig = {
 };
 
 // ❌ ハードコード禁止
-// gitleaks:allow - This is an example of what NOT to do
 const apiKey = 'sk-1234567890abcdef'; // 絶対に禁止
 ```
 
@@ -204,10 +105,9 @@ serviceAccountKey.json
 *.key
 ```
 
-### ファイルアクセス制御（グローバルCLAUDE.md準拠）
+### ファイルアクセス制御
 
 以下のファイルは、いかなる状況でも読み取り、変更、作成を行わない：
-
 - `.env` ファイル
 - APIキー、トークン、認証情報を含むファイル
 - 秘密鍵や証明書
@@ -227,7 +127,7 @@ const todosRef = adminDb.collection('todos');
 const query = todosRef.where('userId', '==', sanitizedUserId);
 
 // ❌ 危険な文字列結合
-const query = `SELECT * FROM todos WHERE userId = '${userId}'`; // SQL使用時は禁止
+const query = `SELECT * FROM todos WHERE userId = '${userId}'`; // 禁止
 ```
 
 ### CORS設定
@@ -235,27 +135,6 @@ const query = `SELECT * FROM todos WHERE userId = '${userId}'`; // SQL使用時�
 - **許可オリジン**: 必要なオリジンのみを許可
 - **本番環境**: ワイルドカード`*`の使用禁止
 - **開発環境**: localhost のみ許可
-
-```typescript
-// next.config.js
-const nextConfig = {
-  async headers() {
-    return [
-      {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: process.env.NODE_ENV === 'production'
-              ? 'https://yourdomain.com'
-              : 'http://localhost:3000',
-          },
-        ],
-      },
-    ];
-  },
-};
-```
 
 ### レート制限
 
@@ -279,10 +158,7 @@ try {
   console.error('Internal error:', error); // サーバーログに詳細記録
 
   // ユーザーには一般的なエラーメッセージのみ
-  return NextResponse.json(
-    { error: 'An error occurred' },
-    { status: 500 }
-  );
+  return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
 }
 ```
 
@@ -297,11 +173,3 @@ try {
 - 依存関係の脆弱性チェック（`npm audit`）
 - セキュリティパッチの適用
 - 認証フローの定期的なレビュー
-
-```bash
-# 依存関係の脆弱性チェック
-npm audit
-
-# 自動修正
-npm audit fix
-```
