@@ -18,10 +18,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | ルールファイル | 適用パス | 主な内容 |
 |-------------|---------|---------|
-| @.claude/rules/app-router.md | `app/**/*.{ts,tsx}` | App Router固有、プライベートディレクトリ、プロバイダー構成 |
-| @.claude/rules/api-development.md | `app/api/**/*.{ts,tsx}` | API開発、認証ミドルウェア、エラーハンドリング |
-| @.claude/rules/features-shared.md | `features/shared/**/*.{ts,tsx}` | 共通コンポーネント設計、環境依存処理 |
-| @.claude/rules/features-todo.md | `features/todo/**/*.{ts,tsx}` | Todo機能、状態管理、カスタムフック |
+| @.claude/rules/app.md | `app/**/*.{ts,tsx}` | App Router開発、API開発、認証ミドルウェア、エラーハンドリング |
+| @.claude/rules/features.md | `features/**/*.{ts,tsx}` | Shared機能、Todo機能、状態管理、カスタムフック |
 | @.claude/rules/testing.md | `tests/**/*.{ts,tsx}`, `**/*.{test,spec}.{ts,tsx}` | テスト戦略、環境設定、データ一貫性 |
 
 ## プロジェクト概要
