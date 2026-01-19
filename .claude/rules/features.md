@@ -1,6 +1,6 @@
 ---
 paths:
-  - "features/**/*.{ts,tsx}"
+  - 'features/**/*.{ts,tsx}'
 ---
 
 # Features機能開発ルール
@@ -17,10 +17,12 @@ paths:
 ### Shared機能
 
 **主要構成**:
+
 - **components/elements/**: 機能横断の汎用UIコンポーネント
 - **templates/**: 共通テンプレートとクライアントラッパー
 
 **役割**:
+
 - 再利用性重視の汎用コンポーネント
 - 共通UI（Navigation、MockIndicator等）
 - 環境別表示制御（開発環境のみのモック表示等）
@@ -28,6 +30,7 @@ paths:
 ### Todo機能
 
 **主要構成**:
+
 - **contexts/**: TodoContext（状態管理）
 - **hooks/**: 4つのカスタムフック（useTodos, useLists, useDeleteList, useUpdateStatusAndCategory）
 - **components/**: UIコンポーネント（MainContainer, PushContainer, elements）
@@ -106,7 +109,7 @@ const { todoHooks, listHooks, deleteListHooks } = useTodoContext();
 
 ### Todo機能
 
-- **100%カバレッジ**: 全フック・コンポーネント（444テスト成功）
+- **100%カバレッジ**: 全フック・コンポーネント（CI参照）
 - **MSW**: ユニットテストでのAPIモッキング統一
 - **環境設定**: `NEXT_PUBLIC_EMULATOR_MODE=true`でテスト実行
 - **テストパターン**: 楽観的更新、エラーハンドリング、ドラッグ&ドロップ
