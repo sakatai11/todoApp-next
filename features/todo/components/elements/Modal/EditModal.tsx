@@ -30,6 +30,19 @@ const EditModal = React.memo(
       setInput({ text: '', status: '' }); // リセットする
     }, [setModalIsOpen, setValidationError, setEditId, setInput]);
 
+    const handleSubmit = useCallback(async () => {
+      let success = false;
+      if (isPushContainer) {
+        success = await addTodo();
+      } else {
+        success = await saveTodo();
+      }
+
+      if (success) {
+        setModalIsOpen(false);
+      }
+    }, [isPushContainer, addTodo, saveTodo, setModalIsOpen]);
+
     return (
       <Modal
         open={modalIsOpen}
@@ -131,18 +144,7 @@ const EditModal = React.memo(
               <Button
                 variant="contained"
                 sx={{ display: 'block' }}
-                onClick={async () => {
-                  let success = false;
-                  if (isPushContainer) {
-                    success = await addTodo();
-                  } else {
-                    success = await saveTodo();
-                  }
-
-                  if (success) {
-                    setModalIsOpen(false);
-                  }
-                }}
+                onClick={handleSubmit}
               >
                 {isPushContainer ? '追加' : '保存'}
               </Button>
