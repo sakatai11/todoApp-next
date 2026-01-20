@@ -54,12 +54,18 @@ paths:
 ### 特殊ファイルパターン
 
 - **template.tsx**: 条件付きレイアウト制御
+  - **使用理由**: 認証フローなど、ページ遷移ごとに再マウントが必要な場合に使用。layout.tsxとは異なり、毎回新しいインスタンスが生成される。
 - **loading.tsx**: ルートグループ別ローディング画面
+  - **使用理由**: 非同期データ取得時のローディング状態を表示。React SuspenseとNext.js App Routerが自動的にローディング状態を管理。
   - `(auth)/loading.tsx`: 認証処理中
   - `(admin)/loading.tsx`: 管理者確認中
   - `(dashboards)/loading.tsx`: データ読み込み中
 
 ### プロバイダー階層構造
+
+**階層順序の理由**:
+- **SessionProvider（最上位）**: 全ての子コンポーネントで認証状態にアクセス可能にするため。MSWProviderやその他のコンポーネントが認証情報を必要とする場合があるため、最上位に配置。
+- **MSWProvider（中間層）**: APIモック機能を提供。SessionProviderの下に配置することで、認証済みAPIリクエストのモックが可能になる。開発環境のみで有効化。
 
 ```typescript
 // app/layout.tsx

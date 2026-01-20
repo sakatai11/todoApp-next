@@ -8,6 +8,11 @@
 
 プロジェクトはNextAuth.js v5とFirebase Admin SDKを使用した二段階認証を実装しています。
 
+**採用理由**:
+- **NextAuth.js v5**: Next.js App Routerとの深い統合、セッション管理の容易さ、OAuth/Email認証の柔軟なサポート
+- **Firebase Admin SDK**: Firestoreとの緊密な連携、きめ細かい権限制御（Custom Claims）、サーバーサイドでの安全なトークン検証
+- **二段階認証の利点**: NextAuthのセッション管理機能とFirebaseのデータベース権限制御を両立し、セキュアかつ柔軟な認証フローを実現
+
 **基本フロー**:
 1. NextAuth.jsカスタムプロバイダーでログイン
 2. `/api/auth/server-login`でFirebase Custom Token取得
@@ -93,6 +98,8 @@ const apiKey = 'sk-1234567890abcdef'; // 絶対に禁止
 ```
 
 ### .gitignore設定
+
+**理由**: 機密情報のGitリーク防止、GDPR等のコンプライアンス対応、不正アクセスによる情報漏洩リスクの最小化のため。
 
 機密ファイルは必ず`.gitignore`に追加：
 ```

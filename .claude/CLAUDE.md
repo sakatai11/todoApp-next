@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 必ず日本語で回答してください
 
+**理由**: このプロジェクトは日本語チーム向けに開発されており、ドキュメント・コード・コミットメッセージも全て日本語で統一されています。日本語での回答により、チームメンバー全員がスムーズにコミュニケーションできます。
+
 ## 横断的ルール（自動読み込み）
 
 以下の`.claude/rules/`配下のルールが全て自動的に適用されます：
@@ -82,9 +84,12 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ### 重要なプロジェクト注意事項
 
-- 本番環境ではTypeScriptビルドエラーを無視（`ignoreBuildErrors: true`）
-- 開発時のAPIモック用MSWを使用
-- キャッシュ制御ヘッダー付きのVercelデプロイ設定
+- **本番環境ではTypeScriptビルドエラーを無視（`ignoreBuildErrors: true`）**
+  - **理由**: Next.js独自の型チェックとTypeScriptの型チェックの二重検証を避け、ビルド速度を向上させるため。開発時に`npm run lint`と`npm run format`で型安全性は確保済み。
+- **開発時のAPIモック用MSWを使用**
+  - **理由**: ユニットテスト時にFirebase Emulatorを起動せずに高速なテスト実行を実現するため。
+- **キャッシュ制御ヘッダー付きのVercelデプロイ設定**
+  - **理由**: 静的アセットの効率的なキャッシュ配信と、動的コンテンツの適切な更新を両立するため。
 
 ## 開発パターン
 
