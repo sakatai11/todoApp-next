@@ -316,6 +316,124 @@ describe('EditModal', () => {
     });
   });
 
+  describe('スペースのみの入力時のバリデーション (issue #48)', () => {
+    it('半角スペースのみの入力時にモーダルが閉じない（pushContainer）', async () => {
+      const mockSetModalIsOpen = vi.fn();
+
+      render(
+        <EditModal
+          {...defaultProps}
+          id="pushContainer"
+          setModalIsOpen={mockSetModalIsOpen}
+        />,
+        { withTodoProvider: true },
+      );
+
+      const textField = screen.getByDisplayValue('');
+      const statusSelect = screen.getByTestId('status-select');
+
+      // 半角スペースのみを入力
+      fireEvent.change(textField, { target: { value: '   ' } });
+      fireEvent.change(statusSelect, { target: { value: 'todo' } });
+
+      const addButton = screen.getByRole('button', { name: '追加' });
+      fireEvent.click(addButton);
+
+      // 非同期処理を待つ
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // モーダルが閉じられていないことを確認
+      expect(mockSetModalIsOpen).not.toHaveBeenCalledWith(false);
+    });
+
+    it('全角スペースのみの入力時にモーダルが閉じない（pushContainer）', async () => {
+      const mockSetModalIsOpen = vi.fn();
+
+      render(
+        <EditModal
+          {...defaultProps}
+          id="pushContainer"
+          setModalIsOpen={mockSetModalIsOpen}
+        />,
+        { withTodoProvider: true },
+      );
+
+      const textField = screen.getByDisplayValue('');
+      const statusSelect = screen.getByTestId('status-select');
+
+      // 全角スペースのみを入力
+      fireEvent.change(textField, { target: { value: '　　　' } });
+      fireEvent.change(statusSelect, { target: { value: 'todo' } });
+
+      const addButton = screen.getByRole('button', { name: '追加' });
+      fireEvent.click(addButton);
+
+      // 非同期処理を待つ
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // モーダルが閉じられていないことを確認
+      expect(mockSetModalIsOpen).not.toHaveBeenCalledWith(false);
+    });
+
+    it('半角スペースのみの入力時にモーダルが閉じない（編集モード）', async () => {
+      const mockSetModalIsOpen = vi.fn();
+
+      render(
+        <EditModal
+          {...defaultProps}
+          id="edit-modal"
+          setModalIsOpen={mockSetModalIsOpen}
+        />,
+        { withTodoProvider: true },
+      );
+
+      const textField = screen.getByDisplayValue('');
+      const statusSelect = screen.getByTestId('status-select');
+
+      // 半角スペースのみを入力
+      fireEvent.change(textField, { target: { value: '   ' } });
+      fireEvent.change(statusSelect, { target: { value: 'todo' } });
+
+      const saveButton = screen.getByRole('button', { name: '保存' });
+      fireEvent.click(saveButton);
+
+      // 非同期処理を待つ
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // モーダルが閉じられていないことを確認
+      expect(mockSetModalIsOpen).not.toHaveBeenCalledWith(false);
+    });
+
+    it('全角スペースのみの入力時にモーダルが閉じない（編集モード）', async () => {
+      const mockSetModalIsOpen = vi.fn();
+
+      render(
+        <EditModal
+          {...defaultProps}
+          id="edit-modal"
+          setModalIsOpen={mockSetModalIsOpen}
+        />,
+        { withTodoProvider: true },
+      );
+
+      const textField = screen.getByDisplayValue('');
+      const statusSelect = screen.getByTestId('status-select');
+
+      // 全角スペースのみを入力
+      fireEvent.change(textField, { target: { value: '　　　' } });
+      fireEvent.change(statusSelect, { target: { value: 'todo' } });
+
+      const saveButton = screen.getByRole('button', { name: '保存' });
+      fireEvent.click(saveButton);
+
+      // 非同期処理を待つ
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // モーダルが閉じられていないことを確認
+      expect(mockSetModalIsOpen).not.toHaveBeenCalledWith(false);
+    });
+  });
+
   describe('128-129行目のモーダル閉じ処理', () => {
     it('input.textとinput.statusの両方が存在する場合のモーダル閉じ処理（基本テスト）', () => {
       const mockSetModalIsOpen = vi.fn();

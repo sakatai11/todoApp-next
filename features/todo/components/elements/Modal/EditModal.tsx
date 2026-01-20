@@ -131,14 +131,15 @@ const EditModal = React.memo(
               <Button
                 variant="contained"
                 sx={{ display: 'block' }}
-                onClick={() => {
+                onClick={async () => {
+                  let success = false;
                   if (isPushContainer) {
-                    addTodo();
+                    success = await addTodo();
                   } else {
-                    saveTodo();
+                    success = await saveTodo();
                   }
 
-                  if (input.text && input.status) {
+                  if (success) {
                     setModalIsOpen(false);
                   }
                 }}
