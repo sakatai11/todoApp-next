@@ -35,7 +35,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // ***** actions ******
   //
   // todo追加
-  const addTodo = useCallback(async () => {
+  const addTodo = useCallback(async (): Promise<boolean> => {
     // バリデーション（半角・全角スペースのみも含む）
     const trimmedText = trimAllSpaces(input.text);
     const trimmedStatus = trimAllSpaces(input.status);

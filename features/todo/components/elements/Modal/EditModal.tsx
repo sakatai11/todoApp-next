@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import StatusPullList from '@/features/todo/components/elements/Status/StatusPullList';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
+import { trimAllSpaces } from '@/features/utils/validationUtils';
 
 const EditModal = React.memo(
   ({ todo, id, modalIsOpen, setModalIsOpen }: ModalPropType) => {
@@ -92,14 +93,14 @@ const EditModal = React.memo(
               fullWidth
               value={input.text}
               error={
-                !input.text
+                !trimAllSpaces(input.text)
                   ? isPushContainer
                     ? validationError.listPushArea
                     : validationError.listModalArea
                   : false
               }
               helperText={
-                !input.text &&
+                !trimAllSpaces(input.text) &&
                 (isPushContainer
                   ? validationError.listPushArea
                   : validationError.listModalArea)

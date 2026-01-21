@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@/tests/test-utils';
+import { render, screen, fireEvent, waitFor } from '@/tests/test-utils';
 import EditModal from '@/features/todo/components/elements/Modal/EditModal';
 import { mockTodos } from '@/tests/test-utils';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -339,8 +339,10 @@ describe('EditModal', () => {
       const addButton = screen.getByRole('button', { name: '追加' });
       fireEvent.click(addButton);
 
-      // 非同期処理を待つ
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // エラーメッセージが表示されるまで待つ
+      await waitFor(() => {
+        expect(screen.getByText('内容を入力してください')).toBeInTheDocument();
+      });
 
       // モーダルが閉じられていないことを確認
       expect(mockSetModalIsOpen).not.toHaveBeenCalledWith(false);
@@ -368,8 +370,10 @@ describe('EditModal', () => {
       const addButton = screen.getByRole('button', { name: '追加' });
       fireEvent.click(addButton);
 
-      // 非同期処理を待つ
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // エラーメッセージが表示されるまで待つ
+      await waitFor(() => {
+        expect(screen.getByText('内容を入力してください')).toBeInTheDocument();
+      });
 
       // モーダルが閉じられていないことを確認
       expect(mockSetModalIsOpen).not.toHaveBeenCalledWith(false);
