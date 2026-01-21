@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import StatusPullList from '@/features/todo/components/elements/Status/StatusPullList';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
+import { trimAllSpaces } from '@/features/utils/validationUtils';
 
 const EditModal = React.memo(
   ({ todo, id, modalIsOpen, setModalIsOpen }: ModalPropType) => {
@@ -29,6 +30,19 @@ const EditModal = React.memo(
       setEditId(null);
       setInput({ text: '', status: '' }); // リセットする
     }, [setModalIsOpen, setValidationError, setEditId, setInput]);
+
+    const handleSubmit = useCallback(async () => {
+      let success = false;
+      if (isPushContainer) {
+        success = await addTodo();
+      } else {
+        success = await saveTodo();
+      }
+
+      if (success) {
+        setModalIsOpen(false);
+      }
+    }, [isPushContainer, addTodo, saveTodo, setModalIsOpen]);
 
     return (
       <Modal
@@ -79,14 +93,14 @@ const EditModal = React.memo(
               fullWidth
               value={input.text}
               error={
-                !input.text
+                !trimAllSpaces(input.text)
                   ? isPushContainer
                     ? validationError.listPushArea
                     : validationError.listModalArea
                   : false
               }
               helperText={
-                !input.text &&
+                !trimAllSpaces(input.text) &&
                 (isPushContainer
                   ? validationError.listPushArea
                   : validationError.listModalArea)
@@ -131,17 +145,7 @@ const EditModal = React.memo(
               <Button
                 variant="contained"
                 sx={{ display: 'block' }}
-                onClick={() => {
-                  if (isPushContainer) {
-                    addTodo();
-                  } else {
-                    saveTodo();
-                  }
-
-                  if (input.text && input.status) {
-                    setModalIsOpen(false);
-                  }
-                }}
+                onClick={handleSubmit}
               >
                 {isPushContainer ? '追加' : '保存'}
               </Button>
