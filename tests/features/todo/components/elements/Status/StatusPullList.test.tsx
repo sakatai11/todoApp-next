@@ -71,9 +71,13 @@ describe('StatusPullList', () => {
         const optionElement = options.find((el) => el.tagName === 'LI');
         if (optionElement) fireEvent.click(optionElement);
 
-        expect(mockSetInput).toHaveBeenCalledWith({
-          status: mockLists[0].category,
-        });
+        expect(mockSetInput).toHaveBeenCalled();
+        // 関数形式のsetStateが呼ばれることを確認
+        const callArg = mockSetInput.mock.calls[0][0];
+        expect(typeof callArg).toBe('function');
+        // 関数を実行して結果を確認
+        const result = callArg({ status: '' });
+        expect(result).toEqual({ status: mockLists[0].category });
       });
     });
 
@@ -95,9 +99,13 @@ describe('StatusPullList', () => {
         const optionElement = options.find((el) => el.tagName === 'LI');
         if (optionElement) fireEvent.click(optionElement);
 
-        expect(mockSetInput).toHaveBeenCalledWith({
-          status: mockLists[0].category,
-        });
+        expect(mockSetInput).toHaveBeenCalled();
+        // 関数形式のsetStateが呼ばれることを確認
+        const callArg = mockSetInput.mock.calls[0][0];
+        expect(typeof callArg).toBe('function');
+        // 関数を実行して結果を確認
+        const result = callArg({ status: '' });
+        expect(result).toEqual({ status: mockLists[0].category });
       });
     });
 
