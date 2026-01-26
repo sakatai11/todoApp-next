@@ -109,7 +109,9 @@ const EditModal = React.memo(
               }
               multiline
               rows={9}
-              onChange={(e) => setInput({ ...input, text: e.target.value })}
+              onChange={(e) =>
+                setInput((prev) => ({ ...prev, text: e.target.value }))
+              }
             />
             <StatusPullList
               // statusプルダウン
@@ -121,7 +123,13 @@ const EditModal = React.memo(
                   : validationError.listModalArea
               }
               setInput={(statusInput) =>
-                setInput({ ...input, status: statusInput.status })
+                setInput((prev) => ({
+                  ...prev,
+                  status:
+                    typeof statusInput === 'function'
+                      ? statusInput({ status: prev.status }).status
+                      : statusInput.status,
+                }))
               }
             />
             <CloseIcon
