@@ -24,9 +24,12 @@ vi.mock('@/features/todo/components/elements/Error/ErrorDisplay', () => ({
 }));
 
 // Mock child components
-vi.mock('@/features/todo/components', () => ({
-  PushContainer: () => <div data-testid="push-container">PushContainer</div>,
-  MainContainer: () => <div data-testid="main-container">MainContainer</div>,
+vi.mock('@/features/todo/components/PushContainer/PushContainer', () => ({
+  default: () => <div data-testid="push-container">PushContainer</div>,
+}));
+
+vi.mock('@/features/todo/components/MainContainer/MainContainer', () => ({
+  default: () => <div data-testid="main-container">MainContainer</div>,
 }));
 
 // Mock react-error-boundary
