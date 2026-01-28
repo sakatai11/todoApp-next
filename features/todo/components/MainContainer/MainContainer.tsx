@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import { useMemo } from 'react';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -7,11 +8,34 @@ import TodoList from '@/features/todo/components/elements/TodoList/TodoList';
 import AddList from '@/features/todo/components/elements/Add/AddList';
 import AddTodo from '@/features/todo/components/elements/Add/AddTodo';
 import StatusTitle from '@/features/todo/components/elements/Status/StatusTitle';
+import { TodoListProps } from '@/types/todos';
 
 const MainContainer = () => {
   const { todoHooks, listHooks } = useTodoContext();
   const { todos } = todoHooks;
   const { lists, handleDragEnd } = listHooks;
+
+  // todosをstatus別、bool別にグループ化してメモ化
+  const todosByStatusAndBool = useMemo(() => {
+    const map = new Map<
+      string,
+      { trueTodos: TodoListProps[]; falseTodos: TodoListProps[] }
+    >();
+
+    todos.forEach((todo) => {
+      if (!map.has(todo.status)) {
+        map.set(todo.status, { trueTodos: [], falseTodos: [] });
+      }
+      const group = map.get(todo.status)!;
+      if (todo.bool) {
+        group.trueTodos.push(todo);
+      } else {
+        group.falseTodos.push(todo);
+      }
+    });
+
+    return map;
+  }, [todos]);
 
   return (
     <DndContext
@@ -51,12 +75,13 @@ const MainContainer = () => {
             }}
           >
             {lists.map((statusPull) => {
-              const filteredTrueTodos = todos.filter(
-                (todo) => statusPull.category === todo.status && todo.bool,
-              );
-              const filteredFalseTodos = todos.filter(
-                (todo) => statusPull.category === todo.status && !todo.bool,
-              );
+              // Map構造から高速ルックアップ（O(1)）
+              const group = todosByStatusAndBool.get(statusPull.category) || {
+                trueTodos: [],
+                falseTodos: [],
+              };
+              const filteredTrueTodos = group.trueTodos;
+              const filteredFalseTodos = group.falseTodos;
 
               return (
                 <SortableItem key={statusPull.id} id={statusPull.id}>
