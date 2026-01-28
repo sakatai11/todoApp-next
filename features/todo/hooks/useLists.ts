@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { StatusListProps, ListPayload, ListResponse } from '@/types/lists';
 import { apiRequest } from '@/features/libs/apis';
 import { trimAllSpaces } from '@/features/utils/validationUtils';
@@ -15,6 +15,12 @@ export const useLists = (initialLists: StatusListProps[]) => {
   //
   const { showError } = useError(); // グローバルエラー（APIエラー等）
   const [lists, setLists] = useState<StatusListProps[]>(initialLists);
+  const listsRef = useRef<StatusListProps[]>(lists);
+
+  // listsが更新されるたびにrefを更新
+  useEffect(() => {
+    listsRef.current = lists;
+  }, [lists]);
   const [input, setInput] = useState<{ status: string }>({ status: '' });
   const [validationError, setValidationError] = useState<{
     addListNull: boolean;
@@ -28,12 +34,9 @@ export const useLists = (initialLists: StatusListProps[]) => {
   // ***** helpers ******
   //
   // 重複するカテゴリが存在するかチェックする関数
-  const checkDuplicateCategory = useCallback(
-    (category: string) => {
-      return lists.some((list) => list.category === category);
-    },
-    [lists],
-  );
+  const checkDuplicateCategory = useCallback((category: string) => {
+    return listsRef.current.some((list) => list.category === category);
+  }, []);
 
   //
   // ***** actions ******
@@ -63,7 +66,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
     }
 
     // リストの数を再計算して連続番号を振り直す
-    const updatedLists = lists.map((list, index) => ({
+    const updatedLists = listsRef.current.map((list, index) => ({
       ...list,
       number: index + 1,
     }));
@@ -95,7 +98,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
       showError(ERROR_MESSAGES.LIST.ADD_FAILED);
       return false;
     }
-  }, [input.status, lists, checkDuplicateCategory, showError]);
+  }, [input.status, checkDuplicateCategory, showError]);
 
   // ドラック&ドロップでのリストとしてlistsを更新
   const handleDragEnd = useCallback(
@@ -103,14 +106,16 @@ export const useLists = (initialLists: StatusListProps[]) => {
       const { active, over } = event;
 
       if (over && active.id !== over.id) {
-        const oldIndex = lists.findIndex((list) => list.id === active.id);
-        const newIndex = lists.findIndex((list) => list.id === over.id);
+        const currentLists = listsRef.current;
+        const oldIndex = currentLists.findIndex(
+          (list) => list.id === active.id,
+        );
+        const newIndex = currentLists.findIndex((list) => list.id === over.id);
 
-        // ロールバック用に現在のデータを保存
-        const previousLists = lists;
+        let previousLists: StatusListProps[] = [];
 
         try {
-          const updatedLists = arrayMove(lists, oldIndex, newIndex); // 配列を新しい順序に並べ替える
+          const updatedLists = arrayMove(currentLists, oldIndex, newIndex); // 配列を新しい順序に並べ替える
 
           const tempLists = updatedLists.map((list, index) => ({
             ...list,
@@ -118,7 +123,10 @@ export const useLists = (initialLists: StatusListProps[]) => {
           }));
 
           // client（楽観的更新）
-          setLists(tempLists);
+          setLists((prevLists) => {
+            previousLists = prevLists;
+            return tempLists;
+          });
 
           // server side
           const updateListsNumber = tempLists.map((list) => list.id); // 新しい順序の全ID配列
@@ -139,32 +147,32 @@ export const useLists = (initialLists: StatusListProps[]) => {
         }
       }
     },
-    [lists, showError],
+    [showError],
   );
 
   // クリックでの移動のリストとしてlistsを更新
   const handleButtonMove = useCallback(
     async (id: string, direction: 'right' | 'left') => {
-      if (!id) return lists;
+      const currentLists = listsRef.current;
+      if (!id) return currentLists;
 
-      const currentIndex = lists.findIndex((list) => list.id === id);
+      const currentIndex = currentLists.findIndex((list) => list.id === id);
       if (currentIndex === -1) return;
 
-      // ロールバック用に現在のデータを保存
-      const previousLists = lists;
+      let previousLists: StatusListProps[] = [];
 
       try {
         // 移動先のインデックスを計算
         const newIndex =
           direction === 'right'
-            ? Math.min(lists.length - 1, currentIndex + 1)
+            ? Math.min(currentLists.length - 1, currentIndex + 1)
             : Math.max(0, currentIndex - 1);
 
         // インデックスが変わらない場合、元のリストを返す
-        if (currentIndex === newIndex) return lists;
+        if (currentIndex === newIndex) return currentLists;
 
         // 配列を新しい順序に並べ替える
-        const updatedLists = arrayMove(lists, currentIndex, newIndex);
+        const updatedLists = arrayMove(currentLists, currentIndex, newIndex);
 
         // インデックスに基づいて番号を再設定してリストを更新
         const tempLists = updatedLists.map((list, index) => ({
@@ -173,7 +181,10 @@ export const useLists = (initialLists: StatusListProps[]) => {
         }));
 
         // client（楽観的更新）
-        setLists(tempLists);
+        setLists((prevLists) => {
+          previousLists = prevLists;
+          return tempLists;
+        });
 
         // servers side
         const updateListsNumber = tempLists.map((list) => list.id); // 新しい順序の全ID配列
@@ -193,7 +204,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
         showError(ERROR_MESSAGES.LIST.MOVE_FAILED);
       }
     },
-    [lists, showError],
+    [showError],
   );
 
   return {

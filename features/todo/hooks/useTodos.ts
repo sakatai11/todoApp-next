@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
 import { apiRequest } from '@/features/libs/apis';
 import { getTime } from '@/features/utils/dateUtils';
@@ -14,6 +14,12 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   //
   const { showError } = useError(); // グローバルエラー（APIエラー等）
   const [todos, setTodos] = useState<TodoListProps[]>(initialTodos);
+  const todosRef = useRef<TodoListProps[]>(todos);
+
+  // todosが更新されるたびにrefを更新
+  useEffect(() => {
+    todosRef.current = todos;
+  }, [todos]);
   const [input, setInput] = useState<{ text: string; status: string }>({
     text: '',
     status: '',
@@ -81,14 +87,16 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
   // todo削除
   const deleteTodo = useCallback(
     async (id: string) => {
-      // ロールバック用に現在のデータを保存
-      const previousTodos = todos;
+      let previousTodos: TodoListProps[] = [];
 
       try {
         // client（楽観的更新）
-        setTodos((prevTodos: TodoListProps[]) =>
-          prevTodos.filter((todo) => todo.id !== id),
-        ); // todo.id が id と一致しない todo だけを残す新しい配列を作成
+        setTodos((prevTodos: TodoListProps[]) => {
+          // ロールバック用に現在のデータを保存
+          previousTodos = prevTodos;
+          // todo.id が id と一致しない todo だけを残す新しい配列を作成
+          return prevTodos.filter((todo) => todo.id !== id);
+        });
 
         // server side
         await apiRequest<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
@@ -103,40 +111,38 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         showError(ERROR_MESSAGES.TODO.DELETE_FAILED);
       }
     },
-    [todos, showError],
+    [showError],
   );
 
   // 編集（モーダル内）
-  const editTodo = useCallback(
-    (id: string) => {
-      const todoToEdit = todos.find((todo) => todo.id === id); // todo.id が指定された id と一致するかどうかをチェック
-      if (todoToEdit) {
-        setInput({
-          text: todoToEdit.text,
-          status: todoToEdit.status,
-        });
-        setEditId(id);
-      }
-    },
-    [todos],
-  );
+  const editTodo = useCallback((id: string) => {
+    const todoToEdit = todosRef.current.find((todo) => todo.id === id); // todo.id が指定された id と一致するかどうかをチェック
+    if (todoToEdit) {
+      setInput({
+        text: todoToEdit.text,
+        status: todoToEdit.status,
+      });
+      setEditId(id);
+    }
+  }, []);
 
   // 選択状態を切り替える関数
   const toggleSelected = useCallback(
     async (id: string) => {
       // 更新するboolの値を取得
-      const todoToUpdate = todos.find((todo) => todo.id === id);
+      const todoToUpdate = todosRef.current.find((todo) => todo.id === id);
       if (todoToUpdate) {
-        // ロールバック用に現在のデータを保存
-        const previousTodos = todos;
+        let previousTodos: TodoListProps[] = [];
 
         try {
           // client（楽観的更新）
-          setTodos((prevTodos: TodoListProps[]) =>
-            prevTodos.map((todo) =>
+          setTodos((prevTodos: TodoListProps[]) => {
+            // ロールバック用に現在のデータを保存
+            previousTodos = prevTodos;
+            return prevTodos.map((todo) =>
               todo.id === id ? { ...todo, bool: !todo.bool } : todo,
-            ),
-          );
+            );
+          });
 
           // server side
           await apiRequest<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
@@ -155,14 +161,14 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
         }
       }
     },
-    [todos, showError],
+    [showError],
   );
 
   // 保存
   const saveTodo = useCallback(async (): Promise<boolean> => {
     if (editId !== null) {
       // trueの場合
-      const todoToUpdate = todos.find((todo) => todo.id === editId);
+      const todoToUpdate = todosRef.current.find((todo) => todo.id === editId);
 
       // バリデーション（半角・全角スペースのみも含む）
       const trimmedText = trimAllSpaces(input.text);
@@ -229,7 +235,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
       }
     }
     return false;
-  }, [editId, input.text, input.status, todos, setTodos, showError]);
+  }, [editId, input.text, input.status, showError]);
 
   return {
     todos,
