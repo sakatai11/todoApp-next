@@ -63,9 +63,8 @@ const AddList = () => {
               }}
               onClick={() => {
                 setAddBtn(false);
-                setInput((prev) => ({ ...prev, status: '' }));
-                setValidationError((prev) => ({
-                  ...prev,
+                setInput(() => ({ status: '' }));
+                setValidationError(() => ({
                   addListNull: false,
                   addListSame: false,
                 }));
@@ -82,8 +81,7 @@ const AddList = () => {
           endIcon={<AddBoxIcon color="primary" />}
           onClick={() => {
             setAddBtn(true);
-            setValidationError((prev) => ({
-              ...prev,
+            setValidationError(() => ({
               addListNull: false,
               addListSame: false,
             }));

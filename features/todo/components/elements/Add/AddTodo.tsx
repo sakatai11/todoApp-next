@@ -54,8 +54,7 @@ const AddTodo = ({ status }: AddTodoProps) => {
             error={validationError.listPushArea}
             helperText={validationError.listPushArea && '入力してください'}
             onChange={(e) =>
-              setInput((prev) => ({
-                ...prev,
+              setInput(() => ({
                 text: e.target.value,
                 status: status,
               }))
@@ -80,7 +79,7 @@ const AddTodo = ({ status }: AddTodoProps) => {
               }}
               onClick={() => {
                 setAddTodoOpenStatus(null);
-                setInput((prev) => ({ ...prev, text: '', status: '' }));
+                setInput(() => ({ text: '', status: '' }));
                 setValidationError((prev) => ({
                   ...prev,
                   listPushArea: false,
@@ -98,7 +97,7 @@ const AddTodo = ({ status }: AddTodoProps) => {
           endIcon={<AddBoxIcon />}
           onClick={() => {
             // 別のAddTodoを開く前に入力値をリセット
-            setInput((prev) => ({ ...prev, text: '', status: '' }));
+            setInput(() => ({ text: '', status: '' }));
             setAddTodoOpenStatus(status);
             setValidationError((prev) => ({ ...prev, listPushArea: false }));
           }}
