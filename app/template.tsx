@@ -1,4 +1,4 @@
-import * as Header from '@/features/shared/templates/index';
+import { ClientWrapper } from '@/features/shared/templates/ClientWrapper';
 import { getLinks } from '@/app/libs/markdown';
 import { fetchUserForTemplate } from '@/app/libs/fetchUserForTemplate';
 
@@ -21,7 +21,7 @@ export default async function Template({
 
   return (
     <>
-      {showHeader && <Header.ClientWrapper data={headerLinks} user={user} />}
+      {showHeader && <ClientWrapper data={headerLinks} user={user} />}
       {children}
     </>
   );
