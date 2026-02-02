@@ -63,11 +63,11 @@ const AddList = () => {
               }}
               onClick={() => {
                 setAddBtn(false);
-                setInput(() => ({ status: '' }));
-                setValidationError(() => ({
+                setInput({ status: '' });
+                setValidationError({
                   addListNull: false,
                   addListSame: false,
-                }));
+                });
               }}
             >
               戻る
@@ -81,10 +81,10 @@ const AddList = () => {
           endIcon={<AddBoxIcon color="primary" />}
           onClick={() => {
             setAddBtn(true);
-            setValidationError(() => ({
+            setValidationError({
               addListNull: false,
               addListSame: false,
-            }));
+            });
           }}
         >
           リストを追加する
