@@ -16,7 +16,7 @@ const StatusPullList = ({
       onChange={(_, newValue) => {
         // _はeventの略
         if (newValue) {
-          setInput({ ...input, status: newValue.category });
+          setInput((prev) => ({ ...prev, status: newValue.category }));
         }
       }}
       renderInput={(options) => (
