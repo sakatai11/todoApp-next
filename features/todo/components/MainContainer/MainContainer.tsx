@@ -95,40 +95,30 @@ const MainContainer = () => {
                       }}
                     >
                       {/* boolがtrueの場合 */}
-                      <Box
-                        sx={{
-                          width: 1,
-                          display:
-                            filteredTrueTodos.length > 0 ? 'block' : 'none',
-                          marginBottom: 4,
-                        }}
-                      >
-                        {todos
-                          .filter(
-                            (todo) =>
-                              statusPull.category === todo.status && todo.bool,
-                          )
-                          .map((todo) => (
+                      {filteredTrueTodos.length > 0 && (
+                        <Box
+                          sx={{
+                            width: 1,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {filteredTrueTodos.map((todo) => (
                             <TodoList key={todo.id} todo={todo} />
                           ))}
-                      </Box>
+                        </Box>
+                      )}
                       {/* boolがfalseの場合 */}
-                      <Box
-                        sx={{
-                          width: 1,
-                          display:
-                            filteredFalseTodos.length > 0 ? 'block' : 'none',
-                        }}
-                      >
-                        {todos
-                          .filter(
-                            (todo) =>
-                              statusPull.category === todo.status && !todo.bool,
-                          )
-                          .map((todo) => (
+                      {filteredFalseTodos.length > 0 && (
+                        <Box
+                          sx={{
+                            width: 1,
+                          }}
+                        >
+                          {filteredFalseTodos.map((todo) => (
                             <TodoList key={todo.id} todo={todo} />
                           ))}
-                      </Box>
+                        </Box>
+                      )}
                       <AddTodo
                         key={`${statusPull.id}_todo`}
                         status={statusPull.category}
