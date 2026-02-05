@@ -21,6 +21,26 @@
 
 詳細は `@todoApp-submodule/docs/app/libs/withAuth.md` を参照してください。
 
+### NextAuthエラーハンドリング
+
+NextAuth.js v5では、エラーが`CallbackRouteError`でラップされることがあります。適切なエラー処理のため、以下のパターンを使用してください：
+
+```typescript
+try {
+  // NextAuth処理
+} catch (error) {
+  // CallbackRouteErrorは元の原因をラップするため、error.causeをチェック
+  if (error instanceof Error && 'cause' in error) {
+    console.error('Original error:', error.cause);
+    // 元のエラーに基づいた処理
+  } else {
+    console.error('Error:', error);
+  }
+}
+```
+
+**重要**: `error.cause`をチェックすることで、ラップされた元のエラーにアクセスし、適切なエラーハンドリングとデバッグが可能になります。
+
 ### Role-Based Access Control (RBAC)
 
 - **管理者API**: `app/api/(admin)/` - 管理者ロール検証必須
