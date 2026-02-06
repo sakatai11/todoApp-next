@@ -23,23 +23,55 @@
 
 ### NextAuthエラーハンドリング
 
-NextAuth.js v5では、エラーが`CallbackRouteError`でラップされることがあります。適切なエラー処理のため、以下のパターンを使用してください：
+NextAuth.js v5では、エラーが`CallbackRouteError`でラップされることがあります。適切なエラー処理のため、以下のAuth.js公式推奨パターンを使用してください：
 
 ```typescript
+import { CredentialsSignin } from 'next-auth';
+
+// カスタムエラークラスの定義（型付きエラー）
+class InvalidCredentialsError extends CredentialsSignin {
+  code = 'invalid_credentials';
+}
+
+// Credentialsプロバイダーでの使用例
+Credentials({
+  async authorize(credentials) {
+    const user = await verifyCredentials(credentials);
+
+    if (!user) {
+      // ジェネリックなErrorではなく、CredentialsSigninを使用
+      throw new InvalidCredentialsError();
+    }
+
+    return user;
+  },
+});
+
+// エラーハンドリング例（サーバー側）
 try {
   // NextAuth処理
 } catch (error) {
-  // CallbackRouteErrorは元の原因をラップするため、error.causeをチェック
+  // Auth.jsエラーの構造化されたログ出力
   if (error instanceof Error && 'cause' in error) {
-    console.error('Original error:', error.cause);
-    // 元のエラーに基づいた処理
+    const cause = (error as { cause?: { err?: Error } }).cause;
+    console.error('[auth][cause]', cause?.err);
+    console.error('[auth][details]', error.message);
   } else {
-    console.error('Error:', error);
+    console.error('[auth][error]', error);
   }
+
+  // クライアントには安全なエラーコード/メッセージのみを返す
+  return { error: 'authentication_failed' };
 }
 ```
 
-**重要**: `error.cause`をチェックすることで、ラップされた元のエラーにアクセスし、適切なエラーハンドリングとデバッグが可能になります。
+**重要な変更点**:
+- **`CallbackRouteError`の正確な構造**: `error.cause?.err`でアクセス
+- **推奨パターン**: ジェネリックな`Error`ではなく、`CredentialsSignin`またはそのサブクラスを使用
+- **構造化ログ**: `[auth][cause]`と`[auth][details]`でデバッグ情報を記録
+- **クライアント安全性**: サーバー側でエラーを検査し、クライアントには安全なメッセージのみを返す
+
+**参考**: [Auth.js公式エラーリファレンス](https://errors.authjs.dev/)
 
 ### Role-Based Access Control (RBAC)
 
