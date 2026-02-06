@@ -21,6 +21,58 @@
 
 詳細は `@todoApp-submodule/docs/app/libs/withAuth.md` を参照してください。
 
+### NextAuthエラーハンドリング
+
+NextAuth.js v5では、エラーが`CallbackRouteError`でラップされることがあります。適切なエラー処理のため、以下のAuth.js公式推奨パターンを使用してください：
+
+```typescript
+import { CredentialsSignin } from 'next-auth';
+
+// カスタムエラークラスの定義（型付きエラー）
+class InvalidCredentialsError extends CredentialsSignin {
+  code = 'invalid_credentials';
+}
+
+// Credentialsプロバイダーでの使用例
+Credentials({
+  async authorize(credentials) {
+    const user = await verifyCredentials(credentials);
+
+    if (!user) {
+      // ジェネリックなErrorではなく、CredentialsSigninを使用
+      throw new InvalidCredentialsError();
+    }
+
+    return user;
+  },
+});
+
+// エラーハンドリング例（サーバー側）
+try {
+  // NextAuth処理
+} catch (error) {
+  // Auth.jsエラーの構造化されたログ出力
+  if (error instanceof Error && 'cause' in error) {
+    const cause = (error as { cause?: { err?: Error } }).cause;
+    console.error('[auth][cause]', cause?.err);
+    console.error('[auth][details]', error.message);
+  } else {
+    console.error('[auth][error]', error);
+  }
+
+  // クライアントには安全なエラーコード/メッセージのみを返す
+  return { error: 'authentication_failed' };
+}
+```
+
+**重要な変更点**:
+- **`CallbackRouteError`の正確な構造**: `error.cause?.err`でアクセス
+- **推奨パターン**: ジェネリックな`Error`ではなく、`CredentialsSignin`またはそのサブクラスを使用
+- **構造化ログ**: `[auth][cause]`と`[auth][details]`でデバッグ情報を記録
+- **クライアント安全性**: サーバー側でエラーを検査し、クライアントには安全なメッセージのみを返す
+
+**参考**: [Auth.js公式エラーリファレンス](https://errors.authjs.dev/)
+
 ### Role-Based Access Control (RBAC)
 
 - **管理者API**: `app/api/(admin)/` - 管理者ロール検証必須
