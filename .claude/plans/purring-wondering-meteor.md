@@ -18,6 +18,7 @@ NextAuth.js v5の認証実装において、以下の問題が発見されまし
 **問題箇所**: `auth.config.ts:127-135`（sessionコールバック）
 
 **現在のコード**:
+
 ```typescript
 async session({ session, token }) {
   session.user = {
@@ -31,10 +32,12 @@ async session({ session, token }) {
 ```
 
 **問題**:
+
 - `auth.config.ts:38`のauthorizedコールバックで`auth?.user?.customToken`をチェックしているが、sessionコールバックで`customToken`をセッションに含めていない
 - 認証判定が常に`undefined`となり、正しく機能しない可能性
 
 **影響範囲**:
+
 - `/todo`, `/admin` 全ての保護ルートへのアクセス
 - `TodoWrapper.tsx:218` セッション認証チェック
 
@@ -45,6 +48,7 @@ async session({ session, token }) {
 **問題箇所**: `types/next-auth.d.ts:5-11`（Session型定義）
 
 **現在の型定義**:
+
 ```typescript
 interface Session extends DefaultSession {
   user?: {
@@ -57,6 +61,7 @@ interface Session extends DefaultSession {
 ```
 
 **問題**:
+
 - `User`型と`JWT`型には`customToken`が定義されているが、`Session`型にはない
 - TypeScriptの型安全性が損なわれ、実行時エラーが発生する可能性
 
@@ -67,6 +72,7 @@ interface Session extends DefaultSession {
 **問題箇所**: `auth.ts` 6箇所（line 23, 30, 35, 46, 56, 71）
 
 **問題**:
+
 - 単純な`Error`クラスを使用しており、NextAuth.js v5推奨の`CredentialsSignin`を使用していない
 - 構造化ログ（`[auth][cause]`, `[auth][details]`）が未実装
 - セキュリティルール（`.claude/rules/security.md`）に準拠していない
@@ -78,6 +84,7 @@ interface Session extends DefaultSession {
 **問題箇所**: `middleware.ts:14-33` と `auth.config.ts:17-52`
 
 **問題**:
+
 - 同様の認証チェックロジックが重複実装されている
 - NextAuth.js v5のベストプラクティスでは`authorized`コールバックで統一管理を推奨
 
@@ -90,6 +97,7 @@ interface Session extends DefaultSession {
 **修正ファイル**: `types/next-auth.d.ts`
 
 **修正内容**:
+
 ```typescript
 // types/next-auth.d.ts:5-11（修正後）
 interface Session extends DefaultSession {
@@ -105,6 +113,7 @@ interface Session extends DefaultSession {
 **理由**: TypeScriptの型チェックが全ての後続修正の基盤となるため、最優先で修正
 
 **検証手順**:
+
 ```bash
 npm run build
 ```
@@ -118,6 +127,7 @@ npm run build
 **修正ファイル**: `auth.config.ts`
 
 **修正内容**:
+
 ```typescript
 // auth.config.ts:127-135（修正後）
 async session({ session, token }) {
@@ -135,6 +145,7 @@ async session({ session, token }) {
 **理由**: 認証フローの中核機能であり、即座に修正が必要
 
 **検証手順**:
+
 ```bash
 # 開発サーバー起動
 npm run dev
@@ -147,6 +158,7 @@ npm run dev
 ```
 
 **期待される結果**:
+
 - セッションコールバックのログに`customToken`が含まれる
 - `/todo`への認証アクセスが成功する
 
@@ -157,6 +169,7 @@ npm run dev
 **修正ファイル**: `todoApp-submodule/mocks/handlers/auth.ts`
 
 **修正内容**:
+
 ```typescript
 // todoApp-submodule/mocks/handlers/auth.ts:47-60（修正後）
 http.get('/api/auth/session', () => {
@@ -177,6 +190,7 @@ http.get('/api/auth/session', () => {
 **理由**: ユニットテストの整合性を確保するため
 
 **検証手順**:
+
 ```bash
 npm run test:run
 ```
@@ -192,6 +206,7 @@ npm run test:run
 **修正内容**:
 
 #### 4.1 カスタムエラークラスの定義
+
 ```typescript
 // auth.ts 冒頭に追加
 import { CredentialsSignin } from 'next-auth';
@@ -217,14 +232,18 @@ class AuthenticationFailedError extends CredentialsSignin {
 #### 4.2 エラースローの変更（6箇所）
 
 **auth.ts:23（修正後）**:
+
 ```typescript
 const parsedCredentials = CredentialsSchema.safeParse(credentials);
 if (!parsedCredentials.success) {
-  throw new InvalidCredentialsError('認証情報が不足しているか、形式が間違っています');
+  throw new InvalidCredentialsError(
+    '認証情報が不足しているか、形式が間違っています',
+  );
 }
 ```
 
 **auth.ts:30（修正後）**:
+
 ```typescript
 if (!email || !password) {
   throw new MissingCredentialsError('認証情報が不足しています');
@@ -232,6 +251,7 @@ if (!email || !password) {
 ```
 
 **auth.ts:35（修正後）**:
+
 ```typescript
 if (!process.env.NEXTAUTH_URL) {
   throw new MissingEnvError('NEXTAUTH_URL is not defined');
@@ -239,6 +259,7 @@ if (!process.env.NEXTAUTH_URL) {
 ```
 
 **auth.ts:46（修正後）**:
+
 ```typescript
 if (!baseUrl) {
   throw new MissingEnvError('Base URL is not configured for authentication');
@@ -246,6 +267,7 @@ if (!baseUrl) {
 ```
 
 **auth.ts:56（修正後）**:
+
 ```typescript
 if (!res.ok) {
   throw new AuthenticationFailedError('ログインに失敗しました');
@@ -253,6 +275,7 @@ if (!res.ok) {
 ```
 
 **auth.ts:70-71（修正後）**:
+
 ```typescript
 } catch (error) {
   if (error instanceof Error && 'cause' in error) {
@@ -269,6 +292,7 @@ if (!res.ok) {
 **理由**: セキュリティルール（`.claude/rules/security.md`）に準拠し、構造化ログを実装
 
 **検証手順**:
+
 ```bash
 npm run test:run
 npm run test:e2e
@@ -283,12 +307,14 @@ npm run test:e2e
 **修正ファイル**: `auth.config.ts`, `middleware.ts`
 
 **修正方針**:
+
 - `auth.config.ts`の`authorized`コールバックを充実化（callbackUrlパラメータの引き継ぎ）
 - `middleware.ts`の重複ロジックを削除し、シンプル化
 
 **注意**: この修正は既存のテストに影響を与える可能性があるため、Phase 1-4完了後に慎重に実施
 
 **検証手順**:
+
 ```bash
 # callbackUrl機能の確認
 # 1. ログアウト状態で http://localhost:3000/admin/user にアクセス
@@ -313,14 +339,17 @@ npm run test:e2e
 ## テスト戦略
 
 ### ユニットテスト（Vitest + MSW）
+
 - **修正後**: MSWモックの修正により、既存のテスト（413テスト）はそのまま通過する想定
 - **実行コマンド**: `npm run test:run`
 
 ### 統合テスト（Docker + Firebase Emulator）
+
 - **影響なし**: `X-Test-User-ID`ヘッダーで認証するため、今回の修正の影響を受けない
 - **実行コマンド**: `npm run docker:test:run`
 
 ### E2Eテスト（Playwright）
+
 - **修正不要**: 既存のE2Eテスト（`tests/e2e/01-authentication.spec.ts`）は修正不要
 - **実行コマンド**: `npm run test:e2e`
 
@@ -329,16 +358,19 @@ npm run test:e2e
 ## リスク評価
 
 ### Phase 1-3: 低リスク
+
 - **影響範囲**: 型定義、sessionコールバック、MSWモック
 - **ロールバック可能性**: 高（各修正は1-2行の変更のみ）
 - **段階的リリース戦略**: 開発環境での動作確認 → E2Eテスト → 本番デプロイ
 
 ### Phase 4: 低〜中リスク
+
 - **影響範囲**: エラーメッセージ、ログ出力
 - **ロールバック可能性**: 高（Errorクラスへの戻しで即座に元に戻せる）
 - **リスク軽減策**: 既存のエラーメッセージを維持、クライアント側のエラーハンドリングは変更しない
 
 ### Phase 5: 中〜高リスク（オプション）
+
 - **影響範囲**: ルート保護ロジック全体
 - **ロールバック可能性**: 中（middleware.tsの元の実装を復元）
 - **リスク軽減策**: 既存のmiddleware.tsをバックアップ、E2Eテストで全ての認証フローを検証
@@ -348,11 +380,13 @@ npm run test:e2e
 ## 検証手順（エンドツーエンド）
 
 ### 1. 開発環境での動作確認
+
 ```bash
 npm run dev
 ```
 
 **検証項目**:
+
 - [ ] サインインページ（`/signin`）でログイン可能
 - [ ] ログイン後、`/todo`にリダイレクトされる
 - [ ] ブラウザコンソールで`session.user.customToken`が出力される
@@ -360,6 +394,7 @@ npm run dev
 - [ ] 一般ユーザーで`/admin`にアクセス時、`/signin`にリダイレクトされる
 
 ### 2. ユニットテスト
+
 ```bash
 npm run test:run
 ```
@@ -367,6 +402,7 @@ npm run test:run
 **期待結果**: 413テスト全て通過
 
 ### 3. 統合テスト
+
 ```bash
 npm run docker:test:run
 ```
@@ -374,6 +410,7 @@ npm run docker:test:run
 **期待結果**: 全ての統合テストが通過
 
 ### 4. E2Eテスト
+
 ```bash
 npm run test:e2e
 ```
@@ -381,6 +418,7 @@ npm run test:e2e
 **期待結果**: 全てのE2Eテストが通過
 
 ### 5. ビルド確認
+
 ```bash
 npm run build
 ```

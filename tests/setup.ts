@@ -93,17 +93,19 @@ Object.defineProperty(window, 'DragEvent', {
     dataTransfer: DataTransfer | null;
     constructor(type: string, eventInitDict?: DragEventInit) {
       super(type, eventInitDict);
-      this.dataTransfer = eventInitDict?.dataTransfer ?? {
-        dropEffect: 'none' as DataTransfer['dropEffect'],
-        effectAllowed: 'all' as DataTransfer['effectAllowed'],
-        files: [] as unknown as FileList,
-        items: [] as unknown as DataTransferItemList,
-        types: [],
-        clearData: vi.fn(),
-        getData: vi.fn(),
-        setData: vi.fn(),
-        setDragImage: vi.fn(),
-      } as DataTransfer;
+      this.dataTransfer =
+        eventInitDict?.dataTransfer ??
+        ({
+          dropEffect: 'none' as DataTransfer['dropEffect'],
+          effectAllowed: 'all' as DataTransfer['effectAllowed'],
+          files: [] as unknown as FileList,
+          items: [] as unknown as DataTransferItemList,
+          types: [],
+          clearData: vi.fn(),
+          getData: vi.fn(),
+          setData: vi.fn(),
+          setDragImage: vi.fn(),
+        } as DataTransfer);
     }
   },
 });

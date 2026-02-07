@@ -130,6 +130,7 @@ export const authConfig = {
         id: token.sub,
         email: token.email,
         role: token.role,
+        customToken: token.customToken,
       };
       return session;
     },
