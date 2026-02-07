@@ -404,7 +404,7 @@ gh pr-review threads list --pr <PR_NUMBER> --repo <OWNER/REPO>
 | `--repo must be owner/repo`            | `-R <owner/repo>`を追加または認証済みリポジトリから実行                                                 |
 | Shell escaping issues                  | `heredoc` を使用します。本文中の `git commit` や `gh pr-review comments reply` の例を参照してください。 |
 | テストが失敗                           | `npm run format`を実行してから再テスト                                                                  |
-| Firebase接続エラー                     | `npm run docker:test`でEmulatorを起動                                                                   |
+| Firebase接続エラー                     | `npm run docker:test:run`でEmulatorを起動                                                               |
 
 ---
 
