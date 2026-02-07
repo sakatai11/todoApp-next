@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path | select(endswith(\".js\") or endswith(\".ts\") or endswith(\".jsx\") or endswith(\".tsx\"))' | tee /dev/stderr | xargs -r npx prettier --write"
+            "command": "jq -r '.tool_input.file_path | select(test(\"\\\\.(?:tsx?|jsx?|json|md)$\"))' | tee /dev/stderr | xargs -r npx prettier --write"
           }
         ]
       }
