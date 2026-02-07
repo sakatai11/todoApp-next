@@ -15,6 +15,7 @@ description: todoApp-next専用GitHub PR Review Workflow（gh pr-review extensio
 ## このプロジェクト固有の特徴
 
 ### 技術スタック
+
 - **フレームワーク**: Next.js 15（App Router + Turbopack）
 - **認証**: NextAuth.js v5（beta）
 - **バックエンド**: Firebase Admin SDK
@@ -23,6 +24,7 @@ description: todoApp-next専用GitHub PR Review Workflow（gh pr-review extensio
 - **テスト**: Vitest + React Testing Library + MSW + Playwright
 
 ### 重要な開発原則
+
 - **型安全性**: `any`型禁止、厳密な型チェック
 - **テストカバレッジ**: 100%達成済み（UT）
 - **コード品質**: ESLint + Prettier準拠
@@ -181,9 +183,11 @@ try {
 #### 状態管理パターン
 
 **楽観的更新**（削除・移動系）:
+
 - `deleteTodo`, `toggleSelected`, `handleDragEnd`, `handleButtonMove`
 
 **サーバーレスポンス待ち**（作成・編集系）:
+
 - `addTodo`, `saveTodo`, `addList`, `deleteList`, `editList`
 
 #### リポジトリ規約に従う
@@ -367,21 +371,25 @@ gh pr-review threads list --pr <PR_NUMBER> --repo <OWNER/REPO>
 ## プロジェクト固有の検証チェックリスト
 
 **コード品質:**
+
 - ✓ `any`型を使用していない
 - ✓ 既存パターンに従っている（MUI + Tailwind）
 - ✓ Zodバリデーションを使用（API）
 
 **テスト:**
+
 - ✓ `npm run test:run` がパス
 - ✓ カバレッジ100%を維持（可能な限り）
 - ✓ サブモジュールデータを使用（独自モックデータ禁止）
 
 **セキュリティ:**
+
 - ✓ Firebase Admin SDKはサーバーサイドのみ
 - ✓ 環境変数で機密情報を管理
 - ✓ NextAuth.js v5のエラーハンドリング（`error.cause`）
 
 **状態管理:**
+
 - ✓ 適切な更新パターンを使用（楽観的 vs サーバーレスポンス待ち）
 - ✓ SWRは初期データ取得のみ（TodoWrapper）
 
@@ -389,14 +397,14 @@ gh pr-review threads list --pr <PR_NUMBER> --repo <OWNER/REPO>
 
 ## Troubleshooting
 
-| 問題 | 解決策 |
-|------|--------|
-| `command not found: gh-pr-review` | 拡張をインストール: `gh extension install agynio/gh-pr-review` |
-| `must specify a pull request via --pr` | PRディレクトリから実行するか`--pr <number>`を追加 |
-| `--repo must be owner/repo` | `-R <owner/repo>`を追加または認証済みリポジトリから実行 |
-| Shell escaping issues | heredocを使用: `--body "$(cat <<'EOF'\n...\nEOF)"` |
-| テストが失敗 | `npm run format`を実行してから再テスト |
-| Firebase接続エラー | `npm run docker:test`でEmulatorを起動 |
+| 問題                                   | 解決策                                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `command not found: gh-pr-review`      | 拡張をインストール: `gh extension install agynio/gh-pr-review`                                          |
+| `must specify a pull request via --pr` | PRディレクトリから実行するか`--pr <number>`を追加                                                       |
+| `--repo must be owner/repo`            | `-R <owner/repo>`を追加または認証済みリポジトリから実行                                                 |
+| Shell escaping issues                  | `heredoc` を使用します。本文中の `git commit` や `gh pr-review comments reply` の例を参照してください。 |
+| テストが失敗                           | `npm run format`を実行してから再テスト                                                                  |
+| Firebase接続エラー                     | `npm run docker:test`でEmulatorを起動                                                                   |
 
 ---
 

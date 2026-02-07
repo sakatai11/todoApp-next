@@ -49,6 +49,7 @@ git diff --name-only ${COMMIT_RANGE}
 **ファイルマッピングルール**: `references/file-mapping.md`を参照してマッピングルールを確認。
 
 仕様書が必要なファイル:
+
 - `app/**/*.ts(x)` - ページ、API、ライブラリ
 - `features/**/*.ts(x)` - コンポーネント、フック、コンテキスト
 - `types/**/*.ts` - 型定義
@@ -56,6 +57,7 @@ git diff --name-only ${COMMIT_RANGE}
 - `scripts/**/*.ts` - スクリプト
 
 除外:
+
 - `tests/**/*.test.ts(x)`
 - `*.config.ts`
 - `.claude/**`
@@ -79,6 +81,7 @@ find todoApp-submodule/docs -name "*.md" -type f
 **新規作成**: `references/spec-template.md`のテンプレートを使用。
 
 **更新時の手順**:
+
 1. 既存仕様書を読み取り
 2. 変更内容を分析（機能追加/修正/削除/改善）
 3. 該当セクションを更新

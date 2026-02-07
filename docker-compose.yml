@@ -27,10 +27,10 @@ services:
       context: .
       dockerfile: firebase-emulator.Dockerfile
     ports:
-      - '127.0.0.1:4000:4000'  # Emulator UI
-      - '127.0.0.1:8080:8080'  # Firestore
-      - '127.0.0.1:9099:9099'  # Auth
-      - '127.0.0.1:5001:5001'  # Functions (将来的に使用可能)
+      - '127.0.0.1:4000:4000' # Emulator UI
+      - '127.0.0.1:8080:8080' # Firestore
+      - '127.0.0.1:9099:9099' # Auth
+      - '127.0.0.1:5001:5001' # Functions (将来的に使用可能)
     volumes:
       - .:/workspace
     environment:

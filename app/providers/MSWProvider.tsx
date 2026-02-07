@@ -12,12 +12,14 @@ export function MSWProvider({ children }: { children: React.ReactNode }) {
       if (typeof window === 'undefined') {
         return;
       }
-      
+
       if (
         process.env.NODE_ENV === 'development' &&
         process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
       ) {
-        const { initMocks } = await import('@/todoApp-submodule/mocks/initMocks');
+        const { initMocks } = await import(
+          '@/todoApp-submodule/mocks/initMocks'
+        );
         await initMocks();
         setMockingEnabled(true);
       } else {
@@ -29,7 +31,11 @@ export function MSWProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Wait for MSW to initialize in development
-  if (!mockingEnabled && process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') {
+  if (
+    !mockingEnabled &&
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+  ) {
     return null;
   }
 

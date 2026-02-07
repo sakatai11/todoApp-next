@@ -78,7 +78,9 @@ vi.mock('@/features/todo/contexts/TodoContext', async (importOriginal) => {
     ...actual,
     useTodoContext: () => ({
       todoHooks: {
-        get editId() { return mockEditId; },
+        get editId() {
+          return mockEditId;
+        },
         deleteTodo: mockDeleteTodo,
         editTodo: mockEditTodo,
         toggleSelected: mockToggleSelected,
