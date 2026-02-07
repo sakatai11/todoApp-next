@@ -50,7 +50,7 @@ gh pr-review --help
 
 ## Workflow Overview
 
-```
+```text
 PR Review Request
   ├─ Get PR number/repo context
   ├─ List all review threads

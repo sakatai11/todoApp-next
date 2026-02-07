@@ -77,7 +77,7 @@ export async function GET(req: Request) {
 }
 
 // ❌ クライアントコンポーネントでの使用禁止
-('use client'); // このファイル内でFirebase Admin SDKを使用しない
+// 'use client'; // このファイル内でFirebase Admin SDKを使用しない
 ```
 
 ## 機密情報管理
