@@ -68,6 +68,7 @@ try {
 ```
 
 **重要な変更点**:
+
 - **`CallbackRouteError`の正確な構造**: `error.cause?.err`でアクセス
 - **推奨パターン**: ジェネリックな`Error`ではなく、`CredentialsSignin`またはそのサブクラスを使用
 - **構造化ログ**: `[auth][cause]`と`[auth][details]`でデバッグ情報を記録
