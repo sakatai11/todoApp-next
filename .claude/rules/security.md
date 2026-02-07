@@ -9,11 +9,13 @@
 プロジェクトはNextAuth.js v5とFirebase Admin SDKを使用した二段階認証を実装しています。
 
 **採用理由**:
+
 - **NextAuth.js v5**: Next.js App Routerとの深い統合、セッション管理の容易さ、OAuth/Email認証の柔軟なサポート
 - **Firebase Admin SDK**: Firestoreとの緊密な連携、きめ細かい権限制御（Custom Claims）、サーバーサイドでの安全なトークン検証
 - **二段階認証の利点**: NextAuthのセッション管理機能とFirebaseのデータベース権限制御を両立し、セキュアかつ柔軟な認証フローを実現
 
 **基本フロー**:
+
 1. NextAuth.jsカスタムプロバイダーでログイン
 2. `/api/auth/server-login`でFirebase Custom Token取得
 3. Firebase Admin SDKでサーバーサイド検証
@@ -120,11 +122,14 @@ try {
 // ✅ API Route内での使用
 export async function GET(req: Request) {
   const user = await adminAuth.getUser(uid);
-  const todos = await adminDb.collection('todos').where('userId', '==', uid).get();
+  const todos = await adminDb
+    .collection('todos')
+    .where('userId', '==', uid)
+    .get();
 }
 
 // ❌ クライアントコンポーネントでの使用禁止
-'use client'; // このファイル内でFirebase Admin SDKを使用しない
+// 'use client'; // このファイル内でFirebase Admin SDKを使用しない
 ```
 
 ## 機密情報管理
@@ -132,6 +137,7 @@ export async function GET(req: Request) {
 ### 環境変数の使用
 
 **機密情報は環境変数で管理**:
+
 - Firebase Admin SDK認証情報
 - APIキー、トークン
 - データベース接続文字列
@@ -154,6 +160,7 @@ const apiKey = 'sk-1234567890abcdef'; // 絶対に禁止
 **理由**: 機密情報のGitリーク防止、GDPR等のコンプライアンス対応、不正アクセスによる情報漏洩リスクの最小化のため。
 
 機密ファイルは必ず`.gitignore`に追加：
+
 ```
 .env
 .env.local
@@ -167,6 +174,7 @@ serviceAccountKey.json
 ### ファイルアクセス制御
 
 以下のファイルは、いかなる状況でも読み取り、変更、作成を行わない：
+
 - `.env` ファイル
 - APIキー、トークン、認証情報を含むファイル
 - 秘密鍵や証明書
