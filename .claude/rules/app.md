@@ -1,6 +1,6 @@
 ---
 paths:
-  - "app/**/*.{ts,tsx}"
+  - 'app/**/*.{ts,tsx}'
 ---
 
 # App開発ルール
@@ -19,11 +19,12 @@ paths:
 
 ### プライベートディレクトリ（ルーティング対象外）
 
-- **_signIn/**: サインイン Server Actions
-- **_signOut/**: サインアウト Server Actions
-- **_signUp/**: サインアップ Server Actions
+- **\_signIn/**: サインイン Server Actions
+- **\_signOut/**: サインアウト Server Actions
+- **\_signUp/**: サインアップ Server Actions
 
 **使用ルール**:
+
 - `_`プレフィックスでルーティング対象外
 - Server Actions専用
 - 各認証処理を分離配置
@@ -48,6 +49,7 @@ paths:
 ```
 
 **判断基準**:
+
 - **複雑さ**: 外部依存、状態管理、複雑なロジック → `libs/`
 - **シンプルさ**: 純粋関数、単純な変換 → `utils/`
 
@@ -64,6 +66,7 @@ paths:
 ### プロバイダー階層構造
 
 **階層順序の理由**:
+
 - **SessionProvider（最上位）**: 全ての子コンポーネントで認証状態にアクセス可能にするため。MSWProviderやその他のコンポーネントが認証情報を必要とする場合があるため、最上位に配置。
 - **MSWProvider（中間層）**: APIモック機能を提供。SessionProviderの下に配置することで、認証済みAPIリクエストのモックが可能になる。開発環境のみで有効化。
 
@@ -81,11 +84,11 @@ paths:
 
 ### API構造
 
-| グループ | 用途 | 認証要件 |
-|---------|------|---------|
-| **(admin)/** | 管理者専用API | admin ロール必須 |
+| グループ       | 用途            | 認証要件         |
+| -------------- | --------------- | ---------------- |
+| **(admin)/**   | 管理者専用API   | admin ロール必須 |
 | **(general)/** | 一般ユーザーAPI | ユーザー認証必須 |
-| **auth/** | 認証API | 認証フロー処理 |
+| **auth/**      | 認証API         | 認証フロー処理   |
 
 ### API開発原則
 
@@ -100,11 +103,11 @@ paths:
 
 詳細は @todoApp-submodule/docs/app/libs/withAuth.md#3-環境別認証処理 を参照してください。
 
-| 環境 | 認証方式 | 条件 |
-|------|---------|------|
-| **本番環境** | NextAuth.js セッション | `NODE_ENV=production` |
-| **Docker開発環境** | NextAuth.js セッション | `NODE_ENV=development` + `FIRESTORE_EMULATOR_HOST` |
-| **Docker統合テスト環境** | `X-Test-User-ID` ヘッダー | `NODE_ENV=test` + `FIRESTORE_EMULATOR_HOST` |
+| 環境                     | 認証方式                  | 条件                                               |
+| ------------------------ | ------------------------- | -------------------------------------------------- |
+| **本番環境**             | NextAuth.js セッション    | `NODE_ENV=production`                              |
+| **Docker開発環境**       | NextAuth.js セッション    | `NODE_ENV=development` + `FIRESTORE_EMULATOR_HOST` |
+| **Docker統合テスト環境** | `X-Test-User-ID` ヘッダー | `NODE_ENV=test` + `FIRESTORE_EMULATOR_HOST`        |
 
 ### エラーレスポンス形式
 

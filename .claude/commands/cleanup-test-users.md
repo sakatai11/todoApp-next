@@ -8,6 +8,7 @@ E2Eテスト実行時に作成された `newuser-*@example.com` 形式のテス�
 ## 実行条件の確認
 
 まず、以下を確認してください：
+
 1. Docker開発環境が起動しているか (`docker ps` で確認)
 2. Firebase Emulatorが実行中か (http://localhost:4000 でアクセス可能か)
 

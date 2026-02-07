@@ -3,23 +3,19 @@
 ## Basic Rules
 
 - Follow Instructions
-
   - Execute tasks as per defined requirements
   - Report progress or issues proactively
 
 - Autonomous Problem Solving
-
   - Analyze and propose solutions when errors or problems occur
   - Clearly state recommended options if multiple approaches exist
   - Report issues that might be outside of the code
 
 - Respect Existing Code
-
   - Follow existing code style and patterns
   - Explain if major changes are necessary
 
 - Handling Repeated Failures
-
   - If a test fails twice in a row, summarize the situation with reproduction steps, logs, and error messages, and report it
   - Do not repeat the same action — always propose a solution
 
@@ -45,17 +41,14 @@ Also follow these security practices:
 Follow these four steps during development:
 
 1. Requirements (PM Mode)
-
    - Clarify and refine requirements
    - Ask questions or make suggestions if needed
 
 2. Design (Architect Mode)
-
    - Choose appropriate architecture or design patterns
    - Design components, data flows, and use case diagrams
 
 3. Implementation (Code Mode)
-
    - Write code based on the design
    - Create unit tests
      - Must be executable via Vitest

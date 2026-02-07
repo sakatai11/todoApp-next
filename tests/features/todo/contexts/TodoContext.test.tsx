@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { TodoProvider, useTodoContext } from '@/features/todo/contexts/TodoContext';
+import {
+  TodoProvider,
+  useTodoContext,
+} from '@/features/todo/contexts/TodoContext';
 import { mockTodos, mockLists } from '@/tests/test-utils';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
@@ -9,7 +12,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 // Wrapper component for hooks testing
 const createWrapper = (
   initialTodos: TodoListProps[] = mockTodos,
-  initialLists: StatusListProps[] = mockLists
+  initialLists: StatusListProps[] = mockLists,
 ) => {
   const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     <TodoProvider initialTodos={initialTodos} initialLists={initialLists}>
@@ -76,7 +79,9 @@ describe('TodoContext', () => {
   describe('Context Error Handling', () => {
     it('プロバイダー外でのコンテキスト使用時にエラーがスローされる', () => {
       // コンソールエラーを抑制
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       expect(() => {
         renderHook(() => useTodoContext());
@@ -93,7 +98,7 @@ describe('TodoContext', () => {
       });
 
       const context = result.current;
-      
+
       // 初期状態の確認（サブモジュールのモックデータを使用）
       expect(context.todoHooks.todos.length).toBe(5); // mockTodosの件数
       expect(context.listHooks.lists.length).toBe(3); // mockListsの件数
@@ -105,9 +110,11 @@ describe('TodoContext', () => {
       });
 
       const context = result.current;
-      
+
       // updateStatusAndCategoryHooksが関数として定義されていることを確認
-      expect(typeof context.updateStatusAndCategoryHooks.editList).toBe('function');
+      expect(typeof context.updateStatusAndCategoryHooks.editList).toBe(
+        'function',
+      );
     });
 
     it('deleteListHooksが必要な依存関係を受け取っている', () => {
@@ -116,7 +123,7 @@ describe('TodoContext', () => {
       });
 
       const context = result.current;
-      
+
       // deleteListHooksが関数として定義されていることを確認
       expect(typeof context.deleteListHooks.deleteList).toBe('function');
     });
@@ -153,7 +160,7 @@ describe('TodoContext', () => {
       });
 
       const context = result.current;
-      
+
       expect(context.todoHooks.todos).toEqual(customTodos);
       expect(context.listHooks.lists).toEqual(customLists);
     });
