@@ -65,16 +65,24 @@ description: TodoApp-next専用Docker環境管理。開発環境（ポート3000
 # TodoApp Docker Operations
 
 ## Overview
+
 ## Environment Architecture
+
 ## Workflow
+
 ## Operations
-  - Environment Management
-  - Troubleshooting
-  - Data Management
-  - Log & Debug
+
+- Environment Management
+- Troubleshooting
+- Data Management
+- Log & Debug
+
 ## Integration with docker-cleanup
+
 ## Error Handling
+
 ## Best Practices
+
 ## Reference
 ```
 
@@ -83,6 +91,7 @@ description: TodoApp-next専用Docker環境管理。開発環境（ポート3000
 #### 3.1 環境管理機能（高優先度）
 
 **開発環境の起動**
+
 ```bash
 # 実行コマンド
 npm run docker:dev
@@ -94,6 +103,7 @@ npm run docker:dev
 ```
 
 **テスト環境の起動**
+
 ```bash
 # 実行コマンド
 npm run docker:test
@@ -104,6 +114,7 @@ npm run docker:test
 ```
 
 **統合テストの実行**
+
 ```bash
 # 実行コマンド
 npm run docker:test:run
@@ -117,6 +128,7 @@ npm run docker:test:run
 ```
 
 **環境の停止**
+
 ```bash
 # 開発環境
 npm run docker:dev:down
@@ -127,6 +139,7 @@ npm run docker:test:down
 ```
 
 **環境状態確認**
+
 ```bash
 # 実行コマンド
 docker ps
@@ -141,6 +154,7 @@ docker-compose ps
 #### 3.2 トラブルシューティング機能（高優先度）
 
 **ポート競合の検出と解決**
+
 ```bash
 # ポート使用確認
 lsof -ti:3000,4000,8080,9099,5001,3002
@@ -152,6 +166,7 @@ lsof -ti:3000,4000,8080,9099,5001,3002
 ```
 
 **エラー診断**
+
 ```bash
 # エラーログ確認
 docker-compose logs [service]
@@ -191,6 +206,7 @@ docker-compose up -d
 #### 3.3 データ管理機能（中優先度）
 
 **テストデータの初期化**
+
 ```bash
 # 実行コマンド
 tsx scripts/init-firebase-data.ts
@@ -202,6 +218,7 @@ tsx scripts/init-firebase-data.ts
 ```
 
 **テストユーザークリーンアップ**
+
 ```bash
 # 手動実行
 npm run cleanup:test-users
@@ -215,6 +232,7 @@ npm run docker:dev:down
 ```
 
 **データのリセット**
+
 ```bash
 # 開発環境データリセット
 docker-compose restart firebase-emulator
@@ -228,6 +246,7 @@ docker-compose -f docker-compose.test.yml restart firebase-emulator-test
 #### 3.4 ログ・デバッグ機能（中優先度）
 
 **コンテナログの表示**
+
 ```bash
 # 全ログ表示
 docker-compose logs --tail=50 --follow
@@ -240,6 +259,7 @@ docker-compose -f docker-compose.test.yml logs firebase-emulator-test --tail=50
 ```
 
 **エラーログの抽出**
+
 ```bash
 # エラーログのみ抽出
 docker-compose logs | grep -i error
@@ -247,6 +267,7 @@ docker-compose logs | grep -i warn
 ```
 
 **リソース監視**
+
 ```bash
 # Docker リソース使用状況
 docker stats --no-stream
@@ -259,18 +280,19 @@ docker system df
 
 #### 役割分担
 
-| 項目 | todoapp-docker-ops | docker-cleanup |
-|-----|-------------------|----------------|
-| **環境起動/停止** | ✓ | - |
-| **トラブルシューティング** | ✓ | - |
-| **データ管理** | ✓ | - |
-| **Docker リソース削除** | - | ✓ |
-| **イメージ/ボリューム削除** | - | ✓ |
+| 項目                        | todoapp-docker-ops | docker-cleanup |
+| --------------------------- | ------------------ | -------------- |
+| **環境起動/停止**           | ✓                  | -              |
+| **トラブルシューティング**  | ✓                  | -              |
+| **データ管理**              | ✓                  | -              |
+| **Docker リソース削除**     | -                  | ✓              |
+| **イメージ/ボリューム削除** | -                  | ✓              |
 
 #### 連携タイミング
 
 1. **環境停止後のクリーンアップ提案**
    - todoapp-docker-ops で環境停止後、以下を提案：
+
    ```
    Docker環境を停止しました。
 
@@ -280,6 +302,7 @@ docker system df
 
 2. **エラー発生時の完全リセット提案**
    - 重度のエラー検出時：
+
    ```
    Docker環境に深刻な問題が検出されました。
 
@@ -291,13 +314,15 @@ docker system df
 
 #### 開発/テスト環境の明確な分離
 
-| 項目 | 開発環境 | テスト環境 |
-|-----|---------|-----------|
-| **ポート番号** | 3000 / 4000 / 8080 / 9099 | 3002 / 4000 / 8080 / 9099 |
-| **Docker Compose** | docker-compose.yml | docker-compose.test.yml |
-| **環境変数** | USE_DEV_DB_DATA=true | USE_TEST_DB_DATA=true |
-| **テストユーザー** | dev-user-1 / dev-admin-1 | test-user-1 / test-admin-1|
-| **データ永続化** | セッション中保持、停止時リセット | 毎回クリーン状態 |
+**注意**: 開発環境とテスト環境はFirebase Emulatorのポート（4000/8080/9099）を共有しているため、**同時起動はできません**。
+
+| 項目               | 開発環境                         | テスト環境                 |
+| ------------------ | -------------------------------- | -------------------------- |
+| **ポート番号**     | 3000 / 4000 / 8080 / 9099        | 3002 / 4000 / 8080 / 9099  |
+| **Docker Compose** | docker-compose.yml               | docker-compose.test.yml    |
+| **環境変数**       | USE_DEV_DB_DATA=true             | USE_TEST_DB_DATA=true      |
+| **テストユーザー** | dev-user-1 / dev-admin-1         | test-user-1 / test-admin-1 |
+| **データ永続化**   | セッション中保持、停止時リセット | 毎回クリーン状態           |
 
 #### Firebase Emulator統合
 
@@ -359,25 +384,25 @@ docker system df
 
 以下のファイルを重点的に参照：
 
-1. **DOCKER_DEVELOPMENT.md** (`/Users/sakaitaichi/workspace/todoApp-next/todoApp-submodule/docs/DOCKER_DEVELOPMENT.md`)
+1. **DOCKER_DEVELOPMENT.md** (`todoApp-submodule/docs/DOCKER_DEVELOPMENT.md`)
    - 開発環境の全体構成とワークフロー
    - データ管理と永続化戦略
    - トラブルシューティング手順
 
-2. **DOCKER_TESTING.md** (`/Users/sakaitaichi/workspace/todoApp-next/todoApp-submodule/docs/DOCKER_TESTING.md`)
+2. **DOCKER_TESTING.md** (`todoApp-submodule/docs/DOCKER_TESTING.md`)
    - テスト環境の構成
    - データ管理戦略
    - CI/CD統合方法
 
-3. **docker-compose.yml** (`/Users/sakaitaichi/workspace/todoApp-next/docker-compose.yml`)
+3. **docker-compose.yml** (`docker-compose.yml`)
    - 開発環境の具体的な構成
    - ポート設定、環境変数、サービス定義
 
-4. **docker-compose.test.yml** (`/Users/sakaitaichi/workspace/todoApp-next/docker-compose.test.yml`)
+4. **docker-compose.test.yml** (`docker-compose.test.yml`)
    - テスト環境の具体的な構成
    - ヘルスチェック、統合テスト設定
 
-5. **development.md** (`/Users/sakaitaichi/workspace/todoApp-next/.claude/rules/development.md`)
+5. **development.md** (`.claude/rules/development.md`)
    - npm scripts の定義
    - 開発コマンドの説明
 
@@ -386,13 +411,15 @@ docker system df
 ### スキル作成後の検証手順
 
 1. **スキルのインストール確認**
+
    ```bash
    # スキルが正しく配置されているか確認
-   ls -la ~/.claude/skills/todoapp-docker-ops/
-   cat ~/.claude/skills/todoapp-docker-ops/SKILL.md
+   ls -la .claude/skills/todoapp-docker-ops/
+   cat .claude/skills/todoapp-docker-ops/SKILL.md
    ```
 
 2. **トリガー動作確認**
+
    ```bash
    # Claude Code で以下のコマンドを試す
    /todoapp-docker-ops
@@ -403,6 +430,7 @@ docker system df
    ```
 
 3. **機能テスト**
+
    ```bash
    # 環境起動のテスト
    # → スキルが npm run docker:dev を実行
@@ -419,6 +447,7 @@ docker system df
    ```
 
 4. **docker-cleanup との連携確認**
+
    ```bash
    # 環境停止後のクリーンアップ提案が表示されるか
    # → docker-cleanup スキルへの適切な誘導
