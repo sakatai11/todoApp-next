@@ -350,7 +350,7 @@ Docker環境に深刻な問題が検出されました。
 ### テストワークフロー
 
 1. **統合テスト**: `npm run docker:test:run`（全自動）
-2. **E2Eテスト**: `npm run test:e2e`
+2. **E2Eテスト**: `npm run docker:e2e:run`
 3. **手動確認**: `npm run docker:test` → `http://localhost:3002`
 
 ### データ管理のポイント
@@ -386,7 +386,7 @@ npm run docker:dev:down         # 開発環境停止 + テストユーザーク�
 npm run docker:test             # テスト環境起動
 npm run docker:test:run         # 統合テスト実行（全自動）
 npm run docker:test:down        # テスト環境停止
-npm run test:e2e          # E2Eテスト実行
+npm run docker:e2e:run          # E2Eテスト実行
 
 # Firebase Emulator
 npm run emulator:start          # 開発用Emulator起動
