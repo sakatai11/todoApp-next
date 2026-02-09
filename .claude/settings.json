@@ -16,6 +16,7 @@
       "Bash(gh pr comment:*)",
       "Bash(gh pr review:*)",
       "Bash(gh pr checkout:*)",
+      "Bash(gh pr-review:*)",
       "Bash(gh issue view:*)",
       "Bash(gh issue list:*)",
       "Bash(gh issue create:*)",
@@ -40,6 +41,7 @@
       "Bash(gh release delete:*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "hooks": {
     "SessionStart": [
       {
@@ -74,6 +76,5 @@
       }
     ]
   },
-  "plansDirectory": "./.claude/plans",
-  "enableAllProjectMcpServers": true
+  "plansDirectory": "./.claude/plans"
 }
