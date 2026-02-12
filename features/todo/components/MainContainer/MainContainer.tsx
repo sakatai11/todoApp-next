@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, SxProps } from '@mui/material';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -7,6 +7,27 @@ import TodoList from '@/features/todo/components/elements/TodoList/TodoList';
 import AddList from '@/features/todo/components/elements/Add/AddList';
 import AddTodo from '@/features/todo/components/elements/Add/AddTodo';
 import StatusTitle from '@/features/todo/components/elements/Status/StatusTitle';
+import { TodoListProps } from '@/types/todos';
+
+interface TodoListGroupProps {
+  todos: TodoListProps[];
+  sx?: SxProps;
+}
+
+const TodoListGroup = ({ todos, sx }: TodoListGroupProps) => {
+  if (todos.length === 0) {
+    return null;
+  }
+  return (
+    <Box sx={sx}>
+      {todos.map((todo) => (
+        <TodoList key={todo.id} todo={todo} />
+      ))}
+    </Box>
+  );
+};
+
+TodoListGroup.displayName = 'TodoListGroup';
 
 const MainContainer = () => {
   const { todoHooks, listHooks } = useTodoContext();
@@ -95,30 +116,15 @@ const MainContainer = () => {
                       }}
                     >
                       {/* boolがtrueの場合 */}
-                      {filteredTrueTodos.length > 0 && (
-                        <Box
-                          sx={{
-                            width: 1,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {filteredTrueTodos.map((todo) => (
-                            <TodoList key={todo.id} todo={todo} />
-                          ))}
-                        </Box>
-                      )}
+                      <TodoListGroup
+                        todos={filteredTrueTodos}
+                        sx={{ width: 1, marginBottom: 4 }}
+                      />
                       {/* boolがfalseの場合 */}
-                      {filteredFalseTodos.length > 0 && (
-                        <Box
-                          sx={{
-                            width: 1,
-                          }}
-                        >
-                          {filteredFalseTodos.map((todo) => (
-                            <TodoList key={todo.id} todo={todo} />
-                          ))}
-                        </Box>
-                      )}
+                      <TodoListGroup
+                        todos={filteredFalseTodos}
+                        sx={{ width: 1 }}
+                      />
                       <AddTodo
                         key={`${statusPull.id}_todo`}
                         status={statusPull.category}
