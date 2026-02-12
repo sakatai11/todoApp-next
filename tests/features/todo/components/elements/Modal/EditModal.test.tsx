@@ -13,13 +13,19 @@ vi.mock('@/features/todo/components/elements/Status/StatusPullList', () => ({
   }: {
     input: { status: string };
     error: boolean;
-    setInput: (input: { status: string }) => void;
+    setInput: (
+      input:
+        | { status: string }
+        | ((prev: { status: string }) => { status: string }),
+    ) => void;
   }) => (
     <div data-testid="status-pull-list">
       <select
         data-testid="status-select"
         value={input.status}
-        onChange={(e) => setInput({ status: e.target.value })}
+        onChange={(e) =>
+          setInput((prev) => ({ ...prev, status: e.target.value }))
+        }
       >
         <option value="">選択してください</option>
         <option value="todo">Todo</option>

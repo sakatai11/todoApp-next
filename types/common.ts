@@ -1,3 +1,5 @@
+import React from 'react';
+
 // TodoHookTypeでも動的に参照
 export type EditDataProps = {
   editId: string | null;
@@ -22,8 +24,8 @@ export type IsModalWithDeleteType = {
 export type BaseHookType<TInput, TError> = {
   input: TInput;
   validationError: TError;
-  setInput: (input: TInput) => void;
-  setValidationError: (error: TError) => void;
+  setInput: React.Dispatch<React.SetStateAction<TInput>>;
+  setValidationError: React.Dispatch<React.SetStateAction<TError>>;
 };
 
 // statusのプルダウンの型
