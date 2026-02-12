@@ -1,4 +1,4 @@
-import { Box, SxProps } from '@mui/material';
+import { Box } from '@mui/material';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -7,12 +7,7 @@ import TodoList from '@/features/todo/components/elements/TodoList/TodoList';
 import AddList from '@/features/todo/components/elements/Add/AddList';
 import AddTodo from '@/features/todo/components/elements/Add/AddTodo';
 import StatusTitle from '@/features/todo/components/elements/Status/StatusTitle';
-import { TodoListProps } from '@/types/todos';
-
-interface TodoListGroupProps {
-  todos: TodoListProps[];
-  sx?: SxProps;
-}
+import { TodoListGroupProps } from '@/types/todos';
 
 const TodoListGroup = ({ todos, sx }: TodoListGroupProps) => {
   if (todos.length === 0) {
