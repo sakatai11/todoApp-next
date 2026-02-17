@@ -1,8 +1,25 @@
 // auth.ts
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
 import { CredentialsSchema } from '@/data/validatedData';
+
+// カスタムエラークラスの定義
+class InvalidCredentialsError extends CredentialsSignin {
+  code = 'invalid_credentials';
+}
+
+class MissingCredentialsError extends CredentialsSignin {
+  code = 'missing_credentials';
+}
+
+class MissingEnvError extends CredentialsSignin {
+  code = 'missing_environment';
+}
+
+class AuthenticationFailedError extends CredentialsSignin {
+  code = 'authentication_failed';
+}
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -20,19 +37,21 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
         const parsedCredentials = CredentialsSchema.safeParse(credentials);
         if (!parsedCredentials.success) {
-          throw new Error('認証情報が不足しているか、形式が間違っています');
+          throw new InvalidCredentialsError(
+            '認証情報が不足しているか、形式が間違っています',
+          );
         }
 
         const { email, password } = parsedCredentials.data;
 
         // credentialsの存在チェックを追加
         if (!email || !password) {
-          throw new Error('認証情報が不足しています');
+          throw new MissingCredentialsError('認証情報が不足しています');
         }
 
         // 環境変数が未定義時のハンドリング
         if (!process.env.NEXTAUTH_URL) {
-          throw new Error('NEXTAUTH_URL is not defined');
+          throw new MissingEnvError('NEXTAUTH_URL is not defined');
         }
 
         try {
@@ -43,7 +62,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
               : process.env.NEXTAUTH_URL;
 
           if (!baseUrl) {
-            throw new Error('Base URL is not configured for authentication');
+            throw new MissingEnvError(
+              'Base URL is not configured for authentication',
+            );
           }
 
           const res = await fetch(`${baseUrl}/api/auth/server-login`, {
@@ -53,7 +74,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           });
 
           if (!res.ok) {
-            throw new Error('ログインに失敗しました');
+            throw new AuthenticationFailedError('ログインに失敗しました');
           }
 
           const { customToken, decodedToken, tokenExpiry, userRole } =
@@ -67,8 +88,16 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             role: userRole, // server-loginから返されたroleを使用
           };
         } catch (error) {
-          console.error('Error signing in with custom token:', error);
-          throw new Error('カスタムトークンによるログインに失敗しました');
+          if (error instanceof Error && 'cause' in error) {
+            const cause = (error as { cause?: { err?: Error } }).cause;
+            console.error('[auth][cause]', cause?.err);
+            console.error('[auth][details]', error.message);
+          } else {
+            console.error('[auth][error]', error);
+          }
+          throw new AuthenticationFailedError(
+            'カスタムトークンによるログインに失敗しました',
+          );
         }
       },
     }),
