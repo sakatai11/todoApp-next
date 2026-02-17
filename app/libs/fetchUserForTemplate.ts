@@ -1,5 +1,9 @@
 // app/libs/fetchUserForTemplate.ts
-export async function fetchUserForTemplate() {
+import { UserData, MockUserData } from '@/types/auth/authData';
+
+export async function fetchUserForTemplate(): Promise<{
+  user: UserData[] | MockUserData[] | null;
+}> {
   // モック環境の場合
   if (
     process.env.NODE_ENV === 'development' &&

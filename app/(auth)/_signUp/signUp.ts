@@ -13,7 +13,7 @@ import * as admin from 'firebase-admin';
 // import { AuthError } from 'next-auth';
 // import { validatePassword } from 'firebase/auth';
 
-function validateEmail(email: string) {
+function validateEmail(email: string): boolean {
   const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|jp|net|to|cx)$/;
   return pattern.test(email);
 }
@@ -25,7 +25,10 @@ function validateEmail(email: string) {
 //   );
 // }
 
-export async function signUpData(_prevState: PrevState, formData: FormData) {
+export async function signUpData(
+  _prevState: PrevState,
+  formData: FormData,
+): Promise<PrevState> {
   // formの属性ごとにformData.get()で値を取り出す
   const rawFormData = {
     email: formData.get('email') as string,
