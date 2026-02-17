@@ -109,7 +109,9 @@ const EditModal = React.memo(
               }
               multiline
               rows={9}
-              onChange={(e) => setInput({ ...input, text: e.target.value })}
+              onChange={(e) =>
+                setInput((prev) => ({ ...prev, text: e.target.value }))
+              }
             />
             <StatusPullList
               // statusプルダウン
@@ -120,9 +122,16 @@ const EditModal = React.memo(
                   ? validationError.listPushArea
                   : validationError.listModalArea
               }
-              setInput={(statusInput) =>
-                setInput({ ...input, status: statusInput.status })
-              }
+              setInput={(statusInput) => {
+                // StatusPullListは常に関数形式でsetInputを呼び出すため、型ガードは実質的に常にtrueだが、
+                // TypeScriptの型システム上、SetStateAction<T>を扱うため型ガードが必要
+                if (typeof statusInput === 'function') {
+                  setInput((prev) => ({
+                    ...prev,
+                    status: statusInput({ status: prev.status }).status,
+                  }));
+                }
+              }}
             />
             <CloseIcon
               sx={{

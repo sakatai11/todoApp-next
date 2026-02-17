@@ -1,4 +1,5 @@
 import { EditDataProps, BaseHookType } from '@/types/common';
+import { SxProps, Theme } from '@mui/material';
 import { Timestamp } from 'firebase-admin/firestore';
 
 // todoデータの型
@@ -9,6 +10,11 @@ export type TodoListProps = {
   text: string;
   status: string;
   bool: boolean;
+};
+
+export type TodoListGroupProps = {
+  todos: TodoListProps[];
+  sx?: SxProps<Theme>;
 };
 
 // TodoのAPIデータの型定義,mock用
