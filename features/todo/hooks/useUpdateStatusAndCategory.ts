@@ -37,7 +37,7 @@ export const useUpdateStatusAndCategory = ({
       newCategory: string,
       oldCategory: string,
       initialTitle: string,
-    ) => {
+    ): Promise<boolean> => {
       const finalCategory =
         trimAllSpaces(newCategory) || trimAllSpaces(initialTitle);
 

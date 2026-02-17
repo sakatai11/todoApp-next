@@ -29,7 +29,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
   //
   // 重複するカテゴリが存在するかチェックする関数
   const checkDuplicateCategory = useCallback(
-    (category: string) => {
+    (category: string): boolean => {
       return lists.some((list) => list.category === category);
     },
     [lists],
@@ -39,7 +39,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
   // ***** actions ******
   //
   // list追加
-  const addList = useCallback(async () => {
+  const addList = useCallback(async (): Promise<boolean> => {
     // バリデーション: 空入力チェック（半角・全角スペースのみも含む）
     const trimmedStatus = trimAllSpaces(input.status);
 
@@ -99,7 +99,7 @@ export const useLists = (initialLists: StatusListProps[]) => {
 
   // ドラック&ドロップでのリストとしてlistsを更新
   const handleDragEnd = useCallback(
-    async (event: DragEndEvent) => {
+    async (event: DragEndEvent): Promise<void> => {
       const { active, over } = event;
 
       if (over && active.id !== over.id) {
@@ -144,7 +144,10 @@ export const useLists = (initialLists: StatusListProps[]) => {
 
   // クリックでの移動のリストとしてlistsを更新
   const handleButtonMove = useCallback(
-    async (id: string, direction: 'right' | 'left') => {
+    async (
+      id: string,
+      direction: 'right' | 'left',
+    ): Promise<StatusListProps[] | void> => {
       if (!id) return lists;
 
       const currentIndex = lists.findIndex((list) => list.id === id);
