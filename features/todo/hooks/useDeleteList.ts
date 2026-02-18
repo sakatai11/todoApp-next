@@ -20,7 +20,7 @@ export const useDeleteList = ({
   // ***** actions ******
   //
   const deleteList = useCallback(
-    async (id: string, title: string) => {
+    async (id: string, title: string): Promise<void> => {
       try {
         // server side
         // リストを削除

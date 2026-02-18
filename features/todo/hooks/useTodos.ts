@@ -80,7 +80,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
   // todo削除
   const deleteTodo = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<void> => {
       // ロールバック用に現在のデータを保存
       const previousTodos = todos;
 
@@ -108,7 +108,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
   // 編集（モーダル内）
   const editTodo = useCallback(
-    (id: string) => {
+    (id: string): void => {
       const todoToEdit = todos.find((todo) => todo.id === id); // todo.id が指定された id と一致するかどうかをチェック
       if (todoToEdit) {
         setInput({
@@ -123,7 +123,7 @@ export const useTodos = (initialTodos: TodoListProps[]) => {
 
   // 選択状態を切り替える関数
   const toggleSelected = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<void> => {
       // 更新するboolの値を取得
       const todoToUpdate = todos.find((todo) => todo.id === id);
       if (todoToUpdate) {

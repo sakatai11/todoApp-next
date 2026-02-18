@@ -34,8 +34,11 @@ export type ListHookType = BaseHookType<
   lists: StatusListProps[];
   setLists: (lists: StatusListProps[]) => void;
   addList: () => Promise<boolean>;
-  handleDragEnd: (event: DragEndEvent) => void;
-  handleButtonMove: (id: string, direction: 'right' | 'left') => void;
+  handleDragEnd: (event: DragEndEvent) => Promise<void>;
+  handleButtonMove: (
+    id: string,
+    direction: 'right' | 'left',
+  ) => Promise<StatusListProps[] | void>;
 };
 
 // POST / PUT / DELETE、それぞれのメソッドに応じたレスポンス型を定義します。

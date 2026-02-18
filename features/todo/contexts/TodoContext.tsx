@@ -13,7 +13,7 @@ import { ErrorSnackbar } from '@/features/todo/components/elements/Error/ErrorSn
 
 const TodoContext = createContext<TodoContextType | null>(null);
 
-export const useTodoContext = () => {
+export const useTodoContext = (): TodoContextType => {
   const context = useContext(TodoContext);
   if (!context) {
     throw new Error('useTodoContext must be used within a TodoProvider');

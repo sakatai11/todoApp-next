@@ -7,7 +7,7 @@ import { auth } from '@/auth';
 export async function withAuthenticatedUser<T, R>(
   req: Request,
   handler: (uid: string, body?: T) => Promise<NextResponse<R>>,
-) {
+): Promise<NextResponse<R | { error: string }>> {
   let uid: string | undefined;
 
   // Dockerテスト環境では X-Test-User-ID ヘッダー認証を使用

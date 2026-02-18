@@ -60,10 +60,10 @@ export type TodoHookType<T extends EditDataProps> = T &
     addTodoOpenStatus: string | null;
     setTodos: (todos: TodoListProps[]) => void;
     addTodo: () => Promise<boolean>;
-    deleteTodo: (id: string) => void;
+    deleteTodo: (id: string) => Promise<void>;
     editTodo: (id: string) => void;
     saveTodo: () => Promise<boolean>;
-    toggleSelected: (id: string) => void;
+    toggleSelected: (id: string) => Promise<void>;
     setAddTodoOpenStatus: (status: string | null) => void;
   };
 
