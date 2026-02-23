@@ -31,13 +31,13 @@ Run URL / 失敗報告
 URLから `run_id` とリポジトリを抽出する。
 URL形式: `https://github.com/{owner}/{repo}/actions/runs/{run_id}`
 
-````bash
+```bash
 # リポジトリ情報の確認
 git remote get-url origin
 
 # 最新のセキュリティCIを確認（run URLがない場合）
 gh run list --workflow=security-review.yml --limit=5
-```1
+```
 
 ---
 
@@ -48,9 +48,9 @@ gh run list --workflow=security-review.yml --limit=5
 gh run view {run_id} --log-failed
 
 # または最新の失敗runのログを取得
-gh run list --workflow=security-review.yml --status=failure --limit=1 \
-  | awk 'NR==1 {print $NF}' | xargs -I{} gh run view {} --log-failed
-````
+gh run list --workflow=security-review.yml --status=failure --limit=1 --json id -q '.[0].id' \
+  | xargs -I{} gh run view {} --log-failed
+```
 
 **確認すべき箇所**: `Enforce security gates (fail at end)` ステップのログ
 
