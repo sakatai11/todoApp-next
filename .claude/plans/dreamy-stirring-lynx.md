@@ -67,9 +67,9 @@ description: >
 ### 1. init_skill.py でスケルトン生成
 
 ```bash
-python3 /Users/sakaitaichi/.claude/plugins/cache/anthropic-agent-skills/document-skills/69c0b1a06741/skills/skill-creator/scripts/init_skill.py \
+python3 ~/.claude/plugins/cache/anthropic-agent-skills/document-skills/69c0b1a06741/skills/skill-creator/scripts/init_skill.py \
   fix-security-ci \
-  --path /Users/sakaitaichi/workspace/todoApp-next/.claude/skills
+  --path .claude/skills
 ```
 
 ### 2. 不要ファイルの削除と内容実装
@@ -82,8 +82,8 @@ python3 /Users/sakaitaichi/.claude/plugins/cache/anthropic-agent-skills/document
 ### 3. package_skill.py でパッケージ化
 
 ```bash
-python3 /Users/sakaitaichi/.claude/plugins/cache/anthropic-agent-skills/document-skills/69c0b1a06741/skills/skill-creator/scripts/package_skill.py \
-  /Users/sakaitaichi/workspace/todoApp-next/.claude/skills/fix-security-ci
+python3 ~/.claude/plugins/cache/anthropic-agent-skills/document-skills/69c0b1a06741/skills/skill-creator/scripts/package_skill.py \
+  .claude/skills/fix-security-ci
 ```
 
 生成された `fix-security-ci.skill` をユーザーに確認してもらいインストール。
