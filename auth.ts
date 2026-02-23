@@ -33,8 +33,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        console.log('authorize:', credentials);
-
         const parsedCredentials = CredentialsSchema.safeParse(credentials);
         if (!parsedCredentials.success) {
           throw new InvalidCredentialsError(
@@ -79,7 +77,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
           const { customToken, decodedToken, tokenExpiry, userRole } =
             await res.json();
-          console.log('token:', customToken);
           return {
             id: decodedToken.uid,
             email: decodedToken.email,
@@ -88,6 +85,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             role: userRole, // server-loginから返されたroleを使用
           };
         } catch (error) {
+          // カスタムエラーはそのまま再スロー（error.codeを保持）
+          if (error instanceof CredentialsSignin) {
+            throw error;
+          }
           if (error instanceof Error && 'cause' in error) {
             const cause = (error as { cause?: { err?: Error } }).cause;
             console.error('[auth][cause]', cause?.err);

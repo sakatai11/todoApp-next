@@ -328,11 +328,11 @@ npm run test:e2e
 
 ## Critical Files for Implementation
 
-1. `/Users/sakaitaichi/workspace/todoApp-next/types/next-auth.d.ts` - 型定義の修正
-2. `/Users/sakaitaichi/workspace/todoApp-next/auth.config.ts` - sessionコールバックの修正
-3. `/Users/sakaitaichi/workspace/todoApp-next/auth.ts` - エラーハンドリングの標準化
-4. `/Users/sakaitaichi/workspace/todoApp-next/todoApp-submodule/mocks/handlers/auth.ts` - MSWモックの修正
-5. `/Users/sakaitaichi/workspace/todoApp-next/middleware.ts` - ミドルウェア最適化（オプション）
+1. `types/next-auth.d.ts` - 型定義の修正
+2. `auth.config.ts` - sessionコールバックの修正
+3. `auth.ts` - エラーハンドリングの標準化
+4. `todoApp-submodule/mocks/handlers/auth.ts` - MSWモックの修正
+5. `middleware.ts` - ミドルウェア最適化（オプション）
 
 ---
 
