@@ -22,18 +22,18 @@ features/ディレクトリのコードをVercel React Best Practicesに基づ�
 
 ### 🔴 CRITICAL（1件）
 
-| # | 問題 | 影響 | ブランチ | 工数 |
-|---|------|------|---------|------|
-| 1 | barrel imports削除 | バンドルサイズ削減 | `feature/bundle-optimize-barrel-imports` | 小 |
+| #   | 問題               | 影響               | ブランチ                                 | 工数 |
+| --- | ------------------ | ------------------ | ---------------------------------------- | ---- |
+| 1   | barrel imports削除 | バンドルサイズ削減 | `feature/bundle-optimize-barrel-imports` | 小   |
 
 ### 🟡 MEDIUM（4件）
 
-| # | 問題 | 影響 | ブランチ | 工数 |
-|---|------|------|---------|------|
-| 2 | useCallback依存配列最適化 | 再レンダリング削減 | `feature/optimize-usecallback-dependencies` | 中 |
-| 3 | 関数形式のsetState | 再レンダリング削減 | `feature/use-functional-setstate` | 小 |
-| 4 | 条件付きレンダリング | パフォーマンス向上 | `feature/improve-conditional-rendering` | 小 |
-| 5 | useMemoでフィルタリング | 計算コスト削減 | `feature/optimize-filtering-with-usememo` | 中 |
+| #   | 問題                      | 影響               | ブランチ                                    | 工数 |
+| --- | ------------------------- | ------------------ | ------------------------------------------- | ---- |
+| 2   | useCallback依存配列最適化 | 再レンダリング削減 | `feature/optimize-usecallback-dependencies` | 中   |
+| 3   | 関数形式のsetState        | 再レンダリング削減 | `feature/use-functional-setstate`           | 小   |
+| 4   | 条件付きレンダリング      | パフォーマンス向上 | `feature/improve-conditional-rendering`     | 小   |
+| 5   | useMemoでフィルタリング   | 計算コスト削減     | `feature/optimize-filtering-with-usememo`   | 中   |
 
 ## 詳細レビュー結果
 
@@ -218,6 +218,7 @@ const HeaderWrapper = dynamic(
 ```
 
 **良い点**:
+
 - `next/dynamic`を使用してHeaderWrapperを遅延ロード
 - `ssr: false`でクライアントサイドのみレンダリング
 - Vercelルール `bundle-dynamic-imports` に準拠
@@ -233,6 +234,7 @@ const HeaderWrapper = dynamic(
 ```
 
 **良い点**:
+
 - ErrorBoundaryを使用した適切なエラーハンドリング
 - カスタムエラーコンテキストでエラー状態を管理
 - ユーザーフレンドリーなエラー表示
@@ -242,19 +244,23 @@ const HeaderWrapper = dynamic(
 **場所**: `features/todo/hooks/useTodos.ts`, `features/todo/hooks/useLists.ts`
 
 ```typescript
-const deleteTodo = useCallback(async (id: string) => {
-  const previousTodos = todos;
-  try {
-    setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
-    await apiRequest('/api/todos', 'DELETE', { id });
-  } catch (error) {
-    setTodos(previousTodos); // ロールバック
-    showError(ERROR_MESSAGES.TODO.DELETE_FAILED);
-  }
-}, [todos, showError]);
+const deleteTodo = useCallback(
+  async (id: string) => {
+    const previousTodos = todos;
+    try {
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+      await apiRequest('/api/todos', 'DELETE', { id });
+    } catch (error) {
+      setTodos(previousTodos); // ロールバック
+      showError(ERROR_MESSAGES.TODO.DELETE_FAILED);
+    }
+  },
+  [todos, showError],
+);
 ```
 
 **良い点**:
+
 - ロールバック機能付きの楽観的更新を実装
 - UXを向上させる良いパターン
 - エラー時の適切な復旧処理
@@ -273,6 +279,7 @@ useEffect(() => {
 ```
 
 **良い点**:
+
 - `preload`を使用して事前にデータをロード
 - `dedupingInterval: 2000`で重複リクエストを防止
 - Vercelルール `client-swr-dedup` に準拠
@@ -380,6 +387,6 @@ npm run test:e2e
 
 ## 変更履歴
 
-| 日付 | バージョン | 変更内容 |
-|------|-----------|---------|
-| 2025-01-25 | 1.0 | 初版作成 |
+| 日付       | バージョン | 変更内容 |
+| ---------- | ---------- | -------- |
+| 2025-01-25 | 1.0        | 初版作成 |

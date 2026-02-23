@@ -7,6 +7,22 @@ import TodoList from '@/features/todo/components/elements/TodoList/TodoList';
 import AddList from '@/features/todo/components/elements/Add/AddList';
 import AddTodo from '@/features/todo/components/elements/Add/AddTodo';
 import StatusTitle from '@/features/todo/components/elements/Status/StatusTitle';
+import { TodoListGroupProps } from '@/types/todos';
+
+const TodoListGroup = ({ todos, sx }: TodoListGroupProps) => {
+  if (todos.length === 0) {
+    return null;
+  }
+  return (
+    <Box sx={sx}>
+      {todos.map((todo) => (
+        <TodoList key={todo.id} todo={todo} />
+      ))}
+    </Box>
+  );
+};
+
+TodoListGroup.displayName = 'TodoListGroup';
 
 const MainContainer = () => {
   const { todoHooks, listHooks } = useTodoContext();
@@ -95,40 +111,15 @@ const MainContainer = () => {
                       }}
                     >
                       {/* boolがtrueの場合 */}
-                      <Box
-                        sx={{
-                          width: 1,
-                          display:
-                            filteredTrueTodos.length > 0 ? 'block' : 'none',
-                          marginBottom: 4,
-                        }}
-                      >
-                        {todos
-                          .filter(
-                            (todo) =>
-                              statusPull.category === todo.status && todo.bool,
-                          )
-                          .map((todo) => (
-                            <TodoList key={todo.id} todo={todo} />
-                          ))}
-                      </Box>
+                      <TodoListGroup
+                        todos={filteredTrueTodos}
+                        sx={{ width: 1, marginBottom: 4 }}
+                      />
                       {/* boolがfalseの場合 */}
-                      <Box
-                        sx={{
-                          width: 1,
-                          display:
-                            filteredFalseTodos.length > 0 ? 'block' : 'none',
-                        }}
-                      >
-                        {todos
-                          .filter(
-                            (todo) =>
-                              statusPull.category === todo.status && !todo.bool,
-                          )
-                          .map((todo) => (
-                            <TodoList key={todo.id} todo={todo} />
-                          ))}
-                      </Box>
+                      <TodoListGroup
+                        todos={filteredFalseTodos}
+                        sx={{ width: 1 }}
+                      />
                       <AddTodo
                         key={`${statusPull.id}_todo`}
                         status={statusPull.category}

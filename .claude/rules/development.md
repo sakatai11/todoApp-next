@@ -62,6 +62,7 @@ npm run msw:init        # MSW 2.8.7を初期化（開発・ユニットテスト
 プロジェクトは**フィーチャーベースアーキテクチャ**を採用しています。
 
 **基本原則**:
+
 - 新しい機能は`features/`内で自己完結させる
 - 共通コンポーネントは`features/shared/`に配置
 - テストファイルは対応する機能構造と同じ階層に配置
@@ -89,12 +90,13 @@ features/
 
 プロジェクトは目的別に状態管理を分離しています：
 
-| 状態タイプ | 技術 | 用途 |
-|-----------|------|------|
-| **Local State** | React Context | Todo・リスト操作のメイン状態管理 |
-| **Server State** | SWR 2.3.3 | 初期データフェッチング・認証連携 |
+| 状態タイプ       | 技術          | 用途                             |
+| ---------------- | ------------- | -------------------------------- |
+| **Local State**  | React Context | Todo・リスト操作のメイン状態管理 |
+| **Server State** | SWR 2.3.3     | 初期データフェッチング・認証連携 |
 
 **データフロー**:
+
 ```
 SWR → 初期データ取得 → TodoContext → useState/useReducerベース状態管理
 ```
@@ -108,12 +110,14 @@ SWR → 初期データ取得 → TodoContext → useState/useReducerベース�
 #### 1. 楽観的更新パターン（削除・移動系操作）
 
 **実装済みの操作**:
+
 - `deleteTodo` - Todo削除
 - `toggleSelected` - Todoのピン留めトグル
 - `handleDragEnd` - リストのドラッグ&ドロップ並び替え
 - `handleButtonMove` - リストのボタン移動
 
 **パターン**:
+
 ```typescript
 // 楽観的更新の実装例（deleteTodo）
 const deleteTodo = async (id: string) => {
@@ -139,6 +143,7 @@ const deleteTodo = async (id: string) => {
 #### 2. サーバーレスポンス待ちパターン（作成・編集系操作）
 
 **実装済みの操作**:
+
 - `addTodo` - Todo追加
 - `saveTodo` - Todo編集
 - `addList` - リスト追加
@@ -146,6 +151,7 @@ const deleteTodo = async (id: string) => {
 - `editList` - リスト名編集（関連Todo一括更新含む）
 
 **パターン**:
+
 ```typescript
 // サーバーレスポンス待ちの実装例（addTodo）
 const addTodo = async () => {
@@ -162,6 +168,7 @@ const addTodo = async () => {
 ```
 
 **理由**:
+
 - サーバー生成のタイムスタンプ（createdTime, updateTime）が必要
 - データ整合性の確保
 - 複雑な一括更新操作の確実性
@@ -175,6 +182,7 @@ const addTodo = async () => {
 - **シンプル設計**: 最小限の複雑さで実装
 
 **NG例**:
+
 - バグ修正時に周辺コードをクリーンアップ
 - シンプルな機能に余分な設定可能性を追加
 - 仮定の将来要件に対する設計
@@ -222,6 +230,7 @@ npm run build
 詳細は `@.claude/commands/` のgit関連コマンドを参照してください。
 
 **基本形式**:
+
 ```
 <type>: <subject>
 
@@ -231,6 +240,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
 **type**:
+
 - `feat`: 新機能
 - `fix`: バグ修正
 - `refactor`: リファクタリング
