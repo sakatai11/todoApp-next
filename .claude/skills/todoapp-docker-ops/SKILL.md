@@ -18,7 +18,7 @@ todoApp-next プロジェクト専用のDocker環境管理スキル。開発環�
 | **環境変数**       | `USE_DEV_DB_DATA=true`           | `USE_TEST_DB_DATA=true`        |
 | **テストユーザー** | `dev-user-1` / `dev-admin-1`     | `test-user-1` / `test-admin-1` |
 | **データ永続化**   | セッション中保持、停止時リセット | 毎回クリーン状態               |
-| **用途**           | 日常の開発作業                   | 統合テスト・E2Eテスト          |
+| **用途**           | 日常の開発作業・E2Eテスト        | 統合テスト                     |
 
 ### サービス構成
 
@@ -160,7 +160,7 @@ lsof -ti:3000,4000,8080,9099,5001,3002
 
 **既知のエラーパターン**:
 
-- Firebase Emulator起動失敗 → Java Runtime Environment不足
+- Firebase Emulator起動失敗 → Java 21以上が必要（`openjdk21-jre` をDockerfileに指定）
 - Next.jsビルドエラー → `docker-compose logs nextjs` で確認
 - 環境変数未設定エラー → `docker-compose.yml` 確認
 - Docker imageビルドエラー → `docker-compose build --no-cache`
@@ -351,6 +351,11 @@ Docker環境に深刻な問題が検出されました。
 
 1. **統合テスト**: `npm run docker:test:run`（全自動）
 2. **E2Eテスト**: `npm run docker:e2e:run`
+   - **⚠️ 前提条件**: 開発環境（ポート3000）が起動していること（`npm run docker:dev`）
+   - Playwright の `baseURL` は `http://localhost:3000`（ポート3000）固定
+   - E2Eテストは**開発環境（ポート3000）**に対して実行される
+   - `docker:e2e:run` はテスト環境（docker-compose.test.yml）を起動するが、Playwright接続先はポート3000
+   - 開発環境が起動していない場合、Playwrightがポート3000に接続できずテストが失敗する
 3. **手動確認**: `npm run docker:test` → `http://localhost:3002`
 
 ### データ管理のポイント

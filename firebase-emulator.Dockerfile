@@ -2,7 +2,7 @@
 FROM node:20-alpine
 
 # 必要なパッケージをインストール
-RUN apk add --no-cache openjdk11-jre curl bash && \
+RUN apk add --no-cache openjdk21-jre curl bash && \
     npm install -g firebase-tools@13.5.1 tsx@4.7.0
 
 # 作業ディレクトリを設定
