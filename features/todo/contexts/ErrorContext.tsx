@@ -13,11 +13,11 @@ const ErrorContext = createContext<ErrorContextType | undefined>(undefined);
 export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
 
-  const showError = useCallback((message: string) => {
+  const showError = useCallback((message: string): void => {
     setError(message);
   }, []);
 
-  const clearError = useCallback(() => {
+  const clearError = useCallback((): void => {
     setError(null);
   }, []);
 
@@ -28,7 +28,7 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useError = () => {
+export const useError = (): ErrorContextType => {
   const context = useContext(ErrorContext);
   if (!context) {
     throw new Error('useError must be used within ErrorProvider');

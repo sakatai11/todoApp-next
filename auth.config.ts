@@ -1,5 +1,5 @@
 // auth.config.ts
-import type { NextAuthConfig, Session, User } from 'next-auth';
+import type { NextAuthConfig, Session } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const authConfig = {
@@ -21,13 +21,6 @@ export const authConfig = {
       auth: Session | null;
       request: NextRequest;
     }) {
-      console.log('Middleware authorized check:', {
-        auth,
-        pathName: nextUrl.pathname,
-        hasCustomToken: !!auth?.user?.customToken,
-        user: auth?.user,
-      });
-
       // 管理者ページ保護
       const isOnAdminPage = nextUrl.pathname.startsWith('/admin');
       if (isOnAdminPage && auth?.user?.role !== 'ADMIN') {
@@ -69,7 +62,6 @@ export const authConfig = {
       if (token.customToken && token.tokenIssuedAt) {
         const currentTime = Math.floor(Date.now() / 1000);
         const tokenAge = currentTime - token.tokenIssuedAt;
-        console.log(tokenAge);
 
         // トークンが45分以上経過していて、かつ最後のリフレッシュから最低5分以上経っている場合のみ
         if (
@@ -77,8 +69,6 @@ export const authConfig = {
           currentTime - (token.lastRefresh ?? 0) > 5 * 60
         ) {
           try {
-            console.log(token.lastRefresh);
-            console.log('リフレッシュトークンを取得します');
             // Docker環境では内部ネットワークを使用
             const baseUrl =
               process.env.NEXT_PUBLIC_EMULATOR_MODE === 'true'
@@ -105,7 +95,6 @@ export const authConfig = {
               token.customToken = customToken;
               token.tokenIssuedAt = currentTime;
               token.lastRefresh = currentTime;
-              console.log('トークンが更新されました');
             } else {
               console.error('トークンの更新に失敗しました');
             }
@@ -125,11 +114,11 @@ export const authConfig = {
     },
     // セッションに公開するデータを設定
     async session({ session, token }) {
-      console.log('session', session, token);
       session.user = {
         id: token.sub,
         email: token.email,
         role: token.role,
+        customToken: token.customToken,
       };
       return session;
     },

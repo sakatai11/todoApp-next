@@ -6,7 +6,7 @@ export const isDuplicateCategory = (
   lists: StatusListProps[],
   category: string,
   id: string,
-) => {
+): boolean => {
   return lists.some((list) => list.category === category && list.id !== id);
 };
 
@@ -17,7 +17,7 @@ export const updateListsAndTodos = (
   id: string,
   finalCategory: string,
   oldCategory: string,
-) => {
+): void => {
   const updateLists = (prevLists: StatusListProps[]) => {
     return prevLists.map((list) =>
       list.id === id ? { ...list, category: finalCategory } : list,

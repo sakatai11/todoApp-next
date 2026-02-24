@@ -53,10 +53,10 @@ firestore.indexes.json
 firestore.rules
 firestore.test.rules
 CLAUDE.local.md
-.github/
-test-results/
+.github/*
+test-results/*
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
-.claude/
+.claude/*
 .claude-pr-config.json
 
 
@@ -64,7 +64,7 @@ test-results/
 public/mockServiceWorker.js
 
 # Firebase Emulator Data (generated)
-firebase-emulator-data/
+firebase-emulator-data/*
 
 # Firebase Emulator Logs
 firebase-debug.log
@@ -73,9 +73,11 @@ firestore-debug.log
 # Firebase Admin SDK Credentials
 firebase-adminsdk-*.json
 
-playwright-report/
+playwright-report/*
 
 # Submodule
 todoApp-submodule
 
-/tests
+tests/*
+# next-agents-md
+.next-docs/*

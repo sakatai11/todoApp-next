@@ -7,7 +7,7 @@ export const getValidationStatus = ({
   message,
   option,
   fieldType,
-}: ValidationParams) => {
+}: ValidationParams): boolean => {
   const isError = success === false;
 
   // 各フィールドのエラー条件を判定

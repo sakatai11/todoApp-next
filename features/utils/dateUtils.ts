@@ -1,5 +1,5 @@
 // タイムスタンプの取得処理（共通関数）
-export const getTime = (timestamp: unknown) => {
+export const getTime = (timestamp: unknown): number => {
   if (typeof timestamp === 'number') return timestamp;
 
   // Firebase Timestampオブジェクトの処理
@@ -28,7 +28,7 @@ export const getTime = (timestamp: unknown) => {
 };
 
 // JST形式の日付をフォーマットする関数
-export const jstFormattedDate = (timestamp: number) => {
+export const jstFormattedDate = (timestamp: number): string => {
   const date = new Date(timestamp); // タイムスタンプをDateオブジェクトに変換
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0'); // 月は0から始まるので+1
