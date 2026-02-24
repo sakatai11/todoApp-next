@@ -131,7 +131,6 @@ npm run build
 ```typescript
 // auth.config.ts:127-135（修正後）
 async session({ session, token }) {
-  console.log('session', session, token);
   session.user = {
     id: token.sub,
     email: token.email,
@@ -153,13 +152,11 @@ npm run dev
 # ブラウザでログイン動作確認
 # 1. http://localhost:3000/signin にアクセス
 # 2. dev.user@todoapp.com / devpassword123 でログイン
-# 3. ブラウザコンソールで session.user.customToken が出力されることを確認
-# 4. /todo にリダイレクトされることを確認
+# 3. /todo にリダイレクトされることを確認
 ```
 
 **期待される結果**:
 
-- セッションコールバックのログに`customToken`が含まれる
 - `/todo`への認証アクセスが成功する
 
 ---
@@ -195,7 +192,7 @@ http.get('/api/auth/session', () => {
 npm run test:run
 ```
 
-**期待される結果**: 全ての既存テスト（413テスト）が通過すること
+**期待される結果**: 全ての既存テスト（490テスト）が通過すること
 
 ---
 
@@ -340,7 +337,7 @@ npm run test:e2e
 
 ### ユニットテスト（Vitest + MSW）
 
-- **修正後**: MSWモックの修正により、既存のテスト（413テスト）はそのまま通過する想定
+- **修正後**: MSWモックの修正により、既存のテスト（490テスト）はそのまま通過する想定
 - **実行コマンド**: `npm run test:run`
 
 ### 統合テスト（Docker + Firebase Emulator）
@@ -399,7 +396,7 @@ npm run dev
 npm run test:run
 ```
 
-**期待結果**: 413テスト全て通過
+**期待結果**: 490テスト全て通過
 
 ### 3. 統合テスト
 

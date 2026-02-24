@@ -351,9 +351,11 @@ Docker環境に深刻な問題が検出されました。
 
 1. **統合テスト**: `npm run docker:test:run`（全自動）
 2. **E2Eテスト**: `npm run docker:e2e:run`
+   - **⚠️ 前提条件**: 開発環境（ポート3000）が起動していること（`npm run docker:dev`）
    - Playwright の `baseURL` は `http://localhost:3000`（ポート3000）固定
    - E2Eテストは**開発環境（ポート3000）**に対して実行される
    - `docker:e2e:run` はテスト環境（docker-compose.test.yml）を起動するが、Playwright接続先はポート3000
+   - 開発環境が起動していない場合、Playwrightがポート3000に接続できずテストが失敗する
 3. **手動確認**: `npm run docker:test` → `http://localhost:3002`
 
 ### データ管理のポイント
