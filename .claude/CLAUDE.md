@@ -137,6 +137,12 @@ npm run msw:init        # Mock Service Workerを初期化
 - **品質基準**: ESLint準拠、表記統一ルール、サブモジュールデータ統一
 - **詳細ガイド**: [@.claude/rules/testing.md](rules/testing.md)参照
 
+## 並列作業の判断基準
+
+タスクが独立・非競合・並列効果ありの場合、`Task` ツールの `isolation: "worktree"` で並列実行する。依存関係がある・同一ファイルを編集する・単純な1箇所修正は並列化しない。
+
+> Docker が必要な並列作業は @.claude/rules/development.md を参照
+
 ## 開発時の重要なルール
 
 ### ディレクトリ構造

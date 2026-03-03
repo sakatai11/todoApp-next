@@ -204,6 +204,54 @@ mkdir -p scripts/
 - **開発時**: APIモック用MSWを使用
 - **Vercelデプロイ**: キャッシュ制御ヘッダー付き設定
 
+## 並列作業とWorktree
+
+### Worktreeで並列化する判断基準
+
+以下の条件を**すべて満たす**場合に `Task` ツールの `isolation: "worktree"` で並列実行する：
+
+1. タスク同士が**独立していて、互いの結果を待つ必要がない**
+2. **同時並行で進めることで効率が上がる**（例：複数機能の実装、複数ファイルのテスト作成）
+3. **同じファイルを同時編集しない**（コンフリクトが発生しない）
+
+逆に以下の場合は並列化しない：
+
+- タスクAの結果をタスクBが必要とする（依存関係あり）
+- 変更箇所が重複する
+- 単純な1ファイル修正など並列化のメリットがない
+
+### Dockerが必要な場合の手順
+
+統合テストや Firebase Emulator が必要な作業では、**worktreeで並列化する前にDockerを先に起動する**。
+
+```bash
+# 1. Dockerを先に起動（dev環境 or test環境）
+npm run docker:dev   # 開発環境
+npm run docker:test  # テスト環境
+
+# 2. Task ツールで isolation: "worktree" を使って並列実行
+# （Dockerは既に起動済みのため、worktree内から共有して利用）
+```
+
+### Task ツールでの使い方
+
+```typescript
+// Docker不要な並列作業
+Task({ isolation: "worktree", ... })
+
+// Docker必要な並列作業 → 先にDockerを起動してからTaskを呼ぶ
+// npm run docker:test を実行済みの状態で：
+Task({ isolation: "worktree", ... })
+```
+
+### Worktreeを使わない場合
+
+以下はWorktreeなしで通常実行する：
+
+- 単一タスクの実装・修正
+- 既存コードの調査・読み取りのみ
+- ユニットテスト（MSWモードで動作するため Docker 不要）
+
 ## Git ワークフロー
 
 ### ブランチ戦略
