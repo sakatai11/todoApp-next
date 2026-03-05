@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { LinkSection } from '@/types/markdown/markdownData';
 import { Box, Typography, Link as MuiLink, Stack } from '@mui/material';
