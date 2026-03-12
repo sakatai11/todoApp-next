@@ -69,7 +69,6 @@ beforeAll(async () => {
         console.log('Firebase Emulator接続成功');
         break;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       // 接続失敗時は待機を続行
     }

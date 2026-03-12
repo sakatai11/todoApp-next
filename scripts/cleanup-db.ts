@@ -52,7 +52,6 @@ async function clearUserData(uid: string) {
   // Firebase Authユーザーの削除
   try {
     await auth.deleteUser(uid);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // ユーザーが存在しない場合は無視
   }
