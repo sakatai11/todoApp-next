@@ -1,7 +1,9 @@
-import nextConfig from 'eslint-config-next';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
 
 const eslintConfig = [
-  ...nextConfig,
+  ...nextVitals,
+  ...nextTs,
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {

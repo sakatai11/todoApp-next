@@ -6,14 +6,14 @@ Next.js 16 では Turbopack のデフォルト化、`middleware` → `proxy` へ
 
 ## 事前調査サマリー
 
-| 項目                | 現状      | 判定                  |
-| ------------------- | --------- | --------------------- |
-| Node.js（ローカル） | v24.2.0   | ✅ 20.9+ 要件を満たす |
-| Node.js（Docker）   | 20-alpine | ✅ 20.9+ 要件を満たす |
-| TypeScript          | ^5.7.3    | ✅ 5.1+ 要件を満たす  |
-| React               | 19.0.0    | ✅ 更新不要           |
-| git 状態            | clean     | ✅ codemod 実行可能   |
-| モノレポ            | なし      | ✅                    |
+| 項目                | 現状      | 判定                                       |
+| ------------------- | --------- | ------------------------------------------ |
+| Node.js（ローカル） | v24.2.0   | ✅ 20.9+ 要件を満たす                      |
+| Node.js（Docker）   | 20-alpine | ✅ 20.9+ 要件を満たす                      |
+| TypeScript          | ^5.7.3    | ✅ 5.1+ 要件を満たす                       |
+| React               | 19.0.0    | ✅ Next.js 16 に合わせて 19.2.x へ更新推奨 |
+| git 状態            | clean     | ✅ codemod 実行可能                        |
+| モノレポ            | なし      | ✅                                         |
 
 ## フェーズ 1: 作業ブランチ作成
 
@@ -24,10 +24,11 @@ git checkout -b feature/upgrade-nextjs-16
 ## フェーズ 2: 公式 codemod の実行（自動移行）
 
 ```bash
-npx @next/codemod@canary upgrade latest
+npx @next/codemod@canary upgrade 16.1.6
 ```
 
-プロンプトが表示された場合はすべて **yes** を選択する。
+プロンプトが表示された場合は、Next.js 16 への移行に直接関係する項目のみを選択する。
+（特に ESLint 関連変換は `eslint.config.mjs` 保護方針に従って選別）
 
 ### codemod が自動対応する内容
 
