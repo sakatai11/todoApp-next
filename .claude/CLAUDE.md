@@ -91,67 +91,13 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ## 開発パターン
 
-### フィーチャーベース開発
-
-- 新しい機能は`features/`内で自己完結させる
-- 共通コンポーネントは`features/shared/`に配置
-- テストファイルは対応する機能構造と同じ階層に配置
-
-### 認証フロー
-
-1. NextAuth.jsカスタムプロバイダーでログイン
-2. `/api/auth/server-login`でFirebase Custom Token取得
-3. Firebase Admin SDKでサーバーサイド検証
-4. Role-based access control (admin/user)
-
-### 状態管理
-
-- **Local State**: React Context（TodoContext）- Todo・リスト操作のメイン状態管理
-- **Server State**: SWR 2.3.3（初期データフェッチング・認証連携）- TodoWrapperでの初期データ取得のみ
-- **データフロー**: SWR→初期データ取得→TodoContext→useState/useReducerベース状態管理
-
-### API開発
-
-- **Admin API**: `app/api/(admin)/` - 管理者用操作
-- **General API**: `app/api/(general)/` - 一般ユーザー用操作
-- **Auth API**: `app/api/auth/` - 認証関連操作
-- **バリデーション**: 全てのAPIでZod必須
-
-### コンポーネント開発
-
-- **UI**: Material-UI（MUI）+ Tailwind CSS
-- **ドラッグ＆ドロップ**: @dnd-kit/core
-- **フォーム**: Zodスキーマでバリデーション
-
-### テスト環境
-
-- **単体テスト**: Vitest 2.1.8 + React Testing Library 14.3.1 + MSW 2.8.7
-- **統合テスト**: `npm run docker:test:run`（Vitest + Firebase Emulator + Docker + tsx）
-- **E2E**: Playwright 1.56.1
+- 新しい機能は`features/`内で自己完結させる（共通は`features/shared/`）
+- **Admin API**: `app/api/(admin)/`、**General API**: `app/api/(general)/`、**Auth API**: `app/api/auth/`
+- 全APIでZodバリデーション必須
+- 詳細: [@.claude/rules/app.md](rules/app.md) / [@.claude/rules/features.md](rules/features.md)
 
 ## テストガイドライン
 
-- **フレームワーク**: Vitest + React Testing Library + MSW + Playwright
-- **UTカバレッジ**: 100%達成済み（413テスト成功）
+- **UTカバレッジ**: 100%達成済み（413テスト）
 - **統合テスト**: Docker + Firebase Emulator（ポート3002/4000/8080/9099）
-- **品質基準**: ESLint準拠、表記統一ルール、サブモジュールデータ統一
 - **詳細ガイド**: [@.claude/rules/testing.md](rules/testing.md)参照
-
-## 並列作業の判断基準
-
-タスクが独立・非競合・並列効果ありの場合、`Task` ツールの `isolation: "worktree"` で並列実行する。依存関係がある・同一ファイルを編集する・単純な1箇所修正は並列化しない。
-
-> Docker が必要な並列作業は @.claude/rules/development.md を参照
-
-## 開発時の重要なルール
-
-### ディレクトリ構造
-
-- App Routerルートグループ`()`で機能別整理
-- 管理者: `app/(admin)/admin`、認証: `app/(auth)`、ダッシュボード: `app/(dashboards)`
-
-### コード品質
-
-- 既存パターンの踏襲（MUI + Tailwind、NextAuth.js v5、Firebase Admin SDK）
-- エラーハンドリングパターンの統一
-- Zodバリデーションの徹底
