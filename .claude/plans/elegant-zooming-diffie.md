@@ -112,9 +112,8 @@ export async function GET(
 
 ```json
 "overrides": {
-  "next-auth": {
-    "next": "^16.0.0"
-  }
+  "@types/react": "19.2.14",
+  "@types/react-dom": "19.2.3"
 }
 ```
 
