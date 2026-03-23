@@ -221,7 +221,7 @@ const TodoContent = (): React.ReactElement => {
     return <ErrorDisplay message={ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED} />;
   }
 
-  // セッションはあるがcustomTokenがない場合（認証が不完全）
+  // セッションはあるがユーザーIDがない場合（認証が不完全）
   if (!emulatorMode && status === 'authenticated' && !sessionUser?.id) {
     return <ErrorDisplay message={ERROR_MESSAGES.AUTH.INCOMPLETE_AUTH} />;
   }
