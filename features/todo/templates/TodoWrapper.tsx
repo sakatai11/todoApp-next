@@ -96,8 +96,11 @@ const fetcher = async (url: string) => {
     try {
       const ct = (response.headers.get('content-type') || '').toLowerCase();
       if (ct.includes('application/json')) {
-        const data = await response.json();
-        message = data?.error || data?.message || message;
+        const data = (await response.json()) as {
+          error?: string;
+          message?: string;
+        };
+        message = data.error ?? data.message ?? message;
       } else {
         const text = await response.text();
         message = text || message;
@@ -108,18 +111,20 @@ const fetcher = async (url: string) => {
     throw createFetchError(message, response.status, response.statusText);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return response.json();
 };
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
   const { data: session, status, update } = useSession();
+  const sessionUser = session?.user as { id?: string } | undefined;
 
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();
   const { todos: todosApiUrl, lists: listsApiUrl } = useApiUrls();
   const shouldFetch =
-    emulatorMode || (status === 'authenticated' && Boolean(session?.user?.id));
+    emulatorMode || (status === 'authenticated' && Boolean(sessionUser?.id));
 
   const [sessionGraceOver, setSessionGraceOver] = useState(false);
 
@@ -133,7 +138,8 @@ const TodoContent = (): React.ReactElement => {
         try {
           const updated = await update();
           // update() が resolve しても未認証のまま（Session が null / user.id 不在）の場合はエラーへ
-          if (!updated || !updated?.user?.id) {
+          const updatedUser = updated?.user as { id?: string } | undefined;
+          if (!updated || !updatedUser?.id) {
             setSessionGraceOver(true);
           }
         } catch (error) {
@@ -145,7 +151,8 @@ const TodoContent = (): React.ReactElement => {
 
       updateSession();
     } else {
-      // 認証完了 or その他の状態に遷移したら待機状態をリセット
+      // 認証完了 or その他の状態に遷移したら待機状態をリセット（意図的な同期更新）
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionGraceOver(false);
     }
   }, [emulatorMode, status, update]);
@@ -183,7 +190,7 @@ const TodoContent = (): React.ReactElement => {
     data: todosData,
     error: todosError,
     isLoading: todosLoading,
-  } = useSWR<TodoDataProps>(
+  } = useSWR<TodoDataProps, Error>(
     shouldFetch ? todosApiUrl : null,
     fetcher,
     swrOptions,
@@ -193,7 +200,7 @@ const TodoContent = (): React.ReactElement => {
     data: listsData,
     error: listsError,
     isLoading: listsLoading,
-  } = useSWR<ListDataProps>(
+  } = useSWR<ListDataProps, Error>(
     shouldFetch ? listsApiUrl : null,
     fetcher,
     swrOptions,
@@ -214,8 +221,8 @@ const TodoContent = (): React.ReactElement => {
     return <ErrorDisplay message={ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED} />;
   }
 
-  // セッションはあるがcustomTokenがない場合（認証が不完全）
-  if (!emulatorMode && status === 'authenticated' && !session?.user?.id) {
+  // セッションはあるがユーザーIDがない場合（認証が不完全）
+  if (!emulatorMode && status === 'authenticated' && !sessionUser?.id) {
     return <ErrorDisplay message={ERROR_MESSAGES.AUTH.INCOMPLETE_AUTH} />;
   }
 

@@ -12,6 +12,10 @@ npm run dev              # Turbopackで開発サーバーを起動 (localhost:30
 npm run build           # クリーンビルド（.nextディレクトリ削除＋ビルド）
 npm start               # 本番サーバーを起動
 
+# Docker開発環境
+npm run docker:dev       # 開発用Docker環境起動
+npm run docker:dev:down  # 開発用Docker環境停止
+
 # コード品質管理
 npm run lint            # ESLint 9.20.0を自動修正で実行
 npm run prettier        # Prettier 3.5.0でコードをフォーマット
