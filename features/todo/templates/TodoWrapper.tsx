@@ -138,7 +138,8 @@ const TodoContent = (): React.ReactElement => {
         try {
           const updated = await update();
           // update() が resolve しても未認証のまま（Session が null / user.id 不在）の場合はエラーへ
-          if (!updated || !(updated?.user as { id?: string } | undefined)?.id) {
+          const updatedUser = updated?.user as { id?: string } | undefined;
+          if (!updated || !updatedUser?.id) {
             setSessionGraceOver(true);
           }
         } catch (error) {
