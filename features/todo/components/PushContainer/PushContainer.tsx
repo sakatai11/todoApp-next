@@ -5,7 +5,7 @@ import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import EditModal from '@/features/todo/components/elements/Modal/EditModal';
 
 const PushContainer = () => {
-  const { todoHooks } = useTodoContext();
+  const { todoHooks, listHooks } = useTodoContext();
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
 
   const isEditing = todoHooks.editId !== null;
@@ -29,6 +29,7 @@ const PushContainer = () => {
       )}
       <Button
         variant="contained"
+        disabled={listHooks.lists.length === 0}
         onClick={() => {
           setModalIsOpen(true);
         }}
