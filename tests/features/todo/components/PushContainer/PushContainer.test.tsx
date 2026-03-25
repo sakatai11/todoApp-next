@@ -296,6 +296,41 @@ describe('PushContainer', () => {
     });
   });
 
+  describe('ボタンの非活性化', () => {
+    it('listsが空の場合、新規作成ボタンが非活性化される', () => {
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: mockTodos,
+        initialLists: [],
+      });
+
+      const createButton = screen.getByRole('button', { name: '新規作成' });
+      expect(createButton).toBeDisabled();
+    });
+
+    it('listsが空でtodosも空の場合、新規作成ボタンが非活性化される', () => {
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: [],
+        initialLists: [],
+      });
+
+      const createButton = screen.getByRole('button', { name: '新規作成' });
+      expect(createButton).toBeDisabled();
+    });
+
+    it('listsが存在する場合、新規作成ボタンが活性化される', () => {
+      render(<PushContainer />, {
+        withTodoProvider: true,
+        initialTodos: [],
+        initialLists: mockLists,
+      });
+
+      const createButton = screen.getByRole('button', { name: '新規作成' });
+      expect(createButton).toBeEnabled();
+    });
+  });
+
   describe('displayName', () => {
     it('コンポーネントにdisplayNameが設定されている', () => {
       expect(PushContainer.displayName).toBe('PushContainer');

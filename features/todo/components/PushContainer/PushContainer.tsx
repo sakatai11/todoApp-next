@@ -29,7 +29,7 @@ const PushContainer = () => {
       )}
       <Button
         variant="contained"
-        disabled={todoHooks.todos.length === 0 && listHooks.lists.length === 0}
+        disabled={listHooks.lists.length === 0}
         onClick={() => {
           setModalIsOpen(true);
         }}
