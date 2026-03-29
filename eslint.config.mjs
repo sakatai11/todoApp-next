@@ -1,22 +1,15 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextVitals,
+  ...nextTs,
   {
-    files: ['*.ts', '*.tsx'],
-    parser: '@typescript-eslint/parser',
-    plugins: ['@typescript-eslint', 'prettier'],
-    parserOptions: {
-      project: './tsconfig.json',
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.json',
+      },
     },
     rules: {
       // セキュリティ関連ルール
@@ -69,11 +62,15 @@ const eslintConfig = [
       '@next/next/no-html-link-for-pages': 'error',
       '@next/next/no-sync-scripts': 'error',
     },
+  },
+  {
     ignores: [
       'node_modules/',
       '.next/',
       'out/',
       'public/',
+      'playwright-report/',
+      'test-results/',
       'package-lock.json',
       'next.config.mjs',
       'tsconfig.json',
