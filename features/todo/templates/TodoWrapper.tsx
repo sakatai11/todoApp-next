@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
 import PushContainer from '@/features/todo/components/PushContainer/PushContainer';
 import MainContainer from '@/features/todo/components/MainContainer/MainContainer';
 import { TodoProvider } from '@/features/todo/contexts/TodoContext';
-import useSWR, { SWRConfig, preload } from 'swr';
+import useSWR, { SWRConfig, preload, useSWRConfig } from 'swr';
 import TodosLoading from '@/app/(dashboards)/loading';
 import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -127,6 +127,21 @@ const TodoContent = (): React.ReactElement => {
     emulatorMode || (status === 'authenticated' && Boolean(sessionUser?.id));
 
   const [sessionGraceOver, setSessionGraceOver] = useState(false);
+  const { mutate: globalMutate } = useSWRConfig();
+  const prevUserIdRef = useRef<string | undefined>(undefined);
+
+  // ユーザーIDが変わった時（ログアウト・ユーザー切り替え）にSWRキャッシュをクリア
+  useEffect(() => {
+    const currentUserId = sessionUser?.id;
+    if (
+      prevUserIdRef.current !== undefined &&
+      prevUserIdRef.current !== currentUserId
+    ) {
+      void globalMutate(todosApiUrl, undefined, { revalidate: false });
+      void globalMutate(listsApiUrl, undefined, { revalidate: false });
+    }
+    prevUserIdRef.current = currentUserId;
+  }, [sessionUser?.id, globalMutate, todosApiUrl, listsApiUrl]);
 
   // セッション待機の設定
   useEffect(() => {
