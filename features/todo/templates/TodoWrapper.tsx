@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { Box } from '@mui/material';
 import PushContainer from '@/features/todo/components/PushContainer/PushContainer';
 import MainContainer from '@/features/todo/components/MainContainer/MainContainer';
 import { TodoProvider } from '@/features/todo/contexts/TodoContext';
-import useSWR, { SWRConfig, preload } from 'swr';
+import useSWR, { SWRConfig, preload, useSWRConfig } from 'swr';
 import TodosLoading from '@/app/(dashboards)/loading';
 import ErrorDisplay from '@/features/todo/components/elements/Error/ErrorDisplay';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -127,6 +127,17 @@ const TodoContent = (): React.ReactElement => {
     emulatorMode || (status === 'authenticated' && Boolean(sessionUser?.id));
 
   const [sessionGraceOver, setSessionGraceOver] = useState(false);
+  const { mutate: globalMutate } = useSWRConfig();
+  const prevUserIdRef = useRef<string | undefined>(undefined);
+
+  // ユーザーIDが変わった時（ログアウト・ユーザー切り替え）にSWRキャッシュをクリア
+  useEffect(() => {
+    const currentUserId = sessionUser?.id;
+    if (prevUserIdRef.current !== currentUserId) {
+      void globalMutate(() => true, undefined, { revalidate: false });
+    }
+    prevUserIdRef.current = currentUserId;
+  }, [sessionUser?.id, globalMutate]);
 
   // セッション待機の設定
   useEffect(() => {
@@ -144,7 +155,10 @@ const TodoContent = (): React.ReactElement => {
           }
         } catch (error) {
           // セッション更新失敗時はエラー表示へ
-          console.error('セッションの更新に失敗しました:', error);
+          console.error(
+            'セッションの更新に失敗しました:',
+            error instanceof Error ? error.message : String(error),
+          );
           setSessionGraceOver(true);
         }
       };
@@ -166,25 +180,28 @@ const TodoContent = (): React.ReactElement => {
   }, [shouldFetch, todosApiUrl, listsApiUrl]);
 
   // 共通のSWRオプション
-  const swrOptions = {
-    revalidateOnMount: true,
-    revalidateOnFocus: true, // タブ切り替え時に最新データ取得
-    revalidateOnReconnect: true, // オフライン復帰時に再取得
-    dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
-    focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
-    suspense: false,
-    shouldRetryOnError: (err: Error) => {
-      // FetchErrorの場合はステータスコードでチェック
-      if (isFetchError(err)) {
-        // 401 (Unauthorized) または 403 (Forbidden) の場合はリトライしない
-        return err.status !== 401 && err.status !== 403;
-      }
-      // その他のエラーはリトライしない（ネットワークエラー等）
-      return false;
-    },
-    errorRetryCount: 3,
-    errorRetryInterval: 1000,
-  };
+  const swrOptions = useMemo(
+    () => ({
+      revalidateOnMount: true,
+      revalidateOnFocus: true, // タブ切り替え時に最新データ取得
+      revalidateOnReconnect: true, // オフライン復帰時に再取得
+      dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
+      focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
+      suspense: false,
+      shouldRetryOnError: (err: Error) => {
+        // FetchErrorの場合はステータスコードでチェック
+        if (isFetchError(err)) {
+          // 401 (Unauthorized) または 403 (Forbidden) の場合はリトライしない
+          return err.status !== 401 && err.status !== 403;
+        }
+        // その他のエラーはリトライしない（ネットワークエラー等）
+        return false;
+      },
+      errorRetryCount: 3,
+      errorRetryInterval: 1000,
+    }),
+    [],
+  );
 
   const {
     data: todosData,

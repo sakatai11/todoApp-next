@@ -40,7 +40,8 @@ export default function ErrorDisplay({ message, onRetry }: ErrorDisplayProps) {
         }}
       >
         <ErrorIcon
-          aria-label="errorIcon"
+          data-testid="ErrorIcon"
+          aria-hidden="true"
           sx={{ fontSize: 40, color: '#fff' }}
         />
       </Paper>
