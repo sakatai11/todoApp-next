@@ -32,7 +32,7 @@ describe('ErrorDisplay', () => {
     it('ErrorIconが表示される', () => {
       render(<ErrorDisplay {...defaultProps} />);
 
-      const errorIcon = screen.getByLabelText('errorIcon');
+      const errorIcon = screen.getByTestId('ErrorIcon');
       // ErrorIconのSVG要素を確認
       expect(errorIcon).toBeInTheDocument();
     });
