@@ -63,7 +63,7 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ### 現在の技術スタック
 
-- **フレームワーク**: Next.js 15（App Router + Turbopack）
+- **フレームワーク**: Next.js 16（App Router + Turbopack）
 - **認証**: NextAuth.js v5（beta）- カスタム認証プロバイダー
 - **バックエンド**: Firebase Admin SDK（Firestore + Auth）
 - **UI**: Material-UI（MUI）+ Tailwind CSS
@@ -98,6 +98,11 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ## テストガイドライン
 
-- **UTカバレッジ**: 100%達成済み（413テスト）
+- **UTカバレッジ**: 100%達成済み（493テスト）
 - **統合テスト**: Docker + Firebase Emulator（ポート3002/4000/8080/9099）
 - **詳細ガイド**: [@.claude/rules/testing.md](rules/testing.md)参照
+
+## Codex 実行ポリシー
+
+- `/codex:review` は常にバックグラウンドで実行する（`--background` フラグを自動付与）
+- `/codex:rescue` はタスクの複雑さに応じて自動判断する（フラグ省略で自動選択）
