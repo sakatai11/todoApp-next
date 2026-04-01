@@ -87,6 +87,7 @@ vi.mock('swr', () => ({
   },
   SWRConfig: ({ children }: { children: React.ReactNode }) => children,
   preload: vi.fn(),
+  useSWRConfig: () => ({ mutate: vi.fn() }),
 }));
 
 describe('TodoWrapper', () => {
