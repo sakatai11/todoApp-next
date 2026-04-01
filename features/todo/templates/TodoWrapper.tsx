@@ -133,15 +133,11 @@ const TodoContent = (): React.ReactElement => {
   // ユーザーIDが変わった時（ログアウト・ユーザー切り替え）にSWRキャッシュをクリア
   useEffect(() => {
     const currentUserId = sessionUser?.id;
-    if (
-      prevUserIdRef.current !== undefined &&
-      prevUserIdRef.current !== currentUserId
-    ) {
-      void globalMutate(todosApiUrl, undefined, { revalidate: false });
-      void globalMutate(listsApiUrl, undefined, { revalidate: false });
+    if (prevUserIdRef.current !== currentUserId) {
+      void globalMutate(() => true, undefined, { revalidate: false });
     }
     prevUserIdRef.current = currentUserId;
-  }, [sessionUser?.id, globalMutate, todosApiUrl, listsApiUrl]);
+  }, [sessionUser?.id, globalMutate]);
 
   // セッション待機の設定
   useEffect(() => {
@@ -159,7 +155,10 @@ const TodoContent = (): React.ReactElement => {
           }
         } catch (error) {
           // セッション更新失敗時はエラー表示へ
-          console.error('セッションの更新に失敗しました:', error);
+          console.error(
+            'セッションの更新に失敗しました:',
+            error instanceof Error ? error.message : String(error),
+          );
           setSessionGraceOver(true);
         }
       };
@@ -181,25 +180,28 @@ const TodoContent = (): React.ReactElement => {
   }, [shouldFetch, todosApiUrl, listsApiUrl]);
 
   // 共通のSWRオプション
-  const swrOptions = {
-    revalidateOnMount: true,
-    revalidateOnFocus: true, // タブ切り替え時に最新データ取得
-    revalidateOnReconnect: true, // オフライン復帰時に再取得
-    dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
-    focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
-    suspense: false,
-    shouldRetryOnError: (err: Error) => {
-      // FetchErrorの場合はステータスコードでチェック
-      if (isFetchError(err)) {
-        // 401 (Unauthorized) または 403 (Forbidden) の場合はリトライしない
-        return err.status !== 401 && err.status !== 403;
-      }
-      // その他のエラーはリトライしない（ネットワークエラー等）
-      return false;
-    },
-    errorRetryCount: 3,
-    errorRetryInterval: 1000,
-  };
+  const swrOptions = useMemo(
+    () => ({
+      revalidateOnMount: true,
+      revalidateOnFocus: true, // タブ切り替え時に最新データ取得
+      revalidateOnReconnect: true, // オフライン復帰時に再取得
+      dedupingInterval: 2000, // 2秒以内の重複リクエストを防止
+      focusThrottleInterval: 5000, // フォーカス時の再検証を5秒に1回に制限
+      suspense: false,
+      shouldRetryOnError: (err: Error) => {
+        // FetchErrorの場合はステータスコードでチェック
+        if (isFetchError(err)) {
+          // 401 (Unauthorized) または 403 (Forbidden) の場合はリトライしない
+          return err.status !== 401 && err.status !== 403;
+        }
+        // その他のエラーはリトライしない（ネットワークエラー等）
+        return false;
+      },
+      errorRetryCount: 3,
+      errorRetryInterval: 1000,
+    }),
+    [],
+  );
 
   const {
     data: todosData,
