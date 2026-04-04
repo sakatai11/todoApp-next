@@ -83,6 +83,17 @@ gh pr view --json title,author,state,reviews
 git remote get-url origin
 ```
 
+**変更内容を把握（コミット一覧 → 変更ファイル → 詳細差分）:**
+
+```bash
+# PRのベースブランチを動的に取得
+BASE=$(gh pr view --json baseRefName -q .baseRefName)
+
+git log $BASE..HEAD --oneline
+git diff $BASE...HEAD --stat
+git diff $BASE...HEAD
+```
+
 **出力**: PR番号（例: `<PR_NUMBER>`）とリポジトリ（例: `<OWNER/REPO>`）
 
 ---
