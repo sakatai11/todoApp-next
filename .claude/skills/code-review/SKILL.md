@@ -86,22 +86,26 @@ CodeRabbit完了後、**同じターンで同時に**以下を起動する：
 Codex（OpenAI）を他社レビュアーとして起動する。TTY不要なためバックグラウンド実行可能。
 
 ```bash
+# ブランチ差分レビューの場合
 node "${CLAUDE_PLUGIN_ROOT}/scripts/codex-companion.mjs" review --scope branch
+
+# 未コミット変更のレビューの場合
+node "${CLAUDE_PLUGIN_ROOT}/scripts/codex-companion.mjs" review
 ```
 
 `run_in_background: true` でBashを呼び出す。起動後は「Codex他社レビューをバックグラウンドで開始しました」とユーザーに伝える。
 
-- ブランチ差分レビューの場合は `--scope branch` を付与してCodexが同じスコープを分析できるようにする
-- 未コミット変更のレビューの場合は `--scope branch` を省略する（デフォルトのworking-tree）
-
 **`CLAUDE_PLUGIN_ROOT` が未設定の場合**のフォールバック（動的パス解決）：
 
 ```bash
-CODEX_SCRIPT=$(ls ~/.claude/plugins/cache/openai-codex/codex/*/scripts/codex-companion.mjs 2>/dev/null | tail -1)
-node "$CODEX_SCRIPT" review --scope branch
+CODEX_SCRIPT=$(ls -v ~/.claude/plugins/cache/openai-codex/codex/*/scripts/codex-companion.mjs 2>/dev/null | tail -1)
+# ブランチ差分レビューの場合
+[ -n "$CODEX_SCRIPT" ] && node "$CODEX_SCRIPT" review --scope branch
+# 未コミット変更のレビューの場合
+[ -n "$CODEX_SCRIPT" ] && node "$CODEX_SCRIPT" review
 ```
 
-フォールバック実行前に `[ -z "$CODEX_SCRIPT" ]` で存在確認し、空の場合は「Codex他社レビューをスキップ（スクリプト未検出）」と記録して続行する。
+`$CODEX_SCRIPT` が空の場合は「Codex他社レビューをスキップ（スクリプト未検出）」と記録して続行する。
 
 #### 4-B: 4専門 Claude エージェントに並列配布（同じターンで同時起動）
 
@@ -198,8 +202,8 @@ Codex（OpenAI）によるレビュー結果をそのまま展開する。Claude
 
 **Codex が起動できない場合（`CLAUDE_PLUGIN_ROOT` 未設定など）**:
 
-- フォールバックパス `/Users/sakaitaichi/.claude/plugins/cache/openai-codex/codex/1.0.2/scripts/codex-companion.mjs` を試みる
-- それも失敗する場合は「Codex他社レビューをスキップ（環境未設定）」と記録してClaude4エージェントのみで続行
+- Step 4-Aで定義されたフォールバックロジック（グロブパターン検索）を使用
+- スクリプトが見つからない場合は「Codex他社レビューをスキップ（スクリプト未検出）」と記録してClaude4エージェントのみで続行
 
 **Codex がタイムアウト（3分超）した場合**:
 
