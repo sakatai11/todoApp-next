@@ -1,0 +1,115 @@
+name: Auto PR Review Response (Claude)
+
+# CodeRabbitがレビューを投稿したタイミングで自動起動
+on:
+  pull_request_review:
+    types: [submitted]
+
+# 同一PRで複数のレビューが届いても1つずつ順番に処理する
+concurrency:
+  group: auto-pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # ブランチへのcommit/push
+  pull-requests: write # コメント投稿・スレッド解決
+
+jobs:
+  auto-response:
+    name: Claude Auto Review Response
+    runs-on: ubuntu-latest
+
+    # CodeRabbitのレビューのみに反応（他のレビュアーは手動対応）
+    if: github.event.review.user.login == 'coderabbitai[bot]'
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          # GITHUB_TOKENではpush権限が弱い場合があるのでデフォルトで試す
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install gh-pr-review extension
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh extension install agynio/gh-pr-review
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      # CodeRabbitが全コメントを投稿し終えるのを待つ
+      - name: Wait for CodeRabbit to finish posting all comments
+        run: sleep 60
+
+      - name: Run Claude PR Review Workflow
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+
+          claude --skip-permissions --non-interactive -p "
+          ## Context
+          - PR番号: #${PR_NUMBER}
+          - リポジトリ: ${REPO}
+          - ブランチ: ${BRANCH}
+          - GitHub Actions CI環境で実行中
+
+          ## Task
+          以下の手順でPRレビュー対応を自動実行してください。
+
+          ### 1. レビューコメント取得
+          \`\`\`bash
+          gh pr-review threads list --pr ${PR_NUMBER} --repo ${REPO}
+          gh api repos/${REPO}/pulls/${PR_NUMBER}/comments --jq '.[] | {id,body,path,line}'
+          \`\`\`
+
+          ### 2. 指摘内容の分析と修正実装
+          - 各コメントを確認し、適用可能なものを実装する
+          - プロジェクトのコーディング規約（TypeScript型安全、Zodバリデーション等）に従う
+
+          ### 3. テスト実行
+          \`\`\`bash
+          npm run format
+          npm run test:run
+          \`\`\`
+
+          ### 4. コミット＆プッシュ
+          - コミットメッセージに必ず '[skip ci]' を含める（ワークフロー無限ループ防止）
+          - 形式: 'fix: address PR review feedback [skip ci]'
+
+          ### 5. レビュースレッドへ返信
+          \`\`\`bash
+          gh pr-review comments reply --pr ${PR_NUMBER} --repo ${REPO} --thread-id <THREAD_ID> --body '対応内容の説明'
+          \`\`\`
+
+          ### 6. スレッド解決
+          \`\`\`bash
+          gh pr-review threads resolve --pr ${PR_NUMBER} --repo ${REPO} --thread-id <THREAD_ID>
+          \`\`\`
+
+          ### 注意事項
+          - '[skip ci]' をコミットメッセージに含めること（必須）
+          - テストが失敗した場合はコミットせず、PRにコメントで状況を報告する
+          - Firebase Admin SDK関連はサーバーサイドのみ
+          - 環境変数を直接コードに書かない
+          "
