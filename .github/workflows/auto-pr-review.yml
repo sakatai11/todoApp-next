@@ -19,8 +19,10 @@ jobs:
     name: Claude Auto Review Response
     runs-on: ubuntu-latest
 
-    # CodeRabbitのレビューのみに反応（他のレビュアーは手動対応）
-    if: github.event.review.user.login == 'coderabbitai[bot]'
+    # CodeRabbit・Gemini Code Assistのレビューに反応（他のレビュアーは手動対応）
+    if: |
+      github.event.review.user.login == 'coderabbitai[bot]' ||
+      github.event.review.user.login == 'gemini-code-assist[bot]'
 
     steps:
       - name: Checkout PR branch
@@ -53,8 +55,8 @@ jobs:
       - name: Install Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
 
-      # CodeRabbitが全コメントを投稿し終えるのを待つ
-      - name: Wait for CodeRabbit to finish posting all comments
+      # CodeRabbit・Gemini Code Assistが全コメントを投稿し終えるのを待つ
+      - name: Wait for reviewer bot to finish posting all comments
         run: sleep 60
 
       - name: Run Claude PR Review Workflow
