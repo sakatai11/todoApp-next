@@ -4,6 +4,13 @@ name: Auto PR Review Response (Claude)
 on:
   pull_request_review:
     types: [submitted]
+  # テスト用手動実行
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR番号（例: 95）'
+        required: true
+        type: string
 
 # 同一PRで複数のレビューが届いても1つずつ順番に処理する
 concurrency:
@@ -19,8 +26,9 @@ jobs:
     name: Claude Auto Review Response
     runs-on: ubuntu-latest
 
-    # CodeRabbit・Gemini Code Assistのレビューに反応（他のレビュアーは手動対応）
+    # CodeRabbit・Gemini Code Assistのレビューに反応（手動実行も許可）
     if: |
+      github.event_name == 'workflow_dispatch' ||
       github.event.review.user.login == 'coderabbitai[bot]' ||
       github.event.review.user.login == 'gemini-code-assist[bot]'
 
@@ -65,9 +73,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
+          # 手動実行時はinputsから、自動実行時はイベントから取得
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUMBER="${{ github.event.inputs.pr_number }}"
+            BRANCH=$(gh pr view ${PR_NUMBER} --json headRefName -q .headRefName)
+          else
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            BRANCH="${{ github.event.pull_request.head.ref }}"
+          fi
           REPO="${{ github.repository }}"
-          BRANCH="${{ github.event.pull_request.head.ref }}"
 
           claude --skip-permissions --non-interactive -p "
           GitHub Actions CI環境で実行中。
