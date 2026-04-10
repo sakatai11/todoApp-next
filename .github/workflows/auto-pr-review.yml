@@ -97,13 +97,17 @@ jobs:
           prompt: |
             ## 実行環境
             - GitHub Actions CI環境
-            - PR番号: #${{ steps.pr_info.outputs.pr_number }}
+            - PR番号: ${{ steps.pr_info.outputs.pr_number }}
             - リポジトリ: ${{ github.repository }}
             - ブランチ: ${{ steps.pr_info.outputs.branch }}
 
             ## タスク
-            `.claude/skills/pr-review-todoapp/SKILL.md` を読み込み、定義された手順に従いPRレビュー対応を完全に実行してください。
+            まず `.claude/skills/pr-review-todoapp/SKILL.md` を Read ツールで読み込んでください。
+            読み込んだ手順に従い、PR #${{ steps.pr_info.outputs.pr_number }} へのレビュー対応を実行してください。
 
-            ## 追加制約
+            SKILL.md内の `${PR_NUMBER}` は `${{ steps.pr_info.outputs.pr_number }}` に、
+            `${REPO}` は `${{ github.repository }}` に置き換えて使用してください。
+
+            ## 絶対制約
             - コミットメッセージには必ず '[skip ci]' を含めること（ワークフロー無限ループ防止）
             - 形式例: 'fix: address PR review feedback [skip ci]'
