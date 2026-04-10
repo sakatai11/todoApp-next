@@ -23,6 +23,8 @@ jobs:
   auto-response:
     name: Claude Auto Review Response
     runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     # CodeRabbit・Gemini Code Assistのみに反応（他のレビュアーは手動対応）
     # issue_commentはPR上のコメントのみ対象（issue本体のコメントは除外）
