@@ -70,48 +70,11 @@ jobs:
           BRANCH="${{ github.event.pull_request.head.ref }}"
 
           claude --skip-permissions --non-interactive -p "
-          ## Context
+          GitHub Actions CI環境で実行中。
           - PR番号: #${PR_NUMBER}
           - リポジトリ: ${REPO}
           - ブランチ: ${BRANCH}
-          - GitHub Actions CI環境で実行中
 
-          ## Task
-          以下の手順でPRレビュー対応を自動実行してください。
-
-          ### 1. レビューコメント取得
-          \`\`\`bash
-          gh pr-review threads list --pr ${PR_NUMBER} --repo ${REPO}
-          gh api repos/${REPO}/pulls/${PR_NUMBER}/comments --jq '.[] | {id,body,path,line}'
-          \`\`\`
-
-          ### 2. 指摘内容の分析と修正実装
-          - 各コメントを確認し、適用可能なものを実装する
-          - プロジェクトのコーディング規約（TypeScript型安全、Zodバリデーション等）に従う
-
-          ### 3. テスト実行
-          \`\`\`bash
-          npm run format
-          npm run test:run
-          \`\`\`
-
-          ### 4. コミット＆プッシュ
-          - コミットメッセージに必ず '[skip ci]' を含める（ワークフロー無限ループ防止）
-          - 形式: 'fix: address PR review feedback [skip ci]'
-
-          ### 5. レビュースレッドへ返信
-          \`\`\`bash
-          gh pr-review comments reply --pr ${PR_NUMBER} --repo ${REPO} --thread-id <THREAD_ID> --body '対応内容の説明'
-          \`\`\`
-
-          ### 6. スレッド解決
-          \`\`\`bash
-          gh pr-review threads resolve --pr ${PR_NUMBER} --repo ${REPO} --thread-id <THREAD_ID>
-          \`\`\`
-
-          ### 注意事項
-          - '[skip ci]' をコミットメッセージに含めること（必須）
-          - テストが失敗した場合はコミットせず、PRにコメントで状況を報告する
-          - Firebase Admin SDK関連はサーバーサイドのみ
-          - 環境変数を直接コードに書かない
+          /pr-review-todoapp を実行してください。
+          コミットメッセージには必ず '[skip ci]' を含めること。
           "
