@@ -13,6 +13,7 @@ concurrency:
 permissions:
   contents: write # ブランチへのcommit/push
   pull-requests: write # コメント投稿・スレッド解決
+  id-token: write # claude-code-action@v1 のOIDC認証に必要
 
 jobs:
   auto-response:
