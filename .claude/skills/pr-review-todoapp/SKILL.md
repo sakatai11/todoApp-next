@@ -16,12 +16,14 @@ description: todoApp-next専用GitHub PR Review Workflow（gh pr-review extensio
 
 ### 技術スタック
 
-- **フレームワーク**: Next.js 15（App Router + Turbopack）
-- **認証**: NextAuth.js v5（beta）
-- **バックエンド**: Firebase Admin SDK
-- **UI**: Material-UI + Tailwind CSS
-- **状態管理**: React Context + SWR
-- **テスト**: Vitest + React Testing Library + MSW + Playwright
+- **フレームワーク**: Next.js 16（App Router + Turbopack）
+- **認証**: NextAuth.js v5（beta）- `next-auth@5.0.0-beta.30`
+- **バックエンド**: Firebase Admin SDK v13（`firebase-admin@13.x`）
+- **UI**: Material-UI v6（`@mui/material@6.x`）+ Tailwind CSS
+- **状態管理**: React Context + SWR 2.3.3
+- **ドラッグ＆ドロップ**: @dnd-kit/core v6（タスクの並び替え）
+- **バリデーション**: Zod 3.x（全API必須）
+- **テスト**: Vitest + React Testing Library + MSW 2.x + Playwright
 
 ### 重要な開発原則
 
@@ -173,18 +175,50 @@ gh api repos/<OWNER>/<REPO>/pulls/<PR_NUMBER>/comments \
 
 #### NextAuth.js v5のエラーハンドリング
 
-NextAuth.js v5では、エラーが`CallbackRouteError`でラップされることがあります:
+NextAuth.js v5では、エラーが`CallbackRouteError`でラップされることがあります。**Auth.js公式推奨パターン**を使用してください：
 
 ```typescript
+import { CredentialsSignin } from 'next-auth';
+
+// カスタムエラークラスの定義（型付きエラー）
+class InvalidCredentialsError extends CredentialsSignin {
+  code = 'invalid_credentials';
+}
+
+// Credentialsプロバイダーでの使用例
+Credentials({
+  async authorize(credentials) {
+    const user = await verifyCredentials(credentials);
+    if (!user) {
+      // ジェネリックなErrorではなく、CredentialsSigninを使用
+      throw new InvalidCredentialsError();
+    }
+    return user;
+  },
+});
+
+// エラーハンドリング例（サーバー側）
 try {
   // NextAuth処理
 } catch (error) {
-  // error.causeをチェック
+  // error.cause?.errでアクセス
   if (error instanceof Error && 'cause' in error) {
-    console.error('Original error:', error.cause);
+    const cause = (error as { cause?: { err?: Error } }).cause;
+    console.error('[auth][cause]', cause?.err);
+    console.error('[auth][details]', error.message);
+  } else {
+    console.error('[auth][error]', error);
   }
+  // クライアントには安全なエラーコードのみを返す
+  return { error: 'authentication_failed' };
 }
 ```
+
+**重要**:
+
+- `CredentialsSignin`またはそのサブクラスを使用（ジェネリックな`Error`禁止）
+- `error.cause?.err`で詳細にアクセス
+- クライアントには安全なメッセージのみ返す
 
 #### Firebase Admin SDK
 
@@ -265,7 +299,7 @@ fix: address PR review feedback
 - 修正内容のサマリー
 - 対応したレビューコメントのリスト
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -397,7 +431,7 @@ gh pr-review threads list --pr <PR_NUMBER> --repo <OWNER/REPO>
 
 - ✓ Firebase Admin SDKはサーバーサイドのみ
 - ✓ 環境変数で機密情報を管理
-- ✓ NextAuth.js v5のエラーハンドリング（`error.cause`）
+- ✓ NextAuth.js v5のエラーハンドリング（`CredentialsSignin` + `error.cause?.err`）
 
 **状態管理:**
 
