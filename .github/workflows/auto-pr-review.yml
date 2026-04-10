@@ -59,6 +59,16 @@ jobs:
       - name: Wait for reviewer bot to finish posting all comments
         run: sleep 60
 
+      - name: Load skill content
+        id: skill
+        run: |
+          # SKILL.mdの内容を読み込んでGitHub Outputに格納
+          SKILL_CONTENT=$(cat .claude/skills/pr-review-todoapp/SKILL.md)
+          # 複数行の文字列をGitHub Outputに安全に渡す
+          echo "content<<EOF_SKILL" >> $GITHUB_OUTPUT
+          echo "$SKILL_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF_SKILL" >> $GITHUB_OUTPUT
+
       - name: Run Claude PR Review Workflow
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -69,12 +79,22 @@ jobs:
           REPO="${{ github.repository }}"
           BRANCH="${{ github.event.pull_request.head.ref }}"
 
+          # SKILL.mdの内容をファイル経由でプロンプトに渡す
+          SKILL_CONTENT=$(cat .claude/skills/pr-review-todoapp/SKILL.md)
+
           claude --skip-permissions --non-interactive -p "
-          GitHub Actions CI環境で実行中。
+          ## 実行環境
+          - GitHub Actions CI環境
           - PR番号: #${PR_NUMBER}
           - リポジトリ: ${REPO}
           - ブランチ: ${BRANCH}
 
-          /pr-review-todoapp を実行してください。
-          コミットメッセージには必ず '[skip ci]' を含めること。
+          ## 実行するスキル仕様
+          以下のスキル定義に従ってPRレビュー対応を実行してください。
+
+          ${SKILL_CONTENT}
+
+          ## 追加制約
+          - コミットメッセージには必ず '[skip ci]' を含めること（ワークフロー無限ループ防止）
+          - 形式例: 'fix: address PR review feedback [skip ci]'
           "
