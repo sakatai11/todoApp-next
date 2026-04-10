@@ -93,7 +93,6 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           allowed_bots: "coderabbitai[bot],gemini-code-assist[bot]"
           track_progress: true
-          claude_args: "--skip-permissions"
           prompt: |
             ## 実行環境
             - GitHub Actions CI環境
