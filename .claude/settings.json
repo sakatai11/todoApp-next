@@ -16,6 +16,17 @@
   },
   "enableAllProjectMcpServers": true,
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '(.tool_input.new_string // .tool_input.content) // empty' | grep -qiE '^[[:space:]]*//.*(TODO|FIXME|HACK|XXX)' && printf '\\u26a0\\ufe0f  先送りコード(TODO/FIXME/HACK)が検出されました。今すぐ実装してください。\\n' >&2 && exit 2 || exit 0"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [
