@@ -10,11 +10,11 @@ export async function GET(
   try {
     const { userId } = await params;
     const session = await auth();
-    if (!(session?.user as { id?: string })?.id) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     // 管理者権限チェック
-    if ((session?.user as { role?: string })?.role !== 'ADMIN') {
+    if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     const listsSnap = await adminDB

@@ -9,7 +9,7 @@ export async function GET() {
     const session = await auth();
     console.log(`sessionData:${JSON.stringify(session, null, 2)}`);
 
-    const sessionUserId = (session?.user as { id?: string })?.id;
+    const sessionUserId = session?.user?.id;
     if (!session || !sessionUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

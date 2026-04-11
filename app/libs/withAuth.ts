@@ -22,7 +22,7 @@ export async function withAuthenticatedUser<T, R>(
   // 本番環境・Docker開発環境では NextAuth.js セッション認証
   else {
     const session = await auth();
-    uid = (session?.user as { id?: string })?.id ?? undefined;
+    uid = session?.user?.id ?? undefined;
   }
 
   if (!uid) {
