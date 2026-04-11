@@ -67,6 +67,8 @@ const eslintConfig = [
     ignores: [
       'node_modules/',
       '.next/',
+      '.vercel/',
+      'coverage/',
       'out/',
       'public/',
       'playwright-report/',
