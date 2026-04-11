@@ -10,11 +10,11 @@ export async function GET(
   try {
     const { userId } = await params;
     const session = await auth();
-    if (!session?.user?.id) {
+    if (!(session?.user as { id?: string })?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     // 管理者権限チェック
-    if (session.user.role !== 'ADMIN') {
+    if ((session?.user as { role?: string })?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     const listsSnap = await adminDB
@@ -23,7 +23,11 @@ export async function GET(
       .get();
     const lists: StatusListProps[] = listsSnap.docs.map((doc) => {
       const d = doc.data();
-      return { id: doc.id, category: d.category, number: d.number };
+      return {
+        id: doc.id,
+        category: d['category'] as string,
+        number: d['number'] as number,
+      };
     });
     return NextResponse.json({ lists }, { status: 200 });
   } catch (error) {

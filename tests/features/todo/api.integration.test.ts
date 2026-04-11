@@ -19,6 +19,16 @@ import { server } from '@/todoApp-submodule/mocks/server';
 import { clearTestData } from '@/scripts/cleanup-db';
 import { initializeApp, getApps } from 'firebase-admin/app';
 
+type TodosApiData = { todos: TodoListProps[] };
+type ListsApiData = { lists: unknown[] };
+type TodoApiData = {
+  text: string;
+  status: string;
+  id: string;
+  createdTime: unknown;
+};
+type ErrorApiData = { error: string };
+
 // Firebase Admin SDK初期化（テスト環境）
 if (getApps().length === 0 && process.env.FIRESTORE_EMULATOR_HOST) {
   initializeApp({
@@ -43,11 +53,14 @@ const apiRequest = async (
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  const data: unknown = response.headers
+    .get('content-type')
+    ?.includes('application/json')
+    ? await (response.json() as Promise<unknown>)
+    : await response.text();
   return {
     status: response.status,
-    data: response.headers.get('content-type')?.includes('application/json')
-      ? await response.json()
-      : await response.text(),
+    data,
   };
 };
 
@@ -98,7 +111,7 @@ describe('Todo API 統合テスト', () => {
       expect(response.data).toBeDefined();
       // APIが正常に応答することを確認（データの有無は問わない）
       expect(response.data).toHaveProperty('todos');
-      expect(Array.isArray(response.data.todos)).toBe(true);
+      expect(Array.isArray((response.data as TodosApiData).todos)).toBe(true);
     });
 
     it('未認証ユーザーは401エラーを受け取る', async () => {
@@ -126,10 +139,10 @@ describe('Todo API 統合テスト', () => {
       const response = await apiRequest('POST', '/todos', newTodo, authHeaders);
 
       expect(response.status).toBe(201);
-      expect(response.data.text).toBe(newTodo.text);
-      expect(response.data.status).toBe(newTodo.status);
-      expect(response.data.id).toBeDefined();
-      expect(response.data.createdTime).toBeDefined();
+      expect((response.data as TodoApiData).text).toBe(newTodo.text);
+      expect((response.data as TodoApiData).status).toBe(newTodo.status);
+      expect((response.data as TodoApiData).id).toBeDefined();
+      expect((response.data as TodoApiData).createdTime).toBeDefined();
     });
 
     it('無効なデータで400エラーを返す', async () => {
@@ -169,7 +182,7 @@ describe('Todo API 統合テスト', () => {
         undefined,
         authHeaders,
       );
-      const existingTodo = getTodosResponse.data.todos[0];
+      const existingTodo = (getTodosResponse.data as TodosApiData).todos[0];
 
       const updatedTodo = {
         id: existingTodo.id,
@@ -186,8 +199,8 @@ describe('Todo API 統合テスト', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(response.data.text).toBe(updatedTodo.text);
-      expect(response.data.status).toBe(updatedTodo.status);
+      expect((response.data as TodoApiData).text).toBe(updatedTodo.text);
+      expect((response.data as TodoApiData).status).toBe(updatedTodo.status);
     });
   });
 
@@ -205,7 +218,7 @@ describe('Todo API 統合テスト', () => {
         undefined,
         authHeaders,
       );
-      const existingTodo = getTodosResponse.data.todos[0];
+      const existingTodo = (getTodosResponse.data as TodosApiData).todos[0];
 
       const response = await apiRequest(
         'DELETE',
@@ -223,7 +236,7 @@ describe('Todo API 統合テスト', () => {
         undefined,
         authHeaders,
       );
-      const remainingTodos = verifyResponse.data.todos.filter(
+      const remainingTodos = (verifyResponse.data as TodosApiData).todos.filter(
         (todo: TodoListProps) => todo.id === existingTodo.id,
       );
       expect(remainingTodos.length).toBe(0);
@@ -249,7 +262,7 @@ describe('Lists API 統合テスト', () => {
       expect(response.status).toBe(200);
       expect(response.data).toBeDefined();
       expect(response.data).toHaveProperty('lists');
-      expect(Array.isArray(response.data.lists)).toBe(true);
+      expect(Array.isArray((response.data as ListsApiData).lists)).toBe(true);
     });
 
     it('未認証ユーザーは401エラーを受け取る', async () => {
@@ -279,7 +292,7 @@ describe('管理者権限テスト', () => {
 
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('todos');
-      expect(Array.isArray(response.data.todos)).toBe(true);
+      expect(Array.isArray((response.data as TodosApiData).todos)).toBe(true);
     });
 
     it('管理者ユーザーが一般ユーザーのリストにアクセスできる', async () => {
@@ -297,7 +310,7 @@ describe('管理者権限テスト', () => {
 
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('lists');
-      expect(Array.isArray(response.data.lists)).toBe(true);
+      expect(Array.isArray((response.data as ListsApiData).lists)).toBe(true);
     });
   });
 
@@ -333,15 +346,12 @@ describe('管理者権限テスト', () => {
       expect(adminResponse.status).toBe(200);
 
       // データが存在する場合の検証（データが空の場合もあるため条件付き）
-      if (
-        userResponse.data.todos.length > 0 &&
-        adminResponse.data.todos.length > 0
-      ) {
-        // ユーザーIDが異なることを確認（データが存在する場合）
-        const userTodos = userResponse.data.todos;
-        const adminTodos = adminResponse.data.todos;
+      const userTodosData = userResponse.data as TodosApiData;
+      const adminTodosData = adminResponse.data as TodosApiData;
+      if (userTodosData.todos.length > 0 && adminTodosData.todos.length > 0) {
+        const userTodos = userTodosData.todos;
+        const adminTodos = adminTodosData.todos;
 
-        // 同じTodoが含まれていないことを確認
         const userTodoIds = userTodos.map((todo: TodoListProps) => todo.id);
         const adminTodoIds = adminTodos.map((todo: TodoListProps) => todo.id);
         const commonIds = userTodoIds.filter((id: string) =>

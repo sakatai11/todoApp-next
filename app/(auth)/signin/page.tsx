@@ -13,8 +13,7 @@ export default async function SignInPage(props: {
   const cb = Array.isArray(raw) ? raw[0] : raw;
   const decodedCb = cb ? decodeURIComponent(cb) : undefined;
   if (session) {
-    // non-admin users
-    if (session.user.role !== 'ADMIN') {
+    if ((session.user as { role?: string })?.role !== 'ADMIN') {
       // attempted to access admin via callback
       if (decodedCb && decodedCb.startsWith('/admin')) {
         redirect('/account/error');

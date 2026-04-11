@@ -15,7 +15,7 @@
  */
 
 import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+import { getAuth, UserRecord } from 'firebase-admin/auth';
 import readline from 'readline';
 
 // 環境変数の必須チェック
@@ -88,7 +88,7 @@ async function cleanupTestUsers() {
   }
 }
 
-async function performCleanup(testUsers: any[]) {
+async function performCleanup(testUsers: UserRecord[]) {
   let deletedCount = 0;
   let errorCount = 0;
 

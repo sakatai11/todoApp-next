@@ -72,11 +72,11 @@ const createTestFetcher = async (url: string) => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Unknown error');
+    const errorData = (await response.json()) as { error?: string };
+    throw new Error(errorData.error ?? 'Unknown error');
   }
 
-  return response.json();
+  return response.json() as Promise<unknown>;
 };
 
 vi.mock('swr', () => ({

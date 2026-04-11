@@ -22,7 +22,7 @@ export async function withAuthenticatedUser<T, R>(
   // 本番環境・Docker開発環境では NextAuth.js セッション認証
   else {
     const session = await auth();
-    uid = session?.user?.id;
+    uid = (session?.user as { id?: string })?.id ?? undefined;
   }
 
   if (!uid) {
@@ -40,7 +40,7 @@ export async function withAuthenticatedUser<T, R>(
 
       if (contentType?.includes('application/json')) {
         try {
-          body = await clonedReq.json();
+          body = (await clonedReq.json()) as T;
         } catch (error) {
           console.error('Error parsing JSON body:', error);
         }

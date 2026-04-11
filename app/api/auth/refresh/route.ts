@@ -5,7 +5,7 @@ import { AuthDecodedTokenSchema } from '@/data/validatedData';
 
 export async function POST(req: Request) {
   try {
-    const response = await req.json();
+    const response: unknown = await req.json();
 
     // **Zod でバリデーション**
     const validatedData = AuthDecodedTokenSchema.safeParse(response);

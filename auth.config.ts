@@ -21,14 +21,16 @@ export const authConfig = {
       auth: Session | null;
       request: NextRequest;
     }) {
-      // 管理者ページ保護
       const isOnAdminPage = nextUrl.pathname.startsWith('/admin');
-      if (isOnAdminPage && auth?.user?.role !== 'ADMIN') {
+      const userRole = (auth?.user as { role?: string } | undefined)?.role;
+      if (isOnAdminPage && userRole !== 'ADMIN') {
         return false;
       }
-      // /todo配下のルートの保護
       const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/todo');
-      const isLoggedin = !!auth?.user?.customToken;
+      const userCustomToken = (
+        auth?.user as { customToken?: string } | undefined
+      )?.customToken;
+      const isLoggedin = !!userCustomToken;
 
       const isOnSignInPage = nextUrl.pathname === '/signin';
 
@@ -91,8 +93,10 @@ export const authConfig = {
             });
 
             if (refreshResponse.ok) {
-              const { customToken } = await refreshResponse.json();
-              token.customToken = customToken;
+              const refreshData = (await refreshResponse.json()) as {
+                customToken?: string;
+              };
+              token.customToken = refreshData.customToken;
               token.tokenIssuedAt = currentTime;
               token.lastRefresh = currentTime;
             } else {
@@ -104,10 +108,12 @@ export const authConfig = {
         }
       }
 
-      // update トリガーの場合（セッションが更新された場合）
-      if (trigger === 'update' && session?.customToken) {
-        token.customToken = session.customToken;
-        token.tokenIssuedAt = Math.floor(Date.now() / 1000);
+      if (trigger === 'update') {
+        const sessionData = session as { customToken?: string } | undefined;
+        if (sessionData?.customToken) {
+          token.customToken = sessionData.customToken;
+          token.tokenIssuedAt = Math.floor(Date.now() / 1000);
+        }
       }
 
       return token;

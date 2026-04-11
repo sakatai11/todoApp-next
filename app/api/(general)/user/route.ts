@@ -1,7 +1,7 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-import { UserData } from '@/types/auth/authData';
+import { AdminUser } from '@/types/auth/authData';
 
 // ユーザー情報を取得する関数
 export async function GET() {
@@ -9,23 +9,26 @@ export async function GET() {
     const session = await auth();
     console.log(`sessionData:${JSON.stringify(session, null, 2)}`);
 
-    if (!session || !session.user?.id) {
+    const sessionUserId = (session?.user as { id?: string })?.id;
+    if (!session || !sessionUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const uid = session.user.id;
+    const uid = sessionUserId;
 
     // Firestoreのusersコレクションからuidが一致するドキュメントを取得
     const doc = await adminDB.collection('users').doc(uid).get();
     const data = doc.data();
     // 各データマッピング
-    const userData: UserData[] = data
+    const userData: AdminUser[] = data
       ? [
           {
             id: uid,
-            email: data.email,
-            role: data.role,
-            createdAt: data.createdAt.toMillis(),
+            email: data['email'] as string,
+            role: data['role'] as 'ADMIN' | 'USER',
+            createdAt: (
+              data['createdAt'] as { toMillis: () => number }
+            ).toMillis(),
           },
         ]
       : [];
