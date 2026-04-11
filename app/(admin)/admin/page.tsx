@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import * as Admin from '@/features/admin/templates/index';
 import Template from '@/app/template';
 import { headers } from 'next/headers';
+import { AdminUser } from '@/types/auth/authData';
 
 export default async function AdminPage() {
   const incomingHeaders = await headers();
@@ -20,7 +21,7 @@ export default async function AdminPage() {
     throw new Error('Failed to fetch data');
   }
 
-  const { users } = await response.json();
+  const { users } = (await response.json()) as { users: AdminUser[] };
 
   return (
     <Template showHeader={true}>

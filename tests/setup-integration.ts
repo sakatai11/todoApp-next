@@ -69,11 +69,13 @@ beforeAll(async () => {
         console.log('Firebase Emulator接続成功');
         break;
       }
-    } catch (error) {
+    } catch (_error) {
       // 接続失敗時は待機を続行
     }
 
-    await new Promise((resolve) => setTimeout(resolve, checkInterval));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, checkInterval);
+    });
     elapsed += checkInterval;
   }
 
