@@ -85,6 +85,7 @@ export const authConfig = {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'X-Internal-Secret': process.env.NEXTAUTH_SECRET ?? '',
               },
               body: JSON.stringify({
                 uid: token.sub,

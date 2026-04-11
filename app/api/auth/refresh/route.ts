@@ -5,6 +5,12 @@ import { AuthDecodedTokenSchema } from '@/data/validatedData';
 
 export async function POST(req: Request) {
   try {
+    // 内部シークレット検証: auth.config.ts の JWT コールバックからのみ呼び出し可能
+    const internalSecret = req.headers.get('X-Internal-Secret');
+    if (!internalSecret || internalSecret !== process.env.NEXTAUTH_SECRET) {
+      return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+    }
+
     const response: unknown = await req.json();
 
     // **Zod でバリデーション**
