@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { TodoListProps } from '@/types/todos';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export async function GET(
   _request: Request,
@@ -14,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     // 管理者権限チェック
-    if (session.user.role !== 'ADMIN') {
+    if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     const todosSnap = await adminDB
@@ -25,11 +26,11 @@ export async function GET(
       const d = doc.data();
       return {
         id: doc.id,
-        updateTime: d.updateTime,
-        createdTime: d.createdTime,
-        text: d.text,
-        status: d.status,
-        bool: d.bool,
+        updateTime: d['updateTime'] as Timestamp,
+        createdTime: d['createdTime'] as Timestamp,
+        text: d['text'] as string,
+        status: d['status'] as string,
+        bool: d['bool'] as boolean,
       };
     });
     return NextResponse.json({ todos }, { status: 200 });

@@ -73,17 +73,11 @@ export async function POST(req: Request) {
       ? `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${firebaseApiKey}`
       : `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`;
 
-    const requestBody = isEmulatorMode
-      ? {
-          email,
-          password,
-          returnSecureToken: true,
-        }
-      : {
-          email,
-          password,
-          returnSecureToken: true,
-        };
+    const requestBody = {
+      email,
+      password,
+      returnSecureToken: true,
+    };
 
     const res = await fetch(authUrl, {
       method: 'POST',
@@ -115,13 +109,13 @@ export async function POST(req: Request) {
 
       // Emulator環境でユーザーロールが存在しない場合のデフォルト値設定
       if (!userRole && isEmulatorMode) {
-        userRole = email?.includes('admin') ? 'admin' : 'user';
+        userRole = 'user';
       }
     } catch (e) {
       console.error('Error fetching user role:', e);
       // Emulator環境でのフォールバック
       if (isEmulatorMode) {
-        userRole = email?.includes('admin') ? 'admin' : 'user';
+        userRole = 'user';
       }
     }
 

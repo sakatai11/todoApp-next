@@ -13,7 +13,7 @@ import { getAuth } from 'firebase-admin/auth';
  * 削除対象:
  * - newuser- で始まるメールアドレスのユーザー
  */
-export default async function globalTeardown(config: FullConfig) {
+export default async function globalTeardown(_config: FullConfig) {
   console.log('🧹 E2Eテスト完了後のクリーンアップ...');
 
   // Emulator環境確認
@@ -50,7 +50,7 @@ export default async function globalTeardown(config: FullConfig) {
         try {
           await auth.deleteUser(user.uid);
           deleted++;
-        } catch (error) {
+        } catch (_error) {
           failed++;
         }
       }),

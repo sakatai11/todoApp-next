@@ -70,6 +70,7 @@
     "eslint-config-next": "16.1.6",
     "eslint-config-prettier": "^10.0.1",
     "jsdom": "^24.0.0",
+    "lefthook": "^2.1.5",
     "msw": "^2.8.7",
     "postcss": "^8.5.3",
     "prettier": "^3.5.0",

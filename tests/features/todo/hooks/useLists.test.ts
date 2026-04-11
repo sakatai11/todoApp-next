@@ -20,7 +20,7 @@ vi.mock('@/features/todo/contexts/ErrorContext', () => ({
 
 // Mock @dnd-kit/sortable
 vi.mock('@dnd-kit/sortable', () => ({
-  arrayMove: vi.fn((array, from, to) => {
+  arrayMove: vi.fn((array: unknown[], from: number, to: number) => {
     const newArray = [...array];
     const item = newArray.splice(from, 1)[0];
     newArray.splice(to, 0, item);
@@ -31,7 +31,9 @@ vi.mock('@dnd-kit/sortable', () => ({
 // Get the mocked function
 import { apiRequest } from '@/features/libs/apis';
 import { arrayMove } from '@dnd-kit/sortable';
-const mockApiRequest = vi.mocked(apiRequest);
+const mockApiRequest = vi.mocked(apiRequest) as unknown as ReturnType<
+  typeof vi.fn
+>;
 const mockArrayMove = vi.mocked(arrayMove);
 
 // サブモジュールのモックデータを使用
@@ -151,7 +153,7 @@ describe('useLists', () => {
         result.current.setInput({ status: 'new-status' });
       });
 
-      let addResult;
+      let addResult: boolean | undefined;
       await act(async () => {
         addResult = await result.current.addList();
       });
@@ -174,7 +176,7 @@ describe('useLists', () => {
     it('入力が空の場合はエラーになる', async () => {
       const { result } = renderHook(() => useLists(mockInitialLists));
 
-      let addResult;
+      let addResult: boolean | undefined;
       await act(async () => {
         addResult = await result.current.addList();
       });
@@ -192,7 +194,7 @@ describe('useLists', () => {
         result.current.setInput({ status: 'in-progress' }); // 既存のカテゴリ
       });
 
-      let addResult;
+      let addResult: boolean | undefined;
       await act(async () => {
         addResult = await result.current.addList();
       });
@@ -216,7 +218,7 @@ describe('useLists', () => {
         result.current.setInput({ status: 'new-status' });
       });
 
-      let addResult;
+      let addResult: boolean | undefined;
       await act(async () => {
         addResult = await result.current.addList();
       });
@@ -283,7 +285,7 @@ describe('useLists', () => {
         'PUT',
         expect.objectContaining({
           type: 'reorder',
-          data: expect.any(Array),
+          data: expect.any(Array) as unknown[],
         }),
       );
     });
@@ -356,7 +358,7 @@ describe('useLists', () => {
         'PUT',
         expect.objectContaining({
           type: 'reorder',
-          data: expect.any(Array),
+          data: expect.any(Array) as unknown[],
         }),
       );
     });

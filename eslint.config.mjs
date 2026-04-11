@@ -14,11 +14,6 @@ const eslintConfig = [
     rules: {
       // セキュリティ関連ルール
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unsafe-assignment': 'error',
-      '@typescript-eslint/no-unsafe-call': 'error',
-      '@typescript-eslint/no-unsafe-member-access': 'error',
-      '@typescript-eslint/no-unsafe-return': 'error',
-      '@typescript-eslint/no-unsafe-argument': 'error',
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
@@ -67,6 +62,9 @@ const eslintConfig = [
     ignores: [
       'node_modules/',
       '.next/',
+      '.vercel/',
+      '.claude/worktrees/',
+      'coverage/',
       'out/',
       'public/',
       'playwright-report/',

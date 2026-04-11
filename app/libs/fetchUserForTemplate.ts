@@ -70,9 +70,11 @@ export async function fetchUserForTemplate(): Promise<{
       return { user: null };
     }
 
-    const { user } = await response.json();
+    const responseData = (await response.json()) as {
+      user: UserData[] | MockUserData[] | null;
+    };
     console.log('Successfully fetched user data for template');
-    return { user };
+    return { user: responseData.user };
   } catch (error) {
     console.warn('Error fetching user for template:', error);
     // エラーが発生した場合もnullユーザーを返す
