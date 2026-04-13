@@ -12,7 +12,7 @@ CodeRabbitの静的解析結果とgit diffを入力として受け取り、API�
 ## プロジェクト固有のAPI文脈
 
 - **APIルート構造**: `app/api/(admin)/`（管理者専用）・`app/api/(general)/`（一般ユーザー）・`app/api/auth/`（認証フロー）
-- **バリデーション**: 全APIでZodスキーマ必須（`safeParse` + エラーハンドリング）
+- **バリデーション**: 新規APIではZodスキーマ推奨（`safeParse` + エラーハンドリング）。既存APIは `trimAllSpaces` + 手動バリデーションを使用している場合がある（`app/api/(general)/` 配下）。`parse()` 使用は許容されるが `safeParse` が望ましい
 - **エラーレスポンス統一形式**: `{ error: string; details?: unknown }`
 - **フレームワーク**: Next.js App Router の Route Handlers（`route.ts`）
 

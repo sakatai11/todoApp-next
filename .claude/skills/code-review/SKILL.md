@@ -108,7 +108,7 @@ CodeRabbitの出力が空または最小限（10行未満）の場合は「CodeR
   app/api/todos/route.ts      → API ファイル
   features/todo/components/TodoItem.tsx → UI コンポーネント
 
-起動するエージェント（6件）:
+起動するエージェント（6件）+ Codex:
   ✓ code-quality-reviewer    （常時）
   ✓ security-reviewer        （app/api/** に一致）
   ✓ api-design-reviewer      （app/api/** に一致）
