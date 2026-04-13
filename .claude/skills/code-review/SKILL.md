@@ -92,7 +92,7 @@ CodeRabbitの出力が空または最小限（10行未満）の場合は「CodeR
 
 ### Step 4: エージェントルーティング判定
 
-`git diff --stat` の出力から変更ファイル一覧を取得し、**エージェントルーティングテーブル**と照合して起動するエージェントを決定する。
+`git diff --name-only` の出力から変更ファイル一覧を取得し、**エージェントルーティングテーブル**と照合して起動するエージェントを決定する。
 
 #### 判定手順
 
@@ -103,7 +103,7 @@ CodeRabbitの出力が空または最小限（10行未満）の場合は「CodeR
 
 **提示例**:
 
-```
+```text
 変更ファイルの分析結果:
   app/api/todos/route.ts      → API ファイル
   features/todo/components/TodoItem.tsx → UI コンポーネント
@@ -120,7 +120,7 @@ CodeRabbitの出力が空または最小限（10行未満）の場合は「CodeR
 
 **テストファイルのみの変更例**（`tests/**` や `**/*.test.ts` のみ）:
 
-```
+```text
 起動するエージェント（1件）+ Codex:
   ✓ code-quality-reviewer    （常時）
   - security-reviewer        （該当ファイルなし）

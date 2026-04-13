@@ -31,7 +31,7 @@ CodeRabbitの静的解析結果とgit diffを入力として受け取り、React
 
 プロジェクトの状態管理ルール：
 
-```
+```text
 SWR → 初期データ取得（TodoWrapper） → TodoContext → useState/useReducerベース管理
 ```
 
