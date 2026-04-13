@@ -24,7 +24,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-これは、App Routerとフィーチャーベースアーキテクチャを使用したNext.js 15のtodoアプリケーションです。
+これは、App Routerとフィーチャーベースアーキテクチャを使用したNext.js 16のtodoアプリケーションです。
 
 ### 開発コマンド
 
@@ -93,7 +93,7 @@ npm run msw:init        # Mock Service Workerを初期化
 
 - 新しい機能は`features/`内で自己完結させる（共通は`features/shared/`）
 - **Admin API**: `app/api/(admin)/`、**General API**: `app/api/(general)/`、**Auth API**: `app/api/auth/`
-- 全APIでZodバリデーション必須
+- 新規APIでZodバリデーション推奨（既存APIは`trimAllSpaces` + 手動チェックの場合あり）
 - 詳細: [@.claude/rules/app.md](rules/app.md) / [@.claude/rules/features.md](rules/features.md)
 
 ## テストガイドライン
