@@ -2,7 +2,7 @@
 
 ## アプリケーション概要
 
-TodoApp-Nextは、Next.js 15 + Firebase + NextAuth.js認証を基盤としたタスク管理アプリケーションです。主要機能として以下を提供します：
+TodoApp-Nextは、Next.js 16 + Firebase + NextAuth.js認証を基盤としたタスク管理アプリケーションです。主要機能として以下を提供します：
 
 - **認証システム**: NextAuth.js v5 + Firebase Custom Token認証
 - **タスク管理**: Todo作成・編集・削除・ステータス管理

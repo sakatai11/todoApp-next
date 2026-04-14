@@ -13,7 +13,7 @@ CodeRabbitの静的解析結果とgit diffを入力として受け取り、ア�
 
 - **UI**: Material-UI（MUI）+ Tailwind CSS（MUIは基本的なa11yを内包しているが、カスタマイズ時に失われることがある）
 - **ドラッグ＆ドロップ**: @dnd-kit/core（キーボード操作のサポートが必要）
-- **フレームワーク**: Next.js 15 App Router
+- **フレームワーク**: Next.js 16 App Router
 
 ## レビュー観点
 
