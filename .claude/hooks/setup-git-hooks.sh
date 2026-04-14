@@ -31,8 +31,9 @@ install_hook() {
 
   # 既存フック（シンボリックリンク以外）はバックアップ
   if [ -f "$target_file" ] && [ ! -L "$target_file" ]; then
-    echo "  ⚠️  既存フックをバックアップ: ${target_file}.bak"
-    mv "$target_file" "${target_file}.bak"
+    local backup_file="${target_file}.bak.$(date +%Y%m%d%H%M%S)"
+    echo "  ⚠️  既存フックをバックアップ: ${backup_file}"
+    mv "$target_file" "$backup_file"
   fi
 
   ln -sf "$source_file" "$target_file"

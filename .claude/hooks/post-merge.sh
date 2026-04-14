@@ -39,7 +39,7 @@ if ! command -v claude &>/dev/null; then
 fi
 
 # ファイル検出と同じ範囲（ORIG_HEAD..HEAD）をそのままClaudeに渡す
-ORIG_HEAD_SHA=$(cat "$(git rev-parse --git-dir)/ORIG_HEAD")
+ORIG_HEAD_SHA=$(git rev-parse ORIG_HEAD)
 COMMIT_RANGE="${ORIG_HEAD_SHA}..HEAD"
 
 echo ""
