@@ -74,7 +74,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 git reflog show --all | grep "checkout: moving from" | head -1
 
 # または merge-base で共通祖先を探す
-git merge-base --fork-point main 2>/dev/null
+git merge-base --fork-point ${BASE_BRANCH:-develop-v2} 2>/dev/null
 ```
 
 ### Step 3: Gather PR Information
@@ -222,7 +222,7 @@ fi
 
 `gh` コマンドが利用できない場合、ユーザーに通知:
 
-```
+```text
 GitHub CLIがインストールされていません。
 以下のコマンドでインストールしてください:
 
