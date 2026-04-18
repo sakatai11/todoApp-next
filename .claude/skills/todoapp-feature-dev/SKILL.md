@@ -95,7 +95,30 @@ Initial request: $ARGUMENTS
 
 ---
 
-## Phase 5: Implementation
+## Phase 5: Implementation Plan（条件付き）
+
+**Goal**: 実装規模に応じてPlanを作成し、変更内容をユーザーと合意する
+
+**規模判定**:
+
+- **大規模**（以下のいずれかに該当）→ Planを作成する
+  - 新規ファイルが3件以上
+  - 複数の `features/` ディレクトリにまたがる変更
+  - API追加 + フロントエンド変更が両方発生する
+- **小〜中規模**（上記に非該当）→ Planをスキップして Phase 6 へ進む
+
+**大規模の場合のActions**:
+
+1. `EnterPlanMode` を使用してPlanを作成する
+2. Plan に以下を明記する：
+   - 作成・変更するファイル一覧（パス付き）
+   - 各ファイルの変更概要
+   - 実装順序
+3. ユーザーの承認後、`ExitPlanMode` で実装フェーズへ移行する
+
+---
+
+## Phase 6: Implementation
 
 **Goal**: 機能を実装する
 
@@ -115,7 +138,7 @@ Initial request: $ARGUMENTS
 
 ---
 
-## Phase 6: Quality Review（プロジェクト専用オーケストレーター使用）
+## Phase 7: Quality Review（プロジェクト専用オーケストレーター使用）
 
 **Goal**: コードの品質・セキュリティ・パフォーマンス・アクセシビリティを総合的に検証する
 
@@ -146,7 +169,7 @@ Initial request: $ARGUMENTS
 
 ---
 
-## Phase 7: Summary
+## Phase 8: Summary
 
 **Goal**: 達成内容をドキュメント化する
 
