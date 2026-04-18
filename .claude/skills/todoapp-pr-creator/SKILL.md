@@ -18,11 +18,11 @@ model: sonnet
 
 設定ファイルがない場合のデフォルト設定:
 
-- `feature/*` → `main`
+- `feature/*` → `develop-v2`
 - `hotfix/*` → `main`
 - `release/*` → `main`
-- `bugfix/*` → `main`
-- その他 → git 履歴から判定、不明な場合は `main`
+- `bugfix/*` → `develop-v2`
+- その他 → git 履歴から判定、不明な場合は `develop-v2`
 
 ## Workflow
 
@@ -177,27 +177,14 @@ Conventional Commits形式でPRタイトルを決定:
 git remote -v
 git branch -vv
 
-# 必要に応じてリモートにプッシュ
-if ! git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null; then
-  git push -u origin ${CURRENT_BRANCH}
-fi
+# 常に最新コミットをリモートにプッシュ
+git push -u origin ${CURRENT_BRANCH}
 
-# PRを作成（HEREDOCで説明文を渡す）
+# PRを作成（Step 4 で生成した説明文を使用）
 gh pr create \
   --base ${BASE_BRANCH} \
   --title "${PR_TITLE}" \
-  --body "$(cat <<'EOF'
-## Summary
-
-[生成したサマリー]
-
-## Test plan
-
-[生成したテスト計画]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-EOF
-)"
+  --body "${PR_DESCRIPTION}"
 ```
 
 ### Step 6: Return PR URL
