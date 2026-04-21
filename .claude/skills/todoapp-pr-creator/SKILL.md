@@ -7,8 +7,6 @@ model: sonnet
 # GitHub Pull Request 自動作成（todoApp-next専用）
 
 グローバルの `pr-creator` をベースに、todoApp-next固有のブランチ戦略を適用したバージョン。
-コードレビューは GitHubルーティン（`pull_request.opened` トリガー）へ委譲する。
-※ 事前に [claude.ai/code/routines](https://claude.ai/code/routines) で当該ルーティンを作成・有効化している場合のみ自動実行される。ルーティンが未設定/無効の場合は自動レビューされない。
 
 ## Configuration
 
@@ -229,10 +227,3 @@ GitHub 認証が必要な場合:
 ```bash
 gh auth status || gh auth login
 ```
-
-## Notes
-
-- グローバルの `pr-creator` をオーバーライドしたtodoApp-next固有バージョン
-- コードレビューはGitHubルーティン（`pull_request.opened`トリガー）が担当するため、このスキルはPR作成のみに集中する（※別途 [claude.ai/code/routines](https://claude.ai/code/routines) で「レビュー結果をPR本文末尾に追記」するルーティン設定が必要）
-- ルーティンが未設定/無効の場合は自動レビューされないため、運用手順に従って事前セットアップを行うこと
-- グローバル版に変更があった場合は Step 1〜6 を手動で同期すること
