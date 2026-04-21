@@ -1,12 +1,12 @@
 ---
 name: todoapp-pr-creator
-description: 'todoApp-next専用PR作成スキル。グローバルのpr-creatorをベースに、PR作成後にcode-reviewオーケストレーターを自動起動するStep 7を追加したバージョン（Generator-Verifierパターン）。使用タイミング: (1) ユーザーが明示的にPR作成を依頼した時（「PRを作成して」「Pull Requestを作成」など）、(2) コミット完了後にPRが必要な文脈、(3) feature/hotfix/releaseブランチからのマージ準備時'
+description: 'todoApp-next専用PR作成スキル。グローバルのpr-creatorをベースに、todoApp-next固有のブランチ戦略を適用したバージョン。使用タイミング: (1) ユーザーが明示的にPR作成を依頼した時（「PRを作成して」「Pull Requestを作成」など）、(2) コミット完了後にPRが必要な文脈、(3) feature/hotfix/releaseブランチからのマージ準備時'
 model: sonnet
 ---
 
 # GitHub Pull Request 自動作成（todoApp-next専用）
 
-グローバルの `pr-creator` をベースに、PR作成後に `code-review` オーケストレーターを自動起動する Step 7 を追加したバージョン。
+グローバルの `pr-creator` をベースに、todoApp-next固有のブランチ戦略を適用したバージョン。コードレビューはGitHubルーティン（`pull_request.opened`トリガー）が自動実行する。
 
 ## Configuration
 
@@ -196,15 +196,6 @@ PR 作成後、URL を返す:
 gh pr view --json url -q '.url'
 ```
 
-### Step 7: 自動コードレビュー（Generator-Verifier）
-
-PR 作成完了後、**自動的にコードレビューを起動**する。ユーザーへの確認は不要。
-
-1. ユーザーに「PR作成完了。コードレビューを開始します...」と伝える
-2. `code-review` スキルを呼び出す（Skill ツールで `skill: "code-review"` を実行）
-3. `code-review` の Step 1 で未コミット変更がないと判断された場合は、ブランチ差分（`git diff ${BASE_BRANCH}...HEAD`）を使用するよう指示する
-4. レビュー結果の優先対応リストを提示し、修正するかユーザーに確認する
-
 ## Error Handling
 
 ### No Commits
@@ -240,5 +231,5 @@ gh auth status || gh auth login
 ## Notes
 
 - グローバルの `pr-creator` をオーバーライドしたtodoApp-next固有バージョン
-- Step 7 のみグローバル版と異なる（`code-review` 自動起動）
+- コードレビューはGitHubルーティン（`pull_request.opened`トリガー）が担当するため、このスキルはPR作成のみに集中する
 - グローバル版に変更があった場合は Step 1〜6 を手動で同期すること
