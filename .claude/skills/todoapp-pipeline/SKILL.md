@@ -10,7 +10,7 @@ description: 'todoApp-next専用ハイブリッドパイプラインスキル。
 ## Core Principles
 
 - **決定論的ステップは止める**: lint / typecheck / test / build / git は失敗したら必ず止める。ハルシネーションでスキップしない
-- **AI判断ステップは前後をゲートで挟む**: AI 実装の前に Spec Quality Gate、後ろに `npm run format && test:run && build`
+- **AI判断ステップは前後をゲートで挟む**: AI 実装の前に Spec Quality Gate、後ろに `npm run format && npm run test:run && npm run build`
 - **既存スキルは再利用**: `todoapp-feature-dev` / `code-review` / `todoapp-pr-creator` を呼ぶ。同じことを書き直さない
 - **品質ゲート失敗時はハイブリッド対応**: lint / format は AI 自動修正 + 再検証、test / build 失敗は人間に確認
 - **トリガーごとに工場を切り替える**: 機能追加 / バグ修正 / UI 変更で実装フローが違う
@@ -123,7 +123,7 @@ type NormalizedTask = {
 
 ```yaml
 ---
-type: spec # または bugfix
+type: spec # または enhancement, bugfix
 ---
 ```
 
@@ -250,12 +250,12 @@ git checkout -b perf/<slug>      # type=optimization の場合
 
 `task.type` に応じて該当 factory ファイルを Read して実行する。
 
-| task.type      | 委譲先                                                             |
-| -------------- | ------------------------------------------------------------------ |
-| `feature`      | `factories/feature.md`（→ `todoapp-feature-dev` スキルへ）         |
-| `bugfix`       | `factories/bugfix.md`（再現テスト→修正→検証）                      |
-| `ui-change`    | `factories/ui-change.md`（コンポーネント特定→修正→ビジュアル確認） |
-| `optimization` | `factories/bugfix.md` を流用（計測ベースの修正サイクル）           |
+| task.type      | 委譲先                                                                                    |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| `feature`      | `factories/feature.md`（→ `todoapp-feature-dev` スキルへ）                                |
+| `bugfix`       | `factories/bugfix.md`（再現テスト→修正→検証）                                             |
+| `ui-change`    | `factories/ui-change.md`（コンポーネント特定→修正→ビジュアル確認）                        |
+| `optimization` | `factories/bugfix.md`（`type=optimization` も受け付ける。計測ベースの修正サイクルを適用） |
 
 各 factory はこの SKILL.md と同じ目的（NormalizedTask を実装する）を共有するが、フローが異なる。
 
@@ -311,6 +311,8 @@ npm run test:run
 npm run build
 ```
 
+このプロジェクトは `package.json` に独立した `typecheck` スクリプトが存在しない。`npm run build` が TypeScript コンパイルを内包するため、型チェックはこのステップで兼ねる。
+
 失敗時：Test と同じく人間に確認。型エラーは ESLint 修正以上に副作用が広いため AI 自動修正禁止。
 
 ---
@@ -355,12 +357,12 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 
 `type` は task.type から導出：
 
-| task.type      | commit type                           |
-| -------------- | ------------------------------------- |
-| `feature`      | `feat`                                |
-| `bugfix`       | `fix`                                 |
-| `ui-change`    | `feat` または `fix`（変更内容で判断） |
-| `optimization` | `perf` または `refactor`              |
+| task.type      | commit type                                                                    |
+| -------------- | ------------------------------------------------------------------------------ |
+| `feature`      | `feat`                                                                         |
+| `bugfix`       | `fix`                                                                          |
+| `ui-change`    | 新規UI追加なら `feat`、既存UI修正なら `fix`（AI が description で判断）        |
+| `optimization` | 計測指標の改善なら `perf`、構造改善なら `refactor`（AI が description で判断） |
 
 ### 実行
 

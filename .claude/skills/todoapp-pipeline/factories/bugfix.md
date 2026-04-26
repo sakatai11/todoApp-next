@@ -4,9 +4,10 @@
 
 ## 入力
 
-`NormalizedTask`（type=bugfix）
+`NormalizedTask`（type=bugfix または type=optimization）
 
-`context.reproSteps` が必須（trigger 段階で確保済み）。
+- `type=bugfix`: `context.reproSteps` が必須（trigger 段階で確保済み）
+- `type=optimization`: 計測指標（PostHog/Lighthouse 等）が `description` に明記されていること
 
 ## 処理フロー
 

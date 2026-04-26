@@ -91,7 +91,7 @@ npm run dev   # または npm run docker:dev
 ```bash
 # 変更前のスクショ（修正前にgit stashして取得しておくのが理想）
 # 変更後の確認テスト
-npx playwright test --grep "<該当画面>" --update-snapshots
+npm run test:e2e -- --grep "<該当画面>" --update-snapshots
 ```
 
 スクショテストがない場合は、新規にスクショアサーションを追加することを検討。
