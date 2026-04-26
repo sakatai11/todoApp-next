@@ -108,7 +108,29 @@ npm run test:e2e -- --grep "<該当画面>" --update-snapshots
 > - レスポンシブ崩れがないか（モバイル / デスクトップ）
 > - ダークモード対応が崩れていないか（プロジェクトで対応している場合）」
 
-### Step 6: a11y 簡易チェック
+### Step 6: UT 作成
+
+変更したコンポーネントに対応するテストファイルを確認・追加する。
+
+```bash
+# 既存テストの確認
+find features/ -name "*.test.tsx" | xargs grep -l "<対象コンポーネント名>"
+```
+
+- **既存テストがある場合**: 変更内容に合わせてテストケースを更新
+- **既存テストがない場合**: `features/<該当機能>/components/__tests__/<ComponentName>.test.tsx` を新規作成
+
+テスト観点：
+
+- 変更後のレンダリングが正常か（スナップショット or DOM検証）
+- props・Context 変化に対して期待通り反応するか
+- インタラクション（クリック・フォーカス等）が正常に動作するか
+
+```bash
+npm run test:run -- <該当テストファイル>
+```
+
+### Step 7: a11y 簡易チェック
 
 以下を確認：
 
@@ -119,9 +141,10 @@ npm run test:e2e -- --grep "<該当画面>" --update-snapshots
 
 不明点があれば pipeline 側の Phase 5 (code-review) で `accessibility-reviewer` が走るので深掘りはそこに任せる。
 
-### Step 7: 変更ファイルリスト返却
+### Step 8: 変更ファイルリスト返却
 
 - 修正コンポーネントファイル
+- 追加 / 更新した UT ファイル
 - 追加 / 更新したスクショテスト
 - 人間が手動確認した URL とポイント
 

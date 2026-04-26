@@ -46,6 +46,12 @@ args: <Step 1 で整形したテキスト>
 
 これにより `todoapp-feature-dev` は Phase 1〜6 + Phase 8 (Summary) を実行する。
 
+### Step 3.5: IT の扱い
+
+`todoapp-feature-dev` の Phase 5 (Testing) は UT を作成する。**IT は pipeline 側の Phase 4-5 で実行**するため、`todoapp-feature-dev` に IT 実行を依頼しない。
+
+ただし、`app/api/` を新規追加・変更した場合は Phase 4-5 で IT 必須となることを、実装ファイルリストに明記して引き継ぐ。
+
 ### Step 4: 実装ファイルリストの収集
 
 `todoapp-feature-dev` の Phase 8 で出力された変更ファイルリストを取得し、SKILL.md 側のコンテキストに保存。
