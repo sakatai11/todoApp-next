@@ -13,7 +13,9 @@ vi.mock('@/features/libs/apis', () => ({
 
 // Get the mocked function
 import { apiRequest } from '@/features/libs/apis';
-const mockApiRequest = vi.mocked(apiRequest);
+const mockApiRequest = vi.mocked(apiRequest) as unknown as ReturnType<
+  typeof vi.fn
+>;
 
 // サブモジュールのモックデータを使用
 const mockInitialTodos: TodoListProps[] = mockTodos;
@@ -88,7 +90,9 @@ describe('useDeleteList', () => {
       expect(mockSetLists).toHaveBeenCalledWith(expect.any(Function));
 
       // 更新関数の動作を確認するため、実際に関数を呼び出す
-      const updateFunction = mockSetLists.mock.calls[0][0];
+      const updateFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       const updatedLists = updateFunction(mockInitialLists);
 
       // list-2が削除され、番号が再計算されることを確認
@@ -158,7 +162,9 @@ describe('useDeleteList', () => {
       expect(mockSetTodos).toHaveBeenCalledWith(expect.any(Function));
 
       // 67行目の実際の動作を確認 - setTodosの更新関数をテスト
-      const updateTodosFunction = mockSetTodos.mock.calls[0][0];
+      const updateTodosFunction = mockSetTodos.mock.calls[0][0] as (
+        todos: TodoListProps[],
+      ) => TodoListProps[];
       const updatedTodos = updateTodosFunction(mockInitialTodos);
 
       // 'in-progress'ステータスのTodoが削除されることを確認

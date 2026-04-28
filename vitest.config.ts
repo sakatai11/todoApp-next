@@ -13,6 +13,7 @@ export default defineConfig({
       'node_modules',
       'dist',
       '.next',
+      '.claude/worktrees/**',
       '**/*integration*.test.ts', // 統合テストを除外
       '**/*integration*.spec.ts', // 統合テストを除外
       'tests/e2e/**/*.spec.ts', // E2Eテストを除外

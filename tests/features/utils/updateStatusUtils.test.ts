@@ -142,7 +142,9 @@ describe('updateStatusUtils', () => {
       expect(mockSetLists).toHaveBeenCalledWith(expect.any(Function));
 
       // setListsに渡された関数を実行してテスト
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       const updatedLists = updateListsFunction(mockInitialLists);
 
       // 指定されたIDのリストのカテゴリが更新されることを確認
@@ -174,7 +176,9 @@ describe('updateStatusUtils', () => {
 
       expect(mockSetLists).toHaveBeenCalledWith(expect.any(Function));
 
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       const updatedLists = updateListsFunction(mockInitialLists);
 
       // 元の配列と同じ内容になることを確認
@@ -191,7 +195,9 @@ describe('updateStatusUtils', () => {
       );
 
       // setListsが呼び出された後、その内部でsetTodosが呼び出される
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       updateListsFunction(mockInitialLists);
 
       expect(mockSetTodos).toHaveBeenCalledWith(expect.any(Function));
@@ -207,11 +213,15 @@ describe('updateStatusUtils', () => {
       );
 
       // setListsの関数を実行してsetTodosの呼び出しをトリガー
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       updateListsFunction(mockInitialLists);
 
       // setTodosに渡された関数を取得
-      const updateTodosFunction = mockSetTodos.mock.calls[0][0];
+      const updateTodosFunction = mockSetTodos.mock.calls[0][0] as (
+        todos: TodoListProps[],
+      ) => TodoListProps[];
       const updatedTodos = updateTodosFunction(mockInitialTodos);
 
       // 旧ステータス 'in-progress' のTodoが新ステータス 'updated-category' に更新されることを確認
@@ -236,10 +246,14 @@ describe('updateStatusUtils', () => {
         'non-existent-status',
       );
 
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       updateListsFunction(mockInitialLists);
 
-      const updateTodosFunction = mockSetTodos.mock.calls[0][0];
+      const updateTodosFunction = mockSetTodos.mock.calls[0][0] as (
+        todos: TodoListProps[],
+      ) => TodoListProps[];
       const updatedTodos = updateTodosFunction(mockInitialTodos);
 
       // Todoの配列は変更されないことを確認
@@ -255,7 +269,9 @@ describe('updateStatusUtils', () => {
         'in-progress',
       );
 
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       const updatedLists = updateListsFunction([]);
 
       // 空の配列が返されることを確認
@@ -271,10 +287,14 @@ describe('updateStatusUtils', () => {
         'in-progress',
       );
 
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       updateListsFunction(mockInitialLists);
 
-      const updateTodosFunction = mockSetTodos.mock.calls[0][0];
+      const updateTodosFunction = mockSetTodos.mock.calls[0][0] as (
+        todos: TodoListProps[],
+      ) => TodoListProps[];
       const updatedTodos = updateTodosFunction([]);
 
       // 空の配列が返されることを確認
@@ -290,7 +310,9 @@ describe('updateStatusUtils', () => {
         'in-progress',
       );
 
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       const updatedLists = updateListsFunction(mockInitialLists);
 
       const updatedList = updatedLists.find(
@@ -310,7 +332,9 @@ describe('updateStatusUtils', () => {
         'in-progress',
       );
 
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       const updatedLists = updateListsFunction(mockInitialLists);
 
       const updatedList = updatedLists.find(
@@ -334,10 +358,14 @@ describe('updateStatusUtils', () => {
         'in-progress',
       );
 
-      const updateListsFunction = mockSetLists.mock.calls[0][0];
+      const updateListsFunction = mockSetLists.mock.calls[0][0] as (
+        lists: StatusListProps[],
+      ) => StatusListProps[];
       updateListsFunction(mockInitialLists);
 
-      const updateTodosFunction = mockSetTodos.mock.calls[0][0];
+      const updateTodosFunction = mockSetTodos.mock.calls[0][0] as (
+        todos: TodoListProps[],
+      ) => TodoListProps[];
       const updatedTodos = updateTodosFunction(mockInitialTodos);
 
       // すべての 'in-progress' Todoが 'all-updated' に更新されることを確認

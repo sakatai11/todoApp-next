@@ -78,3 +78,4 @@ playwright-report/*
 todoApp-submodule
 # next-agents-md
 .next-docs/*
+.claude/worktrees/

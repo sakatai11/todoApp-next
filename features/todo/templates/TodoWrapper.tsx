@@ -111,14 +111,13 @@ const fetcher = async (url: string) => {
     throw createFetchError(message, response.status, response.statusText);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return response.json();
 };
 
 // データを取得するためのコンポーネント
 const TodoContent = (): React.ReactElement => {
   const { data: session, status, update } = useSession();
-  const sessionUser = session?.user as { id?: string } | undefined;
+  const sessionUser = session?.user;
 
   // 開発・テスト環境では認証をスキップ、本番環境では認証確立を待つ
   const emulatorMode = isEmulatorMode();

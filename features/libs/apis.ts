@@ -37,11 +37,28 @@ export const apiRequest = async <TRequest, TResponse = TRequest>(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'API request failed');
+      let message = 'API request failed';
+      const contentType = (
+        response.headers.get('content-type') ?? ''
+      ).toLowerCase();
+      try {
+        if (contentType.includes('application/json')) {
+          const errorData = (await response.json()) as {
+            error?: string;
+            message?: string;
+          };
+          message = errorData.error ?? errorData.message ?? message;
+        } else {
+          const text = await response.text();
+          message = text || message;
+        }
+      } catch {
+        // keep fallback message
+      }
+      throw new Error(message);
     }
 
-    return response.json();
+    return response.json() as Promise<TResponse>;
   } catch (error) {
     console.error('API request error:', error);
     throw error; // 呼び出し元でエラーハンドリング

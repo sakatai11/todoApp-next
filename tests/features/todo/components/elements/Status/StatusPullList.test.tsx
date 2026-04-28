@@ -73,7 +73,9 @@ describe('StatusPullList', () => {
 
         expect(mockSetInput).toHaveBeenCalled();
         // 関数形式のsetStateが呼ばれることを確認
-        const callArg = mockSetInput.mock.calls[0][0];
+        const callArg = mockSetInput.mock.calls[0][0] as (prev: {
+          status: string;
+        }) => { status: string };
         expect(typeof callArg).toBe('function');
         // 関数を実行して結果を確認
         const result = callArg({ status: '' });
@@ -101,7 +103,9 @@ describe('StatusPullList', () => {
 
         expect(mockSetInput).toHaveBeenCalled();
         // 関数形式のsetStateが呼ばれることを確認
-        const callArg = mockSetInput.mock.calls[0][0];
+        const callArg = mockSetInput.mock.calls[0][0] as (prev: {
+          status: string;
+        }) => { status: string };
         expect(typeof callArg).toBe('function');
         // 関数を実行して結果を確認
         const result = callArg({ status: '' });
