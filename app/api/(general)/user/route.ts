@@ -26,9 +26,10 @@ export async function GET() {
             id: uid,
             email: data['email'] as string,
             role: data['role'] as 'ADMIN' | 'USER',
-            createdAt: (
-              data['createdAt'] as { toMillis: () => number }
-            ).toMillis(),
+            createdAt:
+              (
+                data['createdAt'] as { toMillis: () => number } | undefined
+              )?.toMillis() ?? 0,
           },
         ]
       : [];

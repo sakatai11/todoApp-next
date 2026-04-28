@@ -2,10 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { apiRequest } from '@/features/libs/apis';
 
 // fetchのモック
-const createMockResponse = (data: unknown, ok = true, status = 200) => ({
+const createMockResponse = (
+  data: unknown,
+  ok = true,
+  status = 200,
+  contentType = 'application/json',
+) => ({
   ok,
   status,
+  headers: { get: vi.fn().mockReturnValue(contentType) },
   json: vi.fn().mockResolvedValue(data),
+  text: vi.fn().mockResolvedValue(typeof data === 'string' ? data : ''),
 });
 
 describe('apiRequest', () => {
@@ -152,8 +159,20 @@ describe('apiRequest', () => {
       );
     });
 
-    it('エラーレスポンスにerrorフィールドがない場合、デフォルトメッセージが使用される', async () => {
+    it('エラーレスポンスにerrorフィールドがない場合、messageフィールドが使用される', async () => {
       const errorData = { message: 'Something went wrong' };
+
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(createMockResponse(errorData, false, 500));
+
+      await expect(
+        apiRequest('/api/todos', 'POST', { text: 'Test' }),
+      ).rejects.toThrow('Something went wrong');
+    });
+
+    it('エラーレスポンスにerror/messageフィールドがない場合、デフォルトメッセージが使用される', async () => {
+      const errorData = {};
 
       global.fetch = vi
         .fn()
@@ -177,18 +196,36 @@ describe('apiRequest', () => {
       );
     });
 
-    it('JSONパースエラーでエラーがスローされる', async () => {
+    it('JSONパースエラーの場合、デフォルトメッセージが使用される', async () => {
       const mockResponse = {
         ok: false,
         status: 400,
+        headers: { get: vi.fn().mockReturnValue('application/json') },
         json: vi.fn().mockRejectedValue(new Error('Invalid JSON')),
+        text: vi.fn().mockResolvedValue(''),
       };
 
       global.fetch = vi.fn().mockResolvedValue(mockResponse);
 
       await expect(
         apiRequest('/api/todos', 'POST', { text: 'Test' }),
-      ).rejects.toThrow('Invalid JSON');
+      ).rejects.toThrow('API request failed');
+    });
+
+    it('非JSONエラーレスポンスでテキストメッセージが使用される', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 503,
+        headers: { get: vi.fn().mockReturnValue('text/plain') },
+        json: vi.fn(),
+        text: vi.fn().mockResolvedValue('Service Unavailable'),
+      };
+
+      global.fetch = vi.fn().mockResolvedValue(mockResponse);
+
+      await expect(
+        apiRequest('/api/todos', 'POST', { text: 'Test' }),
+      ).rejects.toThrow('Service Unavailable');
     });
   });
 

@@ -22,15 +22,12 @@ export const authConfig = {
       request: NextRequest;
     }) {
       const isOnAdminPage = nextUrl.pathname.startsWith('/admin');
-      const userRole = (auth?.user as { role?: string } | undefined)?.role;
+      const userRole = auth?.user?.role;
       if (isOnAdminPage && userRole !== 'ADMIN') {
         return false;
       }
       const isOnAuthenticatedPage = nextUrl.pathname.startsWith('/todo');
-      const userCustomToken = (
-        auth?.user as { customToken?: string } | undefined
-      )?.customToken;
-      const isLoggedin = !!userCustomToken;
+      const isLoggedin = !!auth?.user?.customToken;
 
       const isOnSignInPage = nextUrl.pathname === '/signin';
 

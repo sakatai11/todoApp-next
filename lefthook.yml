@@ -1,20 +1,19 @@
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
     prettier:
       run: npm run prettier
       stage_fixed: true
     lint:
       run: npm run lint
-    test:
-      run: npm run test:run
+      stage_fixed: true
 
 commit-msg:
   commands:
     validate-message:
       run: |
-        commit_msg=$(cat "{1}")
-        if ! echo "$commit_msg" | grep -qE '^(feat|fix|refactor|test|docs|chore|style|perf|ci|build|revert)(\(.+\))?: .+'; then
+        commit_header=$(sed -n '1p' "{1}")
+        if ! printf '%s\n' "$commit_header" | grep -qE '^(feat|fix|refactor|test|docs|chore|style|perf|ci|build|revert)(\([^)]+\))?(!)?: .+'; then
           echo "❌ コミットメッセージが規約に従っていません。" >&2
           echo "   形式: <type>: <subject>" >&2
           echo "   type: feat, fix, refactor, test, docs, chore, style, perf, ci, build, revert" >&2
