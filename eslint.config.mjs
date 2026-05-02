@@ -63,7 +63,7 @@ const eslintConfig = [
       'node_modules/',
       '.next/',
       '.vercel/',
-      '.claude/worktrees/',
+      '.claude/',
       'coverage/',
       'out/',
       'public/',
