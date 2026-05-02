@@ -118,9 +118,33 @@ type / source / title / description / acceptanceCriteria / context? / branchSlug
 
 ---
 
+## 設計上の決定事項
+
+### スキルとして実行する理由
+
+`todoapp-pipeline` はオーケストレーターであるため、**スキル**として実行する（サブエージェントにしない）。
+Phase 0〜8 全体の状態管理・条件分岐・ユーザーへの確認をメインコンテキスト上で保持する必要があるため。
+サブエージェントにするとコンテキストが分離し、フェーズをまたいだ情報（NormalizedTask・レビュー結果等）を引き継げなくなる。
+
+### todoapp-feature-dev との関係
+
+| スキル                | 用途                                                                         |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `todoapp-pipeline`    | トリガー正規化→実装→品質ゲート→レビュー→コミット→PR まで一気通貫             |
+| `todoapp-feature-dev` | 「実装だけ」行う単体スキル。ブランチ作成・コミット・PRは手動で行う場合に使う |
+
+**`todoapp-pipeline` が `todoapp-feature-dev` を呼ばない理由**: Phase 3 の factory（`factories/feature.md` 等）が同等の探索・設計・実装フローをサブエージェントとして内包するため。`todoapp-feature-dev` は独立したユースケース向けに残す。
+
+### タスク分解の設計
+
+Phase 1-4 でタスク分解を実装済み。大規模仕様（AC 6件以上・複数機能・8ファイル超）を検出した場合にユーザーへ分割案を提示し、順次実行（A）または Worktree 並列実行（B）を選択させる。詳細は `phases/phase1-spec-quality-gate.md` の 1-4 セクションを参照。
+
+---
+
 ## 関連スキル / ファイル
 
-- 既存スキル: `todoapp-feature-dev`, `code-review`, `todoapp-pr-creator`, `coderabbit-review`
+- 呼び出すスキル（内部委譲）: `code-review`（Phase 5）、`todoapp-pr-creator`（Phase 7）
+- 独立ユースケース向けスキル: `todoapp-feature-dev`（実装のみ）、`coderabbit-review`（レビューのみ）
 - ルール: `.claude/rules/development.md`, `.claude/rules/code-quality.md`, `.claude/rules/security.md`
 - triggers: `triggers/spec.md`, `triggers/qa.md`, `triggers/github-issue.md`, `triggers/ui-annotator.md`, `triggers/posthog.md`
 - factories: `factories/feature.md`, `factories/bugfix.md`, `factories/ui-change.md`
