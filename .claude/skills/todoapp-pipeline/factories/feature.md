@@ -1,6 +1,6 @@
 # Factory: feature
 
-新機能実装のための工場フロー。**既存の `todoapp-feature-dev` スキルに委譲**することで重複実装を避ける。
+新機能実装のための工場フロー。パイプライン内で完結する。NormalizedTask が確定済みであることを前提とする。
 
 ## 入力
 
@@ -8,71 +8,92 @@
 
 ## 処理フロー
 
-### Step 1: コンテキスト引き継ぎ準備
+### Step 1: Codebase Exploration
 
-`todoapp-feature-dev` スキルは Phase 1 (Discovery) で `$ARGUMENTS` を受け取る設計。NormalizedTask を以下の形に整形して渡す：
+`code-explorer` エージェントを 2〜3 並列で起動する。各エージェントは：
 
+- コードを包括的にトレースし、抽象化・アーキテクチャ・制御フローを深く理解する
+- コードベースの異なる側面をターゲットにする
+- 読むべき重要ファイル 5〜10 個のリストを返す
+
+**エージェントプロンプト例**:
+
+- 「`<NormalizedTask.title>` に類似した機能を探して実装を包括的にトレースしてください」
+- 「`<NormalizedTask の関連エリア>` のアーキテクチャと抽象化をマッピングしてください」
+- 「`<context.relatedDocs>` に記載された仕様書を読み、実装に必要なコンテキストを収集してください」
+
+**このプロジェクト固有の観点**:
+
+- `features/` のフィーチャーベース設計パターンを確認
+- `features/shared/` の共通コンポーネント活用可否を確認
+- React Context + SWR の状態管理パターンとの整合性を確認
+- 楽観的更新 vs サーバーレスポンス待ちパターンの使い分けを確認
+
+エージェント完了後、返却されたファイルを全て読んで深い理解を構築する。
+
+### Step 2: Architecture Design
+
+`code-architect` エージェントを 2〜3 並列で起動する（異なるフォーカス）：
+
+- **最小変更**: 最小限の変更で最大限の既存コード再利用
+- **クリーンアーキテクチャ**: 保守性と優れた抽象化を重視
+- **プラグマティックバランス**: 速度と品質のバランス
+
+全アプローチをレビューし、ユーザーに提示する：
+
+- 各アプローチの概要とトレードオフ比較
+- **推奨案と理由**
+- 具体的な実装の違い
+
+**どのアプローチを希望するかユーザーに確認する**
+
+### Step 3: Implementation Plan（条件付き）
+
+**規模判定**:
+
+- **大規模**（以下のいずれかに該当）→ Plan を作成する
+  - 新規ファイルが 3 件以上
+  - 複数の `features/` ディレクトリにまたがる変更
+  - API 追加 + フロントエンド変更が両方発生する
+- **小〜中規模**（上記に非該当）→ Plan をスキップして Step 4 へ進む
+
+**大規模の場合の手順**:
+
+1. `EnterPlanMode` を使用して Plan を作成する
+2. Plan に以下を明記する：
+   - 作成・変更するファイル一覧（パス付き）
+   - 各ファイルの変更概要
+   - 実装順序
+3. ユーザーの承認後、`ExitPlanMode` で Step 4 へ移行する
+
+### Step 4: Implementation
+
+1. Step 1 で特定された関連ファイルを全て読む
+2. 選択されたアーキテクチャに従って実装する
+3. コードベースの規約を厳密に遵守する：
+   - フィーチャーベース設計（`features/` で自己完結）
+   - MUI + Tailwind CSS パターン
+   - Zod バリデーション（新規 API に必須）
+   - 楽観的更新 or サーバーレスポンス待ちの適切な使い分け
+4. 実装と同時に UT を作成し、`npm run test:run -- <ファイル>` で都度確認する
+
+### Step 5: Summary
+
+以下を整理して SKILL.md 側（Phase 4 Quality Gate）に返す：
+
+```markdown
+## 変更ファイルリスト
+
+- <変更ファイルのパス一覧>
+
+## IT 必要性
+
+- app/api/ 変更あり: <yes/no>
+- 変更した API ルート: <パス一覧（あれば）>
+
+## 作成・更新した UT ファイル
+
+- <UT ファイルのパス一覧>
 ```
-[Source: <source>]
-[Branch: feature/<branchSlug>]
 
-# <title>
-
-<description>
-
-## Acceptance Criteria
-- <acceptanceCriteria[0]>
-- <acceptanceCriteria[1]>
-...
-
-## Context
-<context フィールドの内容（specPath, issueNumber 等）>
-```
-
-### Step 2: スキル委譲
-
-```
-Skill ツールで skill: "todoapp-feature-dev" を起動
-args: <Step 1 で整形したテキスト>
-```
-
-### Step 3: Phase 重複の回避
-
-`todoapp-feature-dev` には Phase 7 (Quality Review) があるが、**これは pipeline 側の Phase 5 (Cross-Model Review) と重複する**。
-
-委譲時に明示的に伝える：
-
-> 「Phase 7 (Quality Review) はパイプライン側で実行するためスキップしてください。Phase 8 (Summary) で完了したファイルリストを返してください。」
-
-これにより `todoapp-feature-dev` は Phase 1〜6 + Phase 8 (Summary) を実行する。
-
-### Step 3.5: IT の扱い
-
-`todoapp-feature-dev` の Phase 5 (Testing) は UT を作成する。**IT は pipeline 側の Phase 4-5 で実行**するため、`todoapp-feature-dev` に IT 実行を依頼しない。
-
-ただし、`app/api/` を新規追加・変更した場合は Phase 4-5 で IT 必須となることを、実装ファイルリストに明記して引き継ぐ。
-
-### Step 4: 実装ファイルリストの収集
-
-`todoapp-feature-dev` の Phase 8 で出力された変更ファイルリストを取得し、SKILL.md 側のコンテキストに保存。
-
-Phase 4 (Quality Gate) と Phase 5 (Cross-Model Review) で使う。
-
-### Step 5: SKILL.md Phase 4 へ戻る
-
-実装完了状態でパイプラインに戻る。
-
-## なぜ委譲か（再実装しない理由）
-
-- `todoapp-feature-dev` は Discovery / Codebase Exploration / Architecture Design / Implementation の品質確保された フローを既に持っている
-- ここで再実装すると同じことを 2 箇所で保守することになる
-- 委譲することで、`todoapp-feature-dev` の改善が自動的にパイプラインにも反映される
-
-## 委譲しないケース
-
-以下の場合は委譲せず、軽量フローで実装する（将来検討）：
-
-- 1ファイルだけの変更（typoや文言修正など）
-- 既存パターンをコピーするだけのCRUD追加
-
-現状はすべて `todoapp-feature-dev` に委譲する。
+→ Phase 4 (Quality Gate) へ

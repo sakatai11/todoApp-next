@@ -7,7 +7,7 @@
 `NormalizedTask`（type=bugfix または type=optimization）
 
 - `type=bugfix`: `context.reproSteps` が必須（trigger 段階で確保済み）
-- `type=optimization`: 計測指標（PostHog/Lighthouse 等）が `description` に明記されていること
+- `type=optimization`: 計測指標（PostHog/Lighthouse 等）が `description` に明記されていること。Step 1〜6 のフローは共通だが、Step 3 の「再現テスト」は「ベースライン計測スクリプト or Lighthouse スコアの記録」に読み替える。修正後は Step 5 で数値改善を確認すること（例: LCP -Xms、バンドルサイズ -XKB）
 
 ## 処理フロー
 
@@ -114,7 +114,7 @@ args: "統合テストを実行してください"
 
 `features/` 内のロジック修正のみで API に変わりがない場合はスキップ可。
 
-### Step 9: 動作確認（推奨）
+### Step 8: 動作確認（推奨）
 
 UIに関わるバグの場合、開発サーバーで実際に再現手順を試す：
 
@@ -128,7 +128,7 @@ npm run dev
 
 実際に修正されていることを目視で確認。
 
-### Step 10: 変更ファイルリスト返却
+### Step 9: 変更ファイルリスト返却
 
 以下を整理して SKILL.md 側に返す：
 
