@@ -1,6 +1,6 @@
 # Phase 7: Draft PR Creation [決定論]
 
-```
+```text
 Skill ツールで skill: "todoapp-pr-creator" を起動
 ```
 

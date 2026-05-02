@@ -40,7 +40,7 @@ type: spec # または enhancement, bugfix
 
 引数なしで起動された場合：
 
-```
+```text
 このパイプラインは何をしますか？
 1. spec.md から新機能を実装
 2. GitHub Issue から実装

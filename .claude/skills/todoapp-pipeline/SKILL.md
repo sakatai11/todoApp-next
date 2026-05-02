@@ -86,7 +86,7 @@ description: |-
 
 全トリガーは Phase 1 までに以下の形式に正規化する。型定義の詳細は `references/normalized-task.ts` を参照。
 
-```
+```text
 type / source / title / description / acceptanceCriteria / context? / branchSlug
 ```
 

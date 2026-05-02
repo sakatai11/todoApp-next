@@ -30,10 +30,10 @@ npm run lint
 ## 4-3: UT（ユニットテスト）（人間確認）
 
 ```bash
-npm run test:run
+npm run test:coverage
 ```
 
-factories が実装とともに作成した UT をここで全件実行する。カバレッジ100%を維持することを目標とする。
+factories が実装とともに作成した UT をここで全件実行する。カバレッジ閾値（100%）はこのステップで検証する。
 
 失敗時：
 
@@ -69,7 +69,7 @@ API ルートや Firebase Emulator との連携が変更に含まれる場合の
 
 IT が必要と判断した場合は `todoapp-docker-ops` スキルに委譲する：
 
-```
+```text
 Skill ツールで skill: "todoapp-docker-ops" を起動
 args: "統合テストを実行してください"
 ```

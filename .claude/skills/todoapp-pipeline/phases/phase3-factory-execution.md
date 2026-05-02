@@ -11,16 +11,16 @@
 | `feature`      | `factories/feature.md`（Exploration → Architecture → Implementation をパイプライン内で完結） |
 | `bugfix`       | `factories/bugfix.md`（再現テスト→修正→検証）                                                |
 | `ui-change`    | `factories/ui-change.md`（コンポーネント特定→修正→ビジュアル確認）                           |
-| `optimization` | `factories/bugfix.md`（`type=optimization` も受け付ける。計測ベースの修正サイクルを適用）    |
+| `optimization` | `factories/bugfix.md`（`type=optimization` として実行。計測ベースの修正サイクルを適用）      |
 
 ## Agent での実行方法（順次実行）
 
-```
+```text
 Agent ツールで以下を実行:
   description: "<task.type> factory: <task.title>"
   subagent_type: "general-purpose"
   prompt: """
-  <factories/<task.type>.md の全内容を Read して貼り付ける>
+  <Factory マッピングで解決した factoryPath（例: optimization は factories/bugfix.md）の全内容を Read して貼り付ける>
 
   ---
 
@@ -69,7 +69,7 @@ Phase 1 のタスク分解で「B. Worktree 並列実行」が選択されたと
 
 **起動方法**:
 
-```
+```text
 # 全タスクを同一ターンで並列起動する（順次起動は禁止）
 Agent({
   isolation: "worktree",

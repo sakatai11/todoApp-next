@@ -4,7 +4,7 @@
 
 このプロジェクトの規約（`.claude/rules/development.md`）に従う：
 
-```
+```text
 <type>: <subject>
 
 <body>
@@ -16,12 +16,12 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 `type` は task.type から導出：
 
-| task.type      | commit type                                                                    |
-| -------------- | ------------------------------------------------------------------------------ |
-| `feature`      | `feat`                                                                         |
-| `bugfix`       | `fix`                                                                          |
-| `ui-change`    | 新規UI追加なら `feat`、既存UI修正なら `fix`（AI が description で判断）        |
-| `optimization` | 計測指標の改善なら `perf`、構造改善なら `refactor`（AI が description で判断） |
+| task.type      | commit type                                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| `feature`      | `feat`                                                                                          |
+| `bugfix`       | `fix`                                                                                           |
+| `ui-change`    | 新規UI追加なら `feat`、既存UI修正なら `fix`（AI が description で判断）                         |
+| `optimization` | `refactor`（計測指標改善・構造改善ともに `refactor` で統一。`perf` は規約未定義のため使用禁止） |
 
 ## 実行
 

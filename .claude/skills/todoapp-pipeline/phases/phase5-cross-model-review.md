@@ -1,6 +1,6 @@
 # Phase 5: Cross-Model Review [AI判断]
 
-```
+```text
 Skill ツールで skill: "code-review" を起動
 ```
 

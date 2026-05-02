@@ -18,7 +18,7 @@
 ## Phase ごとのステータス
 
 - Phase 4 Quality Gate: ✓
-- Phase 5 Code Review: <Critical 0 / High N / Medium N>
+- Phase 5 Code Review: <Critical 0 / High N / Medium/Low N>
 
 ## 残課題
 
