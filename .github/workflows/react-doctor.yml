@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   react-doctor:
@@ -21,7 +20,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: millionco/react-doctor@react-doctor@0.0.38
+      - uses: millionco/react-doctor@main
         with:
           diff: main
-          github-token: ${{ secrets.GITHUB_TOKEN }}
