@@ -50,6 +50,8 @@ const mockListsUseSWRData = {
   isLoading: false,
 };
 
+const mockMutate = vi.fn();
+
 // 共通fetcherロジック（テスト用）
 const createTestFetcher = async (url: string) => {
   const headers: HeadersInit = {
@@ -87,7 +89,7 @@ vi.mock('swr', () => ({
   },
   SWRConfig: ({ children }: { children: React.ReactNode }) => children,
   preload: vi.fn(),
-  useSWRConfig: () => ({ mutate: vi.fn() }),
+  useSWRConfig: () => ({ mutate: mockMutate }),
 }));
 
 describe('TodoWrapper', () => {
@@ -118,6 +120,7 @@ describe('TodoWrapper', () => {
     vi.stubEnv('NEXT_PUBLIC_TEST_USER_UID', 'test-user-1');
 
     vi.clearAllMocks();
+    mockMutate.mockReset();
   });
 
   describe('基本レンダリング', () => {
@@ -699,6 +702,89 @@ describe('TodoWrapper', () => {
   });
 
   describe('認証状態表示', () => {
+    it('初回認証確立ではSWRキャッシュを削除しない', async () => {
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
+
+      vi.mocked(useSession).mockReturnValue({
+        data: null,
+        status: 'loading',
+        update: vi.fn(),
+      } as never);
+
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
+      const { rerender } = render(<TodoWrapper />, { withTodoProvider: false });
+
+      vi.mocked(useSession).mockReturnValue({
+        data: {
+          user: {
+            id: 'test-user-id',
+            email: 'test@example.com',
+            role: 'USER',
+          },
+        },
+        status: 'authenticated',
+        update: vi.fn(),
+      } as never);
+
+      rerender(<TodoWrapper />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('push-container')).toBeInTheDocument();
+      });
+
+      expect(mockMutate).not.toHaveBeenCalled();
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
+    });
+
+    it('認証済みユーザー切り替え時は対象SWRキーだけ再検証する', async () => {
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
+
+      vi.mocked(useSession).mockReturnValue({
+        data: {
+          user: {
+            id: 'user-1',
+            email: 'user1@example.com',
+            role: 'USER',
+          },
+        },
+        status: 'authenticated',
+        update: vi.fn(),
+      } as never);
+
+      const { default: TodoWrapper } = await import(
+        '@/features/todo/templates/TodoWrapper'
+      );
+      const { rerender } = render(<TodoWrapper />, { withTodoProvider: false });
+
+      vi.mocked(useSession).mockReturnValue({
+        data: {
+          user: {
+            id: 'user-2',
+            email: 'user2@example.com',
+            role: 'USER',
+          },
+        },
+        status: 'authenticated',
+        update: vi.fn(),
+      } as never);
+
+      rerender(<TodoWrapper />);
+
+      await waitFor(() => {
+        expect(mockMutate).toHaveBeenCalledTimes(2);
+      });
+
+      expect(mockMutate).toHaveBeenNthCalledWith(1, '/api/todos', undefined, {
+        revalidate: true,
+      });
+      expect(mockMutate).toHaveBeenNthCalledWith(2, '/api/lists', undefined, {
+        revalidate: true,
+      });
+      vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
+    });
+
     it('セッションがローディング中はローディング画面が表示される', async () => {
       // エミュレーターモードを無効化
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');

@@ -129,14 +129,26 @@ const TodoContent = (): React.ReactElement => {
   const { mutate: globalMutate } = useSWRConfig();
   const prevUserIdRef = useRef<string | undefined>(undefined);
 
-  // ユーザーIDが変わった時（ログアウト・ユーザー切り替え）にSWRキャッシュをクリア
+  // 初回認証確立ではキャッシュを保持し、実際のユーザー切り替え時だけ対象データを再検証する
   useEffect(() => {
     const currentUserId = sessionUser?.id;
-    if (prevUserIdRef.current !== currentUserId) {
-      void globalMutate(() => true, undefined, { revalidate: false });
+
+    if (prevUserIdRef.current === undefined) {
+      prevUserIdRef.current = currentUserId;
+      return;
     }
+
+    if (prevUserIdRef.current !== currentUserId) {
+      if (!currentUserId) {
+        void globalMutate(() => true, undefined, { revalidate: false });
+      } else {
+        void globalMutate(todosApiUrl, undefined, { revalidate: true });
+        void globalMutate(listsApiUrl, undefined, { revalidate: true });
+      }
+    }
+
     prevUserIdRef.current = currentUserId;
-  }, [sessionUser?.id, globalMutate]);
+  }, [sessionUser?.id, globalMutate, todosApiUrl, listsApiUrl]);
 
   // セッション待機の設定
   useEffect(() => {
