@@ -129,12 +129,20 @@ const TodoContent = (): React.ReactElement => {
   const { mutate: globalMutate } = useSWRConfig();
   const prevUserIdRef = useRef<string | undefined>(undefined);
 
-  // ユーザーIDが変わった時（ログアウト・ユーザー切り替え）にSWRキャッシュをクリア
+  // 初回認証確立ではキャッシュを保持し、ユーザー変化（ログアウト・切り替え）時は全キャッシュをクリアする
   useEffect(() => {
     const currentUserId = sessionUser?.id;
+
+    if (prevUserIdRef.current === undefined) {
+      prevUserIdRef.current = currentUserId;
+      return;
+    }
+
     if (prevUserIdRef.current !== currentUserId) {
+      // ログアウトおよびユーザー切り替え時は情報漏洩を防ぐため全キャッシュをクリアする
       void globalMutate(() => true, undefined, { revalidate: false });
     }
+
     prevUserIdRef.current = currentUserId;
   }, [sessionUser?.id, globalMutate]);
 
