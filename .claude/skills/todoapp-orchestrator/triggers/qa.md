@@ -8,11 +8,11 @@ QAやユーザーからのバグ報告を NormalizedTask に正規化する。
 
 ```bash
 # 1. 接頭辞つき自然言語
-/todoapp-pipeline qa: ログイン後にダッシュボードが空白になる
-/todoapp-pipeline bug: Todo追加で500エラー
+/todoapp-orchestrator qa: ログイン後にダッシュボードが空白になる
+/todoapp-orchestrator bug: Todo追加で500エラー
 
 # 2. .md ファイル（先頭が "# Bug Report:" や "# QA:" で始まる）
-/todoapp-pipeline reports/bug-2026-04-23.md
+/todoapp-orchestrator reports/bug-2026-04-23.md
 
 # 3. 対話モードからの選択
 （SKILL.md Phase 0 の対話で「3. QAバグを修正」を選択）

@@ -5,9 +5,9 @@ GitHub Issue から NormalizedTask を構築する。Issue 内容を解析して
 ## 入力形式
 
 ```bash
-/todoapp-pipeline #123
-/todoapp-pipeline https://github.com/sakatai11/todoApp-next/issues/123
-/todoapp-pipeline issue: 123
+/todoapp-orchestrator #123
+/todoapp-orchestrator https://github.com/sakatai11/todoApp-next/issues/123
+/todoapp-orchestrator issue: 123
 ```
 
 ## 処理フロー

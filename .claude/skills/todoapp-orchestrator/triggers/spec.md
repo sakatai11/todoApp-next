@@ -7,8 +7,8 @@
 ファイルパス（絶対 or プロジェクトルート相対）。
 
 ```
-/todoapp-pipeline specs/feature-add-tag.md
-/todoapp-pipeline /Users/.../specs/foo.md
+/todoapp-orchestrator specs/feature-add-tag.md
+/todoapp-orchestrator /Users/.../specs/foo.md
 ```
 
 ## 期待する spec.md フォーマット

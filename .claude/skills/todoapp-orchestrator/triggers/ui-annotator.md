@@ -6,10 +6,10 @@
 
 ```bash
 # 1. 画像ファイル（接頭辞なし、拡張子で判定）
-/todoapp-pipeline screenshots/dashboard-issue.png
+/todoapp-orchestrator screenshots/dashboard-issue.png
 
 # 2. ui: 接頭辞 + 自然言語
-/todoapp-pipeline ui: ダッシュボードのリストカードのpaddingを増やしたい
+/todoapp-orchestrator ui: ダッシュボードのリストカードのpaddingを増やしたい
 
 # 3. 画像 + 注釈テキスト（対話で順番に質問）
 ```

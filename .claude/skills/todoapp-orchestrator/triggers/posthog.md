@@ -6,10 +6,10 @@
 
 ```bash
 # 1. posthog: 接頭辞 + 指標サマリー（自然言語）
-/todoapp-pipeline posthog: signin → dashboard で離脱率45%
+/todoapp-orchestrator posthog: signin → dashboard で離脱率45%
 
 # 2. posthog: 接頭辞 + JSONエクスポート貼り付け
-/todoapp-pipeline posthog: <JSON または CSV パス>
+/todoapp-orchestrator posthog: <JSON または CSV パス>
 ```
 
 ## 処理フロー
