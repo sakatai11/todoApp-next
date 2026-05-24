@@ -61,7 +61,7 @@ description: |-
              ↓
 ┌─────────────────────────────────────────────────────────┐
 │ Phase 5: Cross-Model Review [AI判断]                     │
-│   /code-review を起動（CodeRabbit + Codex + 専門agent群）│
+│   /code-review を起動（CodeRabbit + agents + 専門agent群）│
 └────────────┬────────────────────────────────────────────┘
              ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -121,6 +121,6 @@ type / source / title / description / acceptanceCriteria / context? / branchSlug
 ## 関連スキル / ファイル
 
 - 既存スキル: `todoapp-feature-dev`, `code-review`, `todoapp-pr-creator`, `coderabbit-review`
-- ルール: `.Codex/rules/development.md`, `.Codex/rules/code-quality.md`, `.Codex/rules/security.md`
+- ルール: `.agents/rules/development.md`, `.agents/rules/code-quality.md`, `.agents/rules/security.md`
 - triggers: `triggers/spec.md`, `triggers/qa.md`, `triggers/github-issue.md`, `triggers/ui-annotator.md`, `triggers/posthog.md`
 - factories: `factories/feature.md`, `factories/bugfix.md`, `factories/ui-change.md`
