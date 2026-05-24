@@ -738,7 +738,7 @@ describe('TodoWrapper', () => {
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
     });
 
-    it('認証済みユーザー切り替え時は対象SWRキーだけ再検証する', async () => {
+    it('認証済みユーザー切り替え時は全SWRキャッシュをクリアする', async () => {
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'false');
 
       vi.mocked(useSession).mockReturnValue({
@@ -773,14 +773,11 @@ describe('TodoWrapper', () => {
       rerender(<TodoWrapper />);
 
       await waitFor(() => {
-        expect(mockMutate).toHaveBeenCalledTimes(2);
+        expect(mockMutate).toHaveBeenCalledTimes(1);
       });
 
-      expect(mockMutate).toHaveBeenNthCalledWith(1, '/api/todos', undefined, {
-        revalidate: true,
-      });
-      expect(mockMutate).toHaveBeenNthCalledWith(2, '/api/lists', undefined, {
-        revalidate: true,
+      expect(mockMutate).toHaveBeenCalledWith(expect.any(Function), undefined, {
+        revalidate: false,
       });
       vi.stubEnv('NEXT_PUBLIC_EMULATOR_MODE', 'true');
     });
