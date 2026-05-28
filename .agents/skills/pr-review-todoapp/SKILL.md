@@ -52,18 +52,45 @@ gh pr-review --help
 
 ## Workflow Overview
 
-```text
-PR Review Request
-  ├─ Get PR number/repo context
-  ├─ List all review threads
-  ├─ Analyze feedback and comments
-  ├─ Validate whether each comment applies and explain decisions
-  ├─ Implement fixes in code
-  ├─ Run tests (npm run format + npm run test:run)
-  ├─ Reply to all open review threads with explanations
-  ├─ Wait up to 5 minutes for follow-up
-  ├─ Resolve review threads (or address follow-ups)
-  └─ Commit and push changes
+```mermaid
+flowchart TD
+    Start(["/pr-review-todoapp 起動"]) --> A
+
+    A["① PR Context 取得\ngh pr view\ngit log / diff"] --> B
+
+    B["② レビュースレッド一覧取得\ngh pr-review threads list"] --> C{スレッドあり?}
+
+    C -- "なし" --> C2["通常コメント検索\ngh pr view --comments"]
+    C -- "あり" --> D
+    C2 --> D
+
+    D["③ フィードバック分析\ngh api pulls/comments\n対象ファイルを Read"] --> E
+
+    E{"各コメントの\n適用可否を判定"}
+    E -- "有効" --> F["④ 修正実装\nEdit / Write"]
+    E -- "無効・古い" --> G["スキップ理由を記録"]
+
+    F --> H["⑤ 変更検証\nnpm run format\nnpm run test:run\nnpm run build"]
+    G --> H
+
+    H{テスト/ビルド\nPASS?}
+    H -- "FAIL" --> H2["エラー修正\n再検証"]
+    H2 --> H
+    H -- "PASS" --> I
+
+    I["⑥ コミット・プッシュ\ngit add / commit / push"] --> J
+
+    J["⑦ 全オープンスレッドに返信\ngh pr-review comments reply\n（修正内容 or スキップ理由を説明）"] --> K
+
+    K["⑧ フォローアップ待機\n最大 5 分（1分×5回）\ngh pr-review threads list"] --> L{新しい\n返信あり?}
+
+    L -- "あり" --> M["フォローアップ対応\nステップ③〜⑦を繰り返す"]
+    M --> K
+    L -- "なし / タイムアウト" --> N
+
+    N["⑨ スレッド解決\ngh pr-review threads resolve\n・outdated → 返信なしで解決\n・active → 返信確認後に解決"] --> O
+
+    O["⑩ 最終確認\ngh pr-review threads list\n全スレッド isResolved: true を確認"] --> End([完了])
 ```
 
 ---
