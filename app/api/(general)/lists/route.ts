@@ -121,12 +121,6 @@ export async function PUT(req: Request) {
 
         if (validatedPayload.type === 'update') {
           const { id } = validatedPayload;
-          if (!id || !validatedPayload.data?.category?.trim()) {
-            return NextResponse.json(
-              { error: 'ID and category are required' },
-              { status: 400 },
-            );
-          }
 
           await listsCollection.doc(id).update({
             category: validatedPayload.data.category,

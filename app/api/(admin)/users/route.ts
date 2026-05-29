@@ -31,8 +31,8 @@ export async function GET() {
           email,
           role,
           createdAt: createdAt.toMillis(),
-          name,
-          image,
+          name: name ?? undefined,
+          image: image ?? undefined,
         };
       })
       .filter((user): user is AdminUser => user !== null);

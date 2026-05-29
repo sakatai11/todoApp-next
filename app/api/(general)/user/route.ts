@@ -32,7 +32,14 @@ export async function GET() {
       }
       const { email, role, createdAt, name, image } = parseResult.data;
       userData = [
-        { id: uid, email, role, createdAt: createdAt.toMillis(), name, image },
+        {
+          id: uid,
+          email,
+          role,
+          createdAt: createdAt.toMillis(),
+          name: name ?? undefined,
+          image: image ?? undefined,
+        },
       ];
     }
 

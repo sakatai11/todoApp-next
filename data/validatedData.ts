@@ -51,7 +51,7 @@ export const ListPutBodySchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('update'),
     id: z.string(),
-    data: z.object({ category: z.string().optional() }),
+    data: z.object({ category: z.string().trim().min(1) }),
   }),
 ]);
 
@@ -75,7 +75,7 @@ export const AdminUserFirestoreDocSchema = z.object({
   email: z.string(),
   role: z.enum(['ADMIN', 'USER']),
   createdAt: z.instanceof(Timestamp),
-  name: z.string().optional(),
-  image: z.string().optional(),
-  updatedAt: z.instanceof(Timestamp).optional(),
+  name: z.string().nullish(),
+  image: z.string().nullish(),
+  updatedAt: z.instanceof(Timestamp).nullish(),
 });

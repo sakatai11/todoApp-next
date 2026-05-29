@@ -192,7 +192,10 @@ export async function PUT(req: Request) {
           return NextResponse.json(responseData, { status: 200 });
         }
 
-        if (validatedPayload.type === 'restatus') {
+        if (
+          'type' in validatedPayload &&
+          validatedPayload.type === 'restatus'
+        ) {
           const { oldStatus, status } = validatedPayload.data;
           const snapshot = await todosCollection.get();
           const batch = adminDB.batch();

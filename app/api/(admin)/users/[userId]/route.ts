@@ -40,8 +40,8 @@ export async function GET(
       email,
       role,
       createdAt: createdAt.toMillis(),
-      name,
-      image,
+      name: name ?? undefined,
+      image: image ?? undefined,
       updatedAt: updatedAt?.toMillis(),
     };
 
