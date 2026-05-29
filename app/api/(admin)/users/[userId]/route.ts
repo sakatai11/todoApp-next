@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { AdminUser } from '@/types/auth/authData';
+import { AdminUserFirestoreDocSchema } from '@/data/validatedData';
 
 export async function GET(
   _request: Request,
@@ -26,20 +27,22 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     const data = userDoc.data();
+    const parseResult = AdminUserFirestoreDocSchema.safeParse(data);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid user data format' },
+        { status: 500 },
+      );
+    }
+    const { email, role, createdAt, name, image, updatedAt } = parseResult.data;
     const user: AdminUser = {
       id: userDoc.id,
-      email: data?.['email'] as string,
-      role: data?.['role'] as 'ADMIN' | 'USER',
-      createdAt:
-        (
-          data?.['createdAt'] as { toMillis: () => number } | undefined
-        )?.toMillis() ?? 0,
-      name: (data?.['name'] as string | undefined) ?? undefined,
-      image: (data?.['image'] as string | undefined) ?? undefined,
-      updatedAt:
-        (
-          data?.['updatedAt'] as { toMillis: () => number } | undefined
-        )?.toMillis() ?? undefined,
+      email,
+      role,
+      createdAt: createdAt.toMillis(),
+      name,
+      image,
+      updatedAt: updatedAt?.toMillis(),
     };
 
     return NextResponse.json({ user }, { status: 200 });

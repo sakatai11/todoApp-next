@@ -3,6 +3,12 @@ import { ListPayload, ListResponse, StatusListProps } from '@/types/lists';
 import { NextResponse } from 'next/server';
 import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { trimAllSpaces } from '@/app/utils/validationUtils';
+import {
+  StatusListFirestoreDocSchema,
+  ListPostBodySchema,
+  ListPutBodySchema,
+  ListDeleteBodySchema,
+} from '@/data/validatedData';
 
 /**
  * 認証されたユーザーのリストを取得します。
@@ -22,13 +28,16 @@ export async function GET(req: Request) {
         .orderBy('number', 'asc')
         .get();
 
-      const lists: StatusListProps[] = listsSnapshot.docs.map(
-        (doc) =>
-          ({
-            id: doc.id,
-            ...doc.data(),
-          }) as StatusListProps,
-      );
+      const lists: StatusListProps[] = listsSnapshot.docs
+        .map((doc) => {
+          const result = StatusListFirestoreDocSchema.safeParse(doc.data());
+          if (!result.success) {
+            console.warn('Skipping invalid list document:', doc.id);
+            return null;
+          }
+          return { id: doc.id, ...result.data };
+        })
+        .filter((list): list is StatusListProps => list !== null);
 
       return NextResponse.json({ lists }, { status: 200 });
     } catch (error) {
@@ -45,14 +54,15 @@ export async function POST(req: Request) {
   return withAuthenticatedUser<ListPayload<'POST'>, ListResponse<'POST'>>(
     req,
     async (uid, body) => {
-      if (!body) {
+      const parseResult = ListPostBodySchema.safeParse(body);
+      if (!parseResult.success) {
         return NextResponse.json(
-          { error: 'Request body is required' },
+          { error: 'Invalid request body' },
           { status: 400 },
         );
       }
 
-      const { category, number } = body;
+      const { category, number } = parseResult.data;
 
       const trimmedCategory = trimAllSpaces(category);
 
@@ -93,12 +103,15 @@ export async function PUT(req: Request) {
   return withAuthenticatedUser<ListPayload<'PUT'>, ListResponse<'PUT'>>(
     req,
     async (uid, payload) => {
-      if (!payload) {
+      const parseResult = ListPutBodySchema.safeParse(payload);
+      if (!parseResult.success) {
         return NextResponse.json(
-          { error: 'payload is required' },
+          { error: 'Invalid request body' },
           { status: 400 },
         );
       }
+
+      const validatedPayload = parseResult.data;
 
       try {
         const listsCollection = adminDB
@@ -106,10 +119,9 @@ export async function PUT(req: Request) {
           .doc(uid)
           .collection('lists');
 
-        // editList
-        if (payload.type === 'update') {
-          const { id } = payload;
-          if (!id || !payload.data?.category?.trim()) {
+        if (validatedPayload.type === 'update') {
+          const { id } = validatedPayload;
+          if (!id || !validatedPayload.data?.category?.trim()) {
             return NextResponse.json(
               { error: 'ID and category are required' },
               { status: 400 },
@@ -117,7 +129,7 @@ export async function PUT(req: Request) {
           }
 
           await listsCollection.doc(id).update({
-            category: payload.data.category,
+            category: validatedPayload.data.category,
           });
 
           return NextResponse.json(
@@ -126,10 +138,8 @@ export async function PUT(req: Request) {
           );
         }
 
-        // handleButtonMov
-        // handleDragEnd
-        if (payload.type === 'reorder') {
-          if (!Array.isArray(payload.data) || payload.data.length === 0) {
+        if (validatedPayload.type === 'reorder') {
+          if (validatedPayload.data.length === 0) {
             return NextResponse.json(
               { error: 'Valid order array is required' },
               { status: 400 },
@@ -137,15 +147,13 @@ export async function PUT(req: Request) {
           }
 
           await adminDB.runTransaction(async (transaction) => {
-            // 現在の全リストを取得
             const snapshot = await listsCollection.get();
             const currentLists = snapshot.docs.map((doc) => ({
               id: doc.id,
               ...doc.data(),
             }));
 
-            // バリデーション
-            const isValidOrder = payload.data.every((id) =>
+            const isValidOrder = validatedPayload.data.every((id) =>
               currentLists.some((list) => list.id === id),
             );
 
@@ -153,8 +161,7 @@ export async function PUT(req: Request) {
               throw new Error('Invalid list IDs in newOrder');
             }
 
-            // 新しい順序で番号更新
-            payload.data.forEach((listId, index) => {
+            validatedPayload.data.forEach((listId, index) => {
               const docRef = listsCollection.doc(listId);
               transaction.update(docRef, { number: index + 1 });
             });
@@ -187,14 +194,15 @@ export async function DELETE(req: Request) {
   return withAuthenticatedUser<ListPayload<'DELETE'>, ListResponse<'DELETE'>>(
     req,
     async (uid, body) => {
-      const id = body?.id;
-
-      if (!id) {
+      const parseResult = ListDeleteBodySchema.safeParse(body);
+      if (!parseResult.success) {
         return NextResponse.json(
-          { error: 'ListDelete is required' },
+          { error: 'Invalid request body' },
           { status: 400 },
         );
       }
+
+      const { id } = parseResult.data;
 
       try {
         const listsCollection = adminDB
