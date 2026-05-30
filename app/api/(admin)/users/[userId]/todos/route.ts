@@ -2,7 +2,7 @@ import { auth } from '@/auth';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { TodoListProps } from '@/types/todos';
-import { Timestamp } from 'firebase-admin/firestore';
+import { TodoFirestoreDocSchema } from '@/data/validatedData';
 
 export async function GET(
   _request: Request,
@@ -22,17 +22,16 @@ export async function GET(
       .collection(`users/${userId}/todos`)
       .orderBy('updateTime', 'desc')
       .get();
-    const todos: TodoListProps[] = todosSnap.docs.map((doc) => {
-      const d = doc.data();
-      return {
-        id: doc.id,
-        updateTime: d['updateTime'] as Timestamp,
-        createdTime: d['createdTime'] as Timestamp,
-        text: d['text'] as string,
-        status: d['status'] as string,
-        bool: d['bool'] as boolean,
-      };
-    });
+    const todos: TodoListProps[] = todosSnap.docs
+      .map((doc): TodoListProps | null => {
+        const result = TodoFirestoreDocSchema.safeParse(doc.data());
+        if (!result.success) {
+          console.warn('Skipping invalid todo document:', doc.id);
+          return null;
+        }
+        return { id: doc.id, ...result.data };
+      })
+      .filter((todo): todo is TodoListProps => todo !== null);
     return NextResponse.json({ todos }, { status: 200 });
   } catch (error) {
     console.error('Error in GET /api/users/[userId]/todos:', error);

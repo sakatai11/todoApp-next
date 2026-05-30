@@ -5,6 +5,12 @@ import { withAuthenticatedUser } from '@/app/libs/withAuth';
 import { TodoResponse } from '@/types/todos';
 import { Timestamp } from 'firebase-admin/firestore';
 import { trimAllSpaces } from '@/app/utils/validationUtils';
+import {
+  TodoFirestoreDocSchema,
+  TodoPostBodySchema,
+  TodoPutBodySchema,
+  TodoDeleteBodySchema,
+} from '@/data/validatedData';
 
 /**
  * 認証されたユーザーのtodoリストを取得します。
@@ -23,13 +29,16 @@ export async function GET(req: Request) {
         .collection('todos')
         .get();
 
-      const todos: TodoListProps[] = todosSnapshot.docs.map(
-        (doc) =>
-          ({
-            id: doc.id,
-            ...doc.data(),
-          }) as TodoListProps,
-      );
+      const todos: TodoListProps[] = todosSnapshot.docs
+        .map((doc) => {
+          const result = TodoFirestoreDocSchema.safeParse(doc.data());
+          if (!result.success) {
+            console.warn('Skipping invalid todo document:', doc.id);
+            return null;
+          }
+          return { id: doc.id, ...result.data };
+        })
+        .filter((todo): todo is TodoListProps => todo !== null);
 
       return NextResponse.json({ todos }, { status: 200 });
     } catch (error) {
@@ -51,14 +60,15 @@ export async function POST(req: Request) {
   return withAuthenticatedUser<TodoPayload<'POST'>, TodoResponse<'POST'>>(
     req,
     async (uid, body) => {
-      if (!body) {
+      const parseResult = TodoPostBodySchema.safeParse(body);
+      if (!parseResult.success) {
         return NextResponse.json(
-          { error: 'Request body is required' },
+          { error: 'Invalid request body' },
           { status: 400 },
         );
       }
 
-      const { text, status } = body;
+      const { text, status } = parseResult.data;
 
       const trimmedText = trimAllSpaces(text);
       const trimmedStatus = trimAllSpaces(status);
@@ -110,12 +120,15 @@ export async function PUT(req: Request) {
   return withAuthenticatedUser<TodoPayload<'PUT'>, TodoResponse<'PUT'>>(
     req,
     async (uid, payload) => {
-      if (!payload) {
+      const parseResult = TodoPutBodySchema.safeParse(payload);
+      if (!parseResult.success) {
         return NextResponse.json(
-          { error: 'Request payload is required' },
+          { error: 'Invalid request body' },
           { status: 400 },
         );
       }
+
+      const validatedPayload = parseResult.data;
 
       const todosCollection = adminDB
         .collection('users')
@@ -123,16 +136,22 @@ export async function PUT(req: Request) {
         .collection('todos');
 
       try {
-        if ('id' in payload && 'bool' in payload) {
-          await todosCollection.doc(payload.id).update({ bool: payload.bool });
+        if ('id' in validatedPayload && 'bool' in validatedPayload) {
+          await todosCollection
+            .doc(validatedPayload.id)
+            .update({ bool: validatedPayload.bool });
           return NextResponse.json(
             { message: 'Todo updated toggle' },
             { status: 200 },
           );
         }
 
-        if ('id' in payload && 'text' in payload && 'status' in payload) {
-          const { id, text, status } = payload;
+        if (
+          'id' in validatedPayload &&
+          'text' in validatedPayload &&
+          'status' in validatedPayload
+        ) {
+          const { id, text, status } = validatedPayload;
 
           const trimmedText = trimAllSpaces(text);
           const trimmedStatus = trimAllSpaces(status);
@@ -158,7 +177,6 @@ export async function PUT(req: Request) {
 
           await todosCollection.doc(id).update(updateData);
 
-          // 更新されたドキュメントを取得してレスポンスを返す
           const updatedDoc = await todosCollection.doc(id).get();
           const updatedTodo = updatedDoc.data();
 
@@ -174,8 +192,11 @@ export async function PUT(req: Request) {
           return NextResponse.json(responseData, { status: 200 });
         }
 
-        if (payload.type === 'restatus') {
-          const { oldStatus, status } = payload.data;
+        if (
+          'type' in validatedPayload &&
+          validatedPayload.type === 'restatus'
+        ) {
+          const { oldStatus, status } = validatedPayload.data;
           const snapshot = await todosCollection.get();
           const batch = adminDB.batch();
 
@@ -216,13 +237,15 @@ export async function DELETE(req: Request) {
   return withAuthenticatedUser<TodoPayload<'DELETE'>, TodoResponse<'DELETE'>>(
     req,
     async (uid, body) => {
-      const id = body?.id;
-      if (!id) {
+      const parseResult = TodoDeleteBodySchema.safeParse(body);
+      if (!parseResult.success) {
         return NextResponse.json(
-          { error: 'TodoDelete is required' },
+          { error: 'Invalid request body' },
           { status: 400 },
         );
       }
+
+      const { id } = parseResult.data;
 
       try {
         await adminDB
