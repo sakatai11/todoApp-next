@@ -1,6 +1,6 @@
 ---
-name: "source-command-cleanup-test-users"
-description: "E2Eテストで作成されたテストユーザーをクリーンアップ"
+name: 'source-command-cleanup-test-users'
+description: 'E2Eテストで作成されたテストユーザーをクリーンアップ'
 ---
 
 # source-command-cleanup-test-users

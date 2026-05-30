@@ -1,13 +1,14 @@
 ---
 description: Use when finishing a feature, fixing a bug, before committing React code, or when the user wants to improve code quality or clean up a codebase. Checks for score regression. Covers lint, dead code, accessibility, bundle size, architecture diagnostics.
 metadata:
-    github-path: skills/react-doctor
-    github-ref: refs/tags/react-doctor@0.0.38
-    github-repo: https://github.com/millionco/react-doctor
-    github-tree-sha: 51eb45712bb6cbf45722b4a33f209ac5df13c6ff
+  github-path: skills/react-doctor
+  github-ref: refs/tags/react-doctor@0.0.38
+  github-repo: https://github.com/millionco/react-doctor
+  github-tree-sha: 51eb45712bb6cbf45722b4a33f209ac5df13c6ff
 name: react-doctor
 version: 1.0.0
 ---
+
 # React Doctor
 
 Scans React codebases for security, performance, correctness, and architecture issues. Outputs a 0–100 health score.
