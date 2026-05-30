@@ -27,8 +27,8 @@ export const TodoPostBodySchema = z.object({
 });
 
 export const TodoPutBodySchema = z.union([
-  z.object({ id: z.string(), bool: z.boolean() }),
-  z.object({ id: z.string(), text: z.string(), status: z.string() }),
+  z.object({ id: z.string().min(1), bool: z.boolean() }),
+  z.object({ id: z.string().min(1), text: z.string(), status: z.string() }),
   z.object({
     type: z.literal('restatus'),
     data: z.object({ oldStatus: z.string(), status: z.string() }),
@@ -50,7 +50,7 @@ export const ListPutBodySchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('update'),
-    id: z.string(),
+    id: z.string().min(1),
     data: z.object({ category: z.string().trim().min(1) }),
   }),
 ]);
