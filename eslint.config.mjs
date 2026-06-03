@@ -64,6 +64,7 @@ const eslintConfig = [
       '.next/',
       '.vercel/',
       '.claude/',
+      '.agents/',
       'coverage/',
       'out/',
       'public/',
