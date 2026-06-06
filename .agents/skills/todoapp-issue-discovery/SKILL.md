@@ -62,7 +62,7 @@ todoApp-next のプロダクト課題を調査し、実装せずに Issue 候補
 3. コード構造把握
    - `rg --files app features tests` を優先する。
    - 画面調査は `app/**/page.tsx` から `features/**/templates`、components、hooks、contexts へ辿る。
-   - API調査は `app/api/**/route.ts`、validation、Firebase Admin SDK利用箇所、テストを確認する。
+   - API調査は `app/api/**/route.ts`、validation関連ファイル、Firebase Admin SDK利用箇所、テストを確認する。
    - 状態管理は React Context、SWR初期取得、楽観的更新、サーバーレスポンス待ちの使い分けを見る。
 
 4. 検知観点
@@ -75,7 +75,7 @@ todoApp-next のプロダクト課題を調査し、実装せずに Issue 候補
 5. 必要な検証
    - 実行してもコードが変わらないコマンドだけ使う。
    - 例: `npm run test:run`, `npm run build`, `npm run test:e2e`。
-   - 自動修正を伴う `npm run lint` は、このプロジェクトでは修正が入る可能性があるため、事前に package script を確認し、修正が入るなら実行しない。
+   - 自動修正を伴う `npm run lint` は、このプロジェクトでは修正が入る可能性があるため、事前に package script を確認し、修正が入るなら実行しない（代わりに `--fix` なしのコマンドや `npx eslint .` などを直接実行して検証する）。
    - UI確認が必要なら開発サーバーを起動し、ブラウザで対象画面を確認する。起動が重い場合はユーザーに確認する。
 
 ## Issue候補の出力形式
@@ -85,7 +85,7 @@ Issue候補は以下の形式で出す。
 ```markdown
 ## Issue候補
 
-### 1. [bug|feature|ui|a11y|test] タイトル
+### 1. [bug|feature|ui|a11y|test|security] タイトル
 
 - 優先度: P0|P1|P2|P3
 - 影響範囲: 対象画面/API/コンポーネント
@@ -115,4 +115,3 @@ Issue候補は以下の形式で出す。
 - 最優先で起票すべきIssue
 - 根拠が弱く追加確認が必要な項目
 - 実装には進んでいないこと
-
