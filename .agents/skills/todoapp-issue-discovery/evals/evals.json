@@ -1,0 +1,26 @@
+{
+  "skill_name": "todoapp-issue-discovery",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Todo機能まわりのバグや改善Issue候補を洗い出して。実装はしないで。",
+      "expected_output": "Todo関連コードとテストを調査し、根拠付きのIssue候補を優先度・影響範囲・受け入れ条件つきで列挙する。コード変更はしない。",
+      "files": [
+        "features/todo/templates/TodoWrapper.tsx",
+        "features/todo/hooks/useTodos.ts"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "ログイン画面のUI/UX改善ポイントをIssue化できる形で出して",
+      "expected_output": "ログイン画面のコンポーネントや必要に応じたブラウザ確認から、UI/UX/a11yのIssue候補を起票可能な形式で出す。実装には進まない。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "テスト不足やリグレッションリスクになりそうな箇所を検知してIssue候補にして",
+      "expected_output": "既存テストと重要な分岐・API・状態管理を照合し、テスト追加Issue候補を根拠と受け入れ条件つきで整理する。",
+      "files": ["tests/e2e/E2E_TEST_PLAN.md", "features/todo/hooks/useTodos.ts"]
+    }
+  ]
+}
