@@ -1,12 +1,13 @@
 ---
 name: todoapp-loop
 description: |-
-  todoApp-nextの自律開発ループ（Loop Engineering）を1サイクル実行するheartbeatスキル。
-  状態読込→triage（CI失敗/open issues/recent commits収集）→優先案件選択→
-  既存スキル（todoapp-orchestrator / fix-security-ci）へcreator委譲→
-  code-reviewスキルによるverifierゲート→Draft PR作成→状態更新、までを自動実行する。
+  todoApp-nextの自律開発ループ（Loop Engineering）を実行するheartbeatスキル。
+  `/loop /todoapp-loop` で起動し、処理すべきタスクがなくなるまでサイクルを繰り返す。
+  1サイクル = 状態読込→triage→優先案件選択→creator委譲→verifierゲート→Draft PR→状態更新→継続/停止判定。
+  繰越キューまたは未処理Issueが残っていれば自動で次サイクルへ進み、すべて空になったら自ら停止する。
 
-  使うべき状況: ユーザーが「ループを回して」「/todoapp-loop」と言った時、またはcron/スケジュールからの定期実行。
+  使うべき状況: ユーザーが「ループを回して」「/todoapp-loop」と言った時。
+  推奨起動方法: `/loop /todoapp-loop`（セッションが生きている間、条件達成まで繰り返す）
   引数: --dry-run（Phase 2の選択結果を表示して終了。委譲・PR作成・状態更新を行わない）
 
   使わない状況: 特定タスクの実装依頼（todoapp-orchestrator）、レビューのみ（code-review）、課題発掘のみ（todoapp-issue-discovery）。
@@ -24,6 +25,7 @@ description: |-
 - **1サイクル上限を超えない**: 着手最大2件・PR最大2件。残りは繰越キューへ（人間のレビュー帯域＝orchestration taxの保護）
 - **迷ったら止めてinboxへ**: 受け入れ条件が曖昧・設計判断が必要な案件は自動で推測せず人間にエスカレーション
 - **すべてDraft PR**: 人間がReady化するまでマージ対象にしない。merge / PRのReady化 / Issueのcloseは行わない（人間の役割）
+- **停止条件を持つ**: 処理すべきタスクがなくなったら自ら停止する。繰越キューが空かつ新規候補もない状態が「ループ完了」
 
 ## 状態ファイル
 
@@ -156,12 +158,45 @@ verdict が pass / conditional の項目のみ:
 - conditional の場合は Medium/Low 指摘の一覧をPR本文に含める
 - 1サイクルのPR上限は **2件**。超過分は次サイクルへ繰越
 
-## Phase 6: 状態更新・サマリー [決定論]
+## Phase 6: 状態更新・継続/停止判定・サマリー [決定論]
 
 1. `loop-state.md` を更新: 前回実行（日時・結果）、進行中、繰越キュー、処理済み（30件超は古い順に削除）
 2. `triage-inbox.md` にエスカレーション項目を追記（既載と重複する項目は追記しない）
 3. inbox の未処理（`[ ]`）が **10件を超えたら警告** をサマリーに含める
-4. サマリーをテーブルで出力:
+
+### 継続/停止判定（`/loop` との連携）
+
+以下の条件を評価し、サマリーの末尾に **必ず** いずれかを出力する:
+
+**🔄 CONTINUE（次サイクルへ）**: 以下のいずれかが true の場合
+
+- 繰越キューに1件以上残っている
+- `gh issue list --state open` で未処理のIssueが存在する（処理済みリストに含まれないもの）
+- CI失敗が未解消のまま残っている
+
+**✅ STOP（ループ完了）**: 以下をすべて満たす場合
+
+- 繰越キューが空
+- 未処理のopen issueが0件（またはすべて triage-inbox 行き判定済み）
+- 未解消のCI失敗が0件
+
+```markdown
+---
+
+🔄 CONTINUE: 繰越N件 / 未処理IssueN件 → 次サイクルを開始します
+```
+
+または
+
+```markdown
+---
+
+✅ STOP: 処理すべきタスクがなくなりました。ループを終了します。
+```
+
+> **`/loop` の動作原理**: `/loop /todoapp-loop` で起動すると、スキルが完了するたびに `/loop` が出力を評価して次サイクルを起動する。`STOP` を出力した場合、`/loop` はそのサイクルを最後にセッションを終了する。
+
+4. サマリーをテーブルで出力（継続/停止シグナルを末尾に付ける）:
 
 ```markdown
 ## Loop サイクル完了
@@ -173,6 +208,10 @@ verdict が pass / conditional の項目のみ:
 | inbox追加  | N件（合計N件）           |
 | 繰越       | N件                      |
 | 次回開始点 | <繰越キュー先頭 or なし> |
+
+---
+
+🔄 CONTINUE: 繰越N件 → 次サイクルを開始します
 ```
 
 ---
