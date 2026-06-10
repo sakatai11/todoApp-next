@@ -1,6 +1,6 @@
 # Triage Rules
 
-`todoapp-loop` の Phase 2 で使うスコアリングと自動委譲可否の基準。
+`todoapp-backlog-loop` の Phase 2 で使うスコアリングと自動委譲可否の基準。
 
 ## Scoring
 
