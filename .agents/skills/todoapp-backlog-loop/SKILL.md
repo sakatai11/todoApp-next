@@ -102,9 +102,12 @@ git pull --ff-only origin develop-v2
 
 ## Phase 1: Triage Collection
 
-`LAST_RUN` は `loop-state.md` の前回実行日時。初回は 7 日前として扱う。
+`LAST_RUN` は `loop-state.md` の前回実行日時。**初回実行時や値が `-`（未実行）の場合は、現在時刻の
+7 日前の日付（`YYYY-MM-DD` 形式、例: `2026-06-03`）を計算して `LAST_RUN` に代入してから使う。**
+`-` をそのままコマンドに渡すと `fatal: invalid date format: -` 等でエラーになるため、下記コマンドの
+`LAST_RUN` は必ず具体的な日付に置換すること。
 
-収集コマンド:
+収集コマンド（`LAST_RUN` を具体的な日付に置換して実行）:
 
 ```bash
 gh run list --status failure --created ">LAST_RUN" \

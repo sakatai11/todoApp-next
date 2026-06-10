@@ -177,6 +177,14 @@ while true; do
     exit 2
   fi
 
+  # SIGINT/SIGTERM がサイクル中に届いた場合、子(claude)も同一プロセスグループで
+  # 中断され run_rc が非0になる。これをエラーと誤判定せず、ここで安全に停止する。
+  if $STOP_REQUESTED; then
+    warn "中断シグナルを検出。現在のサイクルを終了して停止します。"
+    rm -f "$outfile"
+    exit 0
+  fi
+
   # claude --output-format json の result テキストを取り出す
   result_text="$(jq -r 'if type == "object" then (.result // "") else "" end' "$outfile" 2>/dev/null || true)"
   is_error="$(jq -r 'if type == "object" then (.is_error // false) else false end' "$outfile" 2>/dev/null || echo "true")"
@@ -212,7 +220,13 @@ while true; do
         exit 0
       fi
       info "CONTINUE を受信。${LOOP_INTERVAL}s 待機して次サイクルへ。"
-      sleep "$LOOP_INTERVAL"
+      # set -e 下で sleep が SIGINT で中断されてもスクリプトを即終了させず、
+      # 中断要求を観測してから安全に停止する
+      sleep "$LOOP_INTERVAL" || true
+      if $STOP_REQUESTED; then
+        warn "待機中に中断シグナルを検出。停止します。"
+        exit 0
+      fi
       ;;
     *)
       err "LOOP_RESULT を解釈できませんでした。安全側に倒して停止します。"
