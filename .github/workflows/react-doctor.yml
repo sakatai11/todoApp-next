@@ -25,6 +25,6 @@ jobs:
       # `@main` は action.yml と CLI（version 既定: latest）が共に流動するため、
       # 上流の更新で CI が不安定化する。アクションは安定版タグ、CLI は固定
       # バージョンにピン留めして再現性を確保する。
-      - uses: millionco/react-doctor@v2.1.0
+      - uses: millionco/react-doctor@547e1e4ecdb70315d81a91ec3605701d58616ee2 # v2.1.0
         with:
           version: '0.5.1'
