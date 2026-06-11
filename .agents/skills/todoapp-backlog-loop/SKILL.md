@@ -33,6 +33,8 @@ description: |-
 ```
 
 設定・セーフガード・終了コード・cron 運用の詳細は `references/runner.md` を参照。
+運用開始前の最小確認は `references/runbook.md`、状態ファイルの初期形は `references/state-templates.md` を参照。
+runner の制御だけを確認する場合は `scripts/test-loop-runner.sh` を実行する。
 
 ## Principles
 
@@ -318,6 +320,8 @@ reason: 人間判断、環境異常、verifier実行不能、ブランチ復帰�
 - `develop-v2` に戻れない
 
 ## Initial State Formats
+
+初期テンプレートだけを確認したい場合は `references/state-templates.md` を参照。
 
 **loop-state.md**
 
