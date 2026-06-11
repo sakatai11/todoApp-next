@@ -34,6 +34,7 @@ description: |-
 
 設定・セーフガード・終了コード・cron 運用の詳細は `references/runner.md` を参照。
 運用開始前の最小確認は `references/runbook.md`、状態ファイルの初期形は `references/state-templates.md` を参照。
+サブエージェントや既存スキルへ委譲する場合の入出力契約は `references/subagent-contracts.md` を参照。
 runner の制御だけを確認する場合は `scripts/test-loop-runner.sh` を実行する。
 
 ## Principles
@@ -104,6 +105,10 @@ git pull --ff-only origin develop-v2
 
 ## Phase 1: Triage Collection
 
+候補収集とスコアリングをサブエージェントに委譲する場合は、`.claude/agents/loop-triage-analyst.md`
+を使う。委譲時も `.claude/state/` の更新、実装、PR作成、最終 `LOOP_RESULT` 判定は親エージェントが行う。
+入出力契約は `references/subagent-contracts.md` の `Triage Analyst` を使う。
+
 `LAST_RUN` は `loop-state.md` の前回実行日時。**初回実行時や値が `-`（未実行）の場合は、現在時刻の
 7 日前の日付（`YYYY-MM-DD` 形式、例: `2026-06-03`）を計算して `LAST_RUN` に代入してから使う。**
 `-` をそのままコマンドに渡すと `fatal: invalid date format: -` 等でエラーになるため、下記コマンドの
@@ -169,6 +174,8 @@ gh run list --workflow "<workflowName>" \
 ## Phase 3: Creator Execution
 
 選択項目ごとに順次実行する。並列処理はこのスキルでは行わない。
+creator へ委譲する場合は `references/subagent-contracts.md` の `Creator` 戻り値を必須とする。
+creator は実装・テスト・コミットまでを担当し、PR作成、state 更新、最終 `LOOP_RESULT` は担当しない。
 
 ### Security CI
 
@@ -195,6 +202,7 @@ gh run list --workflow "<workflowName>" \
 Phase 5 Cross-Model Review と Phase 7 Draft PR Creation は実行しないでください。
 Phase 6 Commit & Push まで完了したら、ブランチ名、コミットSHA、実行した検証コマンドを返してください。
 レビューとPR作成は loop 側の verifier / PR phase が担当します。
+戻り値は references/subagent-contracts.md の creator_result 形式で返してください。
 ```
 
 creator が人間確認を要求した場合:
@@ -206,6 +214,8 @@ creator が人間確認を要求した場合:
 ## Phase 4: Independent Verification
 
 creator がブランチとコミットを返した項目だけ verifier に進む。
+verifier へ委譲する場合は `references/subagent-contracts.md` の `Verifier` 戻り値を必須とする。
+verifier は差分検証だけを担当し、修正、PR作成、state 更新、最終 `LOOP_RESULT` は担当しない。
 
 実行方法:
 
@@ -227,6 +237,7 @@ creator がブランチとコミットを返した項目だけ verifier に進�
 ## Phase 5: Draft PR Creation
 
 `pass` または `conditional` の項目だけ PR を作成する。
+PR作成を委譲する場合は `references/subagent-contracts.md` の `PR Creator` 戻り値を必須とする。
 
 実行方法:
 
