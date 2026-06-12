@@ -96,12 +96,24 @@ git pull --ff-only origin develop-v2
 
 中断条件:
 
-| 条件                           | 処理                                                                  |
-| ------------------------------ | --------------------------------------------------------------------- |
-| dirty tree                     | 新規着手しない。`LOOP_RESULT: BLOCKED` で終了。状態確認のみ許可する。 |
-| `develop-v2` 以外              | 新規着手しない。`LOOP_RESULT: BLOCKED` で終了。                       |
-| `git pull --ff-only` 失敗      | inbox に環境異常として記録し、`LOOP_RESULT: BLOCKED`。                |
-| gh 認証なし / ネットワーク不可 | 調査不能として inbox に記録し、`LOOP_RESULT: BLOCKED`。               |
+| 条件                           | 処理                                                                              |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| dirty tree                     | Phase 0 で停止し、`LOOP_RESULT: BLOCKED` で終了。read-only 状態確認のみ許可する。 |
+| `develop-v2` 以外              | 新規着手しない。`LOOP_RESULT: BLOCKED` で終了。                                   |
+| `git pull --ff-only` 失敗      | inbox に環境異常として記録し、`LOOP_RESULT: BLOCKED`。                            |
+| gh 認証なし / ネットワーク不可 | 調査不能として inbox に記録し、`LOOP_RESULT: BLOCKED`。                           |
+
+dirty tree の場合、Phase 1 以降には進まない。許可する read-only 状態確認は次に限定する。
+
+- `git status --short --untracked-files=all` による staged / unstaged / untracked の一覧化
+- `loop-state.md` の進行中項目の確認
+- 既存 Draft PR の状態確認
+
+禁止する操作:
+
+- 新規候補収集
+- checkout / pull / commit / push
+- creator / verifier / PR 作成
 
 ## Phase 1: Triage Collection
 
@@ -155,7 +167,7 @@ gh run list --workflow "<workflowName>" \
 選択数:
 
 - 既定: 1 件
-- `--max-items=N`: `N` 件。ただし最大 2 件
+- `--max-items=N`: `N` 件を選択。ただし `N > 2` の場合は 2 にクランプする。
 - 進行中項目がある場合: 進行中を 1 件として扱い、新規選択枠を消費する
 
 選択結果を必ず表示する。

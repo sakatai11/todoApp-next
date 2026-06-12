@@ -163,6 +163,7 @@ run_case() {
 
 run_case "STOP exits 0" "stop" 0
 run_case "BLOCKED exits 2" "blocked" 2
+run_case "CLAUDE error exits 2" "error" 2
 run_case "missing LOOP_RESULT exits 3" "missing" 3
 run_case "CONTINUE then STOP exits 0" "continue_then_stop" 0
 run_case "CONTINUE hits max cycles exits 0" "continue_forever" 0

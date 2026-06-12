@@ -113,6 +113,15 @@ verify_repo_state() {
 
 mkdir -p "$(dirname "$LOOP_LOG")"
 
+if ! [[ "$LOOP_MAX_ITEMS" =~ ^[0-9]+$ ]]; then
+  err "LOOP_MAX_ITEMS は数値で指定してください（現在: ${LOOP_MAX_ITEMS}）。"
+  exit 1
+fi
+if ((LOOP_MAX_ITEMS > 2)); then
+  warn "LOOP_MAX_ITEMS=${LOOP_MAX_ITEMS} は上限を超えています。2 にクランプします。"
+  LOOP_MAX_ITEMS=2
+fi
+
 info "=== todoapp-backlog-loop runner 起動 ==="
 info "設定: max_cycles=${LOOP_MAX_CYCLES} interval=${LOOP_INTERVAL}s branch=${LOOP_BRANCH} max_items=${LOOP_MAX_ITEMS} budget=\$${LOOP_MAX_BUDGET_USD} dry_run=${DRY_RUN}"
 
