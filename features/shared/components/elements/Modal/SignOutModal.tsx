@@ -1,4 +1,4 @@
-import { Button, Box, Typography } from '@mui/material';
+import { Button, Box, Typography, IconButton } from '@mui/material';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import { SignOutPropType } from '@/types/components';
@@ -40,17 +40,19 @@ const SignOutModal = ({
               position: 'relative',
             }}
           >
-            <CloseIcon
-              // 閉じる
+            <IconButton
+              aria-label="閉じる"
+              onClick={() => setModalIsOpen(false)}
               sx={{
                 position: 'absolute',
                 top: '-27px',
                 right: 0,
                 color: '#FFF',
-                cursor: 'pointer',
+                p: 0,
               }}
-              onClick={() => setModalIsOpen(false)}
-            />
+            >
+              <CloseIcon aria-hidden="true" />
+            </IconButton>
             <Typography variant="h6" sx={{ textAlign: 'center' }}>
               サインアウトしますか？
             </Typography>

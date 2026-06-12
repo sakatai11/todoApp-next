@@ -111,6 +111,24 @@ describe('StatusTitle', () => {
       expect(screen.getByTestId('SwipeOutlinedIcon')).toBeInTheDocument();
       expect(screen.getByTestId('MoreVertIcon')).toBeInTheDocument();
     });
+
+    it('ドラッグハンドルとメニューボタンにアクセシブルネームが付与されている', () => {
+      render(<StatusTitle {...defaultProps} />, {
+        withTodoProvider: true,
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'リストを並び替え' }),
+      ).toBeInTheDocument();
+
+      const menuButton = screen.getByRole('button', {
+        name: 'リスト操作メニュー',
+      });
+      expect(menuButton).toBeInTheDocument();
+      // メニュー未展開時は aria-expanded=false
+      expect(menuButton).toHaveAttribute('aria-haspopup', 'true');
+      expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    });
   });
 
   describe('モーダル操作', () => {

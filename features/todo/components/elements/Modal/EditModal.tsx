@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Button, Box, Typography, TextField } from '@mui/material';
+import { Button, Box, Typography, TextField, IconButton } from '@mui/material';
 import { ModalPropType } from '@/types/components';
 import { jstFormattedDate, getTime } from '@/features/utils/dateUtils';
 import Modal from '@mui/material/Modal';
@@ -133,16 +133,19 @@ const EditModal = React.memo(
                 }
               }}
             />
-            <CloseIcon
+            <IconButton
+              aria-label="閉じる"
+              onClick={handleClose}
               sx={{
                 position: 'absolute',
                 top: '-27px',
                 right: 0,
                 color: '#FFF',
-                cursor: 'pointer',
+                p: 0,
               }}
-              onClick={handleClose}
-            />
+            >
+              <CloseIcon aria-hidden="true" />
+            </IconButton>
             <Box
               sx={{
                 width: '100%',

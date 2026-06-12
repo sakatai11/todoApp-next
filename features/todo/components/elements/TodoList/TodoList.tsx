@@ -86,6 +86,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
         <ToggleButton
           value="check"
           selected={todo.bool}
+          aria-label={todo.bool ? 'ピン留めを解除' : 'ピン留め'}
           onChange={() => {
             toggleSelected(todo.id);
           }}
@@ -105,6 +106,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
         >
           {todo.bool ? (
             <PushPinIcon
+              aria-hidden="true"
               sx={{
                 width: 20,
                 height: 20,
@@ -116,6 +118,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
             />
           ) : (
             <PushPinIcon
+              aria-hidden="true"
               sx={{
                 color: 'rgba(0, 0, 0, 0.08)',
                 width: 20,
@@ -129,6 +132,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
           )}
         </ToggleButton>
         <Button
+          aria-label="編集"
           sx={{
             // p:0,
             minWidth: 'auto',
@@ -144,6 +148,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
           }}
         >
           <ModeEditIcon
+            aria-hidden="true"
             sx={{
               width: 20,
               height: 20,
@@ -167,6 +172,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
         )}
         <Button
           // variant="outlined"
+          aria-label="削除"
           onClick={() => setModalIsOpen({ ...modalIsOpen, delete: true })}
           sx={{
             minWidth: 'auto',
@@ -176,6 +182,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
           }}
         >
           <DeleteIcon
+            aria-hidden="true"
             sx={{
               width: 20,
               height: 20,
