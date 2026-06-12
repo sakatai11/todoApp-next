@@ -258,6 +258,22 @@ describe('StatusTitle', () => {
 
       expect(screen.queryByTestId('select-list-modal')).not.toBeInTheDocument();
     });
+
+    it('Escapeキー押下でメニューが閉じる', () => {
+      render(<StatusTitle {...defaultProps} />, {
+        withTodoProvider: true,
+      });
+
+      // メニューを開く
+      const moreVertIcon = screen.getByTestId('MoreVertIcon');
+      fireEvent.click(moreVertIcon);
+      expect(screen.getByTestId('select-list-modal')).toBeInTheDocument();
+
+      // Escapeキーでキーボードユーザーが閉じられる
+      fireEvent.keyDown(document, { key: 'Escape' });
+
+      expect(screen.queryByTestId('select-list-modal')).not.toBeInTheDocument();
+    });
   });
 
   describe('ドラッグ&ドロップ', () => {

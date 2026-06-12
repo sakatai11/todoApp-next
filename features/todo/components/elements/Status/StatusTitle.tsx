@@ -63,6 +63,21 @@ const StatusTitle = React.memo(
       };
     }, [handleClickOutside]);
 
+    // メニュー（SelectListModal）はキーボードのみのユーザーが Escape で閉じられるようにする
+    // （メニューボタンの aria-haspopup が示す disclosure パターンへの準拠）
+    const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectModalIsOpen(false);
+      }
+    }, []);
+
+    useEffect(() => {
+      document.addEventListener('keydown', handleEscapeKey);
+      return () => {
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
+    }, [handleEscapeKey]);
+
     // リスト名の更新およびバリデーション処理
     // useCallbackを使用
     const handleBlur = useCallback(async () => {
