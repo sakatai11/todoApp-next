@@ -4,6 +4,15 @@ import { useUpdateStatusAndCategory } from '@/features/todo/hooks/useUpdateStatu
 import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { mockTodos, mockLists } from '@/tests/test-utils';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
+
+// Mock useError
+const mockShowError = vi.fn();
+vi.mock('@/features/todo/contexts/ErrorContext', () => ({
+  useError: () => ({
+    showError: mockShowError,
+  }),
+}));
 
 // Mock apiRequest
 vi.mock('@/features/libs/apis', () => ({
@@ -249,11 +258,17 @@ describe('useUpdateStatusAndCategory', () => {
         );
       });
 
-      expect(editResult).toBe(true); // エラーが発生してもtrueが返される
+      // API失敗時は false を返し、エラー通知を行う（UIに成功表示させない）
+      expect(editResult).toBe(false);
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error puting list or todo:',
         expect.any(Error),
       );
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.LIST.UPDATE_FAILED,
+      );
+      // 失敗時はクライアント状態を更新しない
+      expect(mockUpdateListsAndTodos).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
@@ -287,10 +302,14 @@ describe('useUpdateStatusAndCategory', () => {
         );
       });
 
-      expect(editResult).toBe(true);
+      // Todo更新の部分失敗でも false を返し、エラー通知を行う
+      expect(editResult).toBe(false);
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error puting list or todo:',
         expect.any(Error),
+      );
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.LIST.UPDATE_FAILED,
       );
 
       consoleSpy.mockRestore();

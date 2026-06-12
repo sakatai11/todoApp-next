@@ -113,7 +113,8 @@ const StatusTitle = React.memo(
               id={`${id}_input`}
               value={inputValue}
               onChange={(e) => {
-                setInputValue(e.target.value.trim()); // ローカル状態を更新
+                // 入力中はトリムしない（語中・語末のスペースを保持）。確定時(onBlur)にトリムする
+                setInputValue(e.target.value);
               }}
               onBlur={handleBlur}
               style={{
