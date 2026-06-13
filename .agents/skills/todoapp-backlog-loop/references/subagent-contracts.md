@@ -69,19 +69,23 @@ triage_result:
 
 推奨委譲先:
 
+- `.claude/agents/loop-creator.md`（constraints と戻り値契約を system prompt に固定。route に応じて下記スキルを読む）
 - `fix-security-ci`
 - `todoapp-orchestrator`
+
+複数 issue を1PRにまとめる場合は、**必ず** `items` に複数渡して1回の委譲で処理すること。issue ごとに委譲を繰り返すことは禁止（item-by-item の繰り返しはメインコンテキスト逼迫の原因になる）。各 issue の実装差分はサブエージェント内で消費され、親には `creator_result` だけが返る。
 
 入力:
 
 ```yaml
-item_id: '<item_id>'
-source_url: '<issue or run url>'
+items:
+  - item_id: '<item_id>'
+    source_url: '<issue or run url>'
 route: '<todoapp-orchestrator|fix-security-ci>'
 constraints:
-  - 'Phase 5 Cross-Model Review は実行しない'
-  - 'Phase 7 Draft PR Creation は実行しない'
+  - 'Cross-Model Review / Draft PR Creation フェーズは実行しない'
   - 'merge / Issue close / branch delete はしない'
+  - '複数 items の場合は1ブランチ・1PRにまとめる'
   - '.env / secrets は読まない'
 ```
 
@@ -89,13 +93,14 @@ constraints:
 
 ```yaml
 creator_result:
-  item_id: 'issue:123'
+  item_ids:
+    - 'issue:123'
   status: 'completed|needs_human|failed'
-  branch: 'feature/...'
-  commit_sha: 'abcdef0'
-  changed_files:
+  branch: 'feature/...' # status が completed の場合のみ必須（failed/needs_human でブランチ未作成時は省略または null 可）
+  commit_sha: 'abcdef0' # status が completed の場合のみ必須（未コミット時は省略または null 可）
+  changed_files: # status が completed の場合のみ必須（省略または空配列可）
     - 'features/...'
-  verification_commands:
+  verification_commands: # status が completed の場合のみ必須（省略または空配列可）
     - 'npm run test:run -- ...'
   human_input_required: false
   summary: '...'
