@@ -53,7 +53,11 @@ const SignOutModal = ({
             >
               <CloseIcon aria-hidden="true" />
             </IconButton>
-            <Typography variant="h6" sx={{ textAlign: 'center' }}>
+            <Typography
+              id="modal-modal-text"
+              variant="h6"
+              sx={{ textAlign: 'center' }}
+            >
               サインアウトしますか？
             </Typography>
             <Box

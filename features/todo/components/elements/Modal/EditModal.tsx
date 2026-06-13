@@ -75,6 +75,19 @@ const EditModal = React.memo(
               position: 'relative',
             }}
           >
+            <IconButton
+              aria-label="閉じる"
+              onClick={handleClose}
+              sx={{
+                position: 'absolute',
+                top: '-27px',
+                right: 0,
+                color: '#FFF',
+                p: 0,
+              }}
+            >
+              <CloseIcon aria-hidden="true" />
+            </IconButton>
             {todo?.updateTime && (
               <Typography
                 component="span"
@@ -133,19 +146,6 @@ const EditModal = React.memo(
                 }
               }}
             />
-            <IconButton
-              aria-label="閉じる"
-              onClick={handleClose}
-              sx={{
-                position: 'absolute',
-                top: '-27px',
-                right: 0,
-                color: '#FFF',
-                p: 0,
-              }}
-            >
-              <CloseIcon aria-hidden="true" />
-            </IconButton>
             <Box
               sx={{
                 width: '100%',

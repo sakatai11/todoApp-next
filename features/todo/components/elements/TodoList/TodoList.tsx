@@ -86,7 +86,7 @@ const TodoList = React.memo(({ todo }: TodoPropsType) => {
         <ToggleButton
           value="check"
           selected={todo.bool}
-          aria-label={todo.bool ? 'ピン留めを解除' : 'ピン留め'}
+          aria-label="ピン留め"
           onChange={() => {
             toggleSelected(todo.id);
           }}

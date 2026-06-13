@@ -72,11 +72,12 @@ const StatusTitle = React.memo(
     }, []);
 
     useEffect(() => {
+      if (!selectModalIsOpen) return;
       document.addEventListener('keydown', handleEscapeKey);
       return () => {
         document.removeEventListener('keydown', handleEscapeKey);
       };
-    }, [handleEscapeKey]);
+    }, [selectModalIsOpen, handleEscapeKey]);
 
     // リスト名の更新およびバリデーション処理
     // useCallbackを使用

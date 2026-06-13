@@ -56,7 +56,11 @@ const DeleteModal = ({
             >
               <CloseIcon aria-hidden="true" />
             </IconButton>
-            <Typography variant="h6" sx={{ textAlign: 'center' }}>
+            <Typography
+              id="modal-modal-text"
+              variant="h6"
+              sx={{ textAlign: 'center' }}
+            >
               削除しても問題ないですか？
             </Typography>
             <Typography variant="subtitle2" sx={{ textAlign: 'center' }}>
