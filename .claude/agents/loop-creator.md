@@ -46,14 +46,14 @@ constraints:
 | `fix-security-ci`      | `.agents/skills/fix-security-ci/SKILL.md`      |
 
 `todoapp-orchestrator` を読む場合は `triggers/github-issue.md` と必要な phase ファイルも読む。
-ただし以下の制約を必ず守る。
+複数 `items` がある場合は、同一ブランチ上で各 item に対して順次、委譲先スキルの実装・テスト手順を適用し、コミットを積み重ねること。
 
-```text
-この作業は todoapp-backlog-loop の creator フェーズです。
-Cross-Model Review と Draft PR Creation のフェーズは実行しないでください。
-Commit & Push まで完了したら停止してください。
-レビューと PR 作成は loop 側の verifier / PR phase が担当します。
-```
+各 route の停止ポイント:
+
+| route                  | 停止ポイント                                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `todoapp-orchestrator` | **Phase 6 (Commit & Push) で停止**。Phase 5 (Cross-Model Review) と Phase 7 (Draft PR Creation) はスキップ |
+| `fix-security-ci`      | **Step 6 (commit & push) で停止**。Draft PR Creation フェーズは存在しないため禁止文言の対象外              |
 
 ## 完了条件
 
@@ -61,8 +61,9 @@ Commit & Push まで完了したら停止してください。
 - 変更が1ブランチにコミット済み（複数 item の場合も1ブランチ）
 - `develop-v2` を base にしている
 
-人間判断が必要になった場合は実装を止め、`status: needs_human` と理由を返す。
-ブランチを作成済みなら、その branch 名も返す。
+テストが失敗した場合は実装を修正して再テストする。修正後も失敗する場合は `status: failed` と失敗理由を返す（ブランチ作成済みなら branch 名も含める）。
+
+人間判断が必要になった場合は実装を止め、`status: needs_human` と理由を返す。ブランチを作成済みなら、その branch 名も返す。
 
 ## 出力形式
 
@@ -74,11 +75,11 @@ creator_result:
     - 'issue:143'
     - 'issue:144'
   status: 'completed|needs_human|failed'
-  branch: 'fix/...'
-  commit_sha: 'abcdef0'
-  changed_files:
+  branch: 'fix/...' # status が completed の場合のみ必須（failed/needs_human でブランチ未作成時は省略または null 可）
+  commit_sha: 'abcdef0' # status が completed の場合のみ必須（未コミット時は省略または null 可）
+  changed_files: # status が completed の場合のみ必須（省略または空配列可）
     - 'features/...'
-  verification_commands:
+  verification_commands: # status が completed の場合のみ必須（省略または空配列可）
     - 'npm run test:run -- ...'
   human_input_required: false
   summary: '...'

@@ -73,9 +73,7 @@ triage_result:
 - `fix-security-ci`
 - `todoapp-orchestrator`
 
-複数 issue を1PRにまとめる場合は、issue ごとに委譲を繰り返さず、`items` に複数渡して
-1ブランチ・1PRにまとめる。各 issue の実装差分はサブエージェント内で消費され、親には
-`creator_result` だけが返るため、メインコンテキストの逼迫を防げる。
+複数 issue を1PRにまとめる場合は、**必ず** `items` に複数渡して1回の委譲で処理すること。issue ごとに委譲を繰り返すことは禁止（item-by-item の繰り返しはメインコンテキスト逼迫の原因になる）。各 issue の実装差分はサブエージェント内で消費され、親には `creator_result` だけが返る。
 
 入力:
 
@@ -98,11 +96,11 @@ creator_result:
   item_ids:
     - 'issue:123'
   status: 'completed|needs_human|failed'
-  branch: 'feature/...'
-  commit_sha: 'abcdef0'
-  changed_files:
+  branch: 'feature/...' # status が completed の場合のみ必須（failed/needs_human でブランチ未作成時は省略または null 可）
+  commit_sha: 'abcdef0' # status が completed の場合のみ必須（未コミット時は省略または null 可）
+  changed_files: # status が completed の場合のみ必須（省略または空配列可）
     - 'features/...'
-  verification_commands:
+  verification_commands: # status が completed の場合のみ必須（省略または空配列可）
     - 'npm run test:run -- ...'
   human_input_required: false
   summary: '...'
