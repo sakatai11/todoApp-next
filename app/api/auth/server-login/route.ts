@@ -28,11 +28,12 @@ export async function POST(req: Request) {
       process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
     ) {
       // モックユーザーの認証
-      const { mockUser } = await import('@/todoApp-submodule/mocks/data/user');
-      const user = mockUser.find((u) => u.email === email);
+      const { findMockAuthUser } = await import(
+        '@/todoApp-submodule/mocks/data/authUsers'
+      );
+      const user = findMockAuthUser(email);
 
-      if (!user || password !== 'password') {
-        // モック環境では固定パスワード
+      if (!user || user.password !== password) {
         return NextResponse.json({ error: '認証エラー' }, { status: 401 });
       }
 

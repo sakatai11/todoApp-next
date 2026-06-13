@@ -6,8 +6,6 @@ import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { getServerApiRequest } from '@/app/libs/apis';
 import { handleError } from '@/app/utils/authUtils';
-import { adminAuth, adminDB } from '@/app/libs/firebaseAdmin';
-import * as admin from 'firebase-admin';
 // import { redirect } from 'next/navigation';
 // import { signIn } from '@/auth';
 // import { AuthError } from 'next-auth';
@@ -77,6 +75,29 @@ export async function signUpData(
       message: messageType.addressError,
     };
   }
+
+  if (
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+  ) {
+    const { findMockAuthUser, createMockAuthUser } = await import(
+      '@/todoApp-submodule/mocks/data/authUsers'
+    );
+    if (findMockAuthUser(rawFormData.email)) {
+      return {
+        success: false,
+        option: 'email',
+        message: messageType.mailError,
+      };
+    }
+
+    createMockAuthUser(rawFormData.email, rawFormData.password);
+    revalidatePath('/signup');
+    return { success: true, message: '登録しました！' };
+  }
+
+  const { adminAuth, adminDB } = await import('@/app/libs/firebaseAdmin');
+  const admin = await import('firebase-admin');
 
   try {
     // Firebase Authenticationを使ってメール重複チェック

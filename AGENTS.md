@@ -44,14 +44,13 @@ npm run test            # テスト（watch mode）
 npm run test:run        # テスト一回実行
 npm run test:coverage   # カバレッジ付きテスト実行
 npm run test:ui         # Vitest UIモードでテスト実行
-npm run test:e2e        # Playwright E2Eテスト
+npm run test:e2e        # Playwright E2Eテスト（MSW使用）
 npm run test:e2e:ui     # Playwright UIモードでE2Eテスト
 
 # Docker統合テスト
 npm run docker:test     # Firebase Emulator環境起動
 npm run docker:test:run # 統合テスト実行（Firebase Emulator + tsx）
 npm run docker:test:down # Docker環境停止
-npm run docker:e2e:run  # E2Eテスト実行
 
 # Firebase Emulator
 npm run emulator:start  # 開発用Firebase Emulator起動

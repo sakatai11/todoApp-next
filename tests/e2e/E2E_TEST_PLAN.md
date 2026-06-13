@@ -15,24 +15,24 @@ TodoApp-Nextは、Next.js 16 + Firebase + NextAuth.js認証を基盤としたタ
 
 ### 実行環境
 
-- **Docker開発環境**: http://localhost:3000
+- **MSW E2E環境**: http://localhost:3000
 - **テストフレームワーク**: Playwright 1.56.1
 - **ブラウザ**: Chromium, Firefox, WebKit
-- **認証方式**: NextAuth.js Credentials Provider + Firebase Custom Token
+- **認証方式**: NextAuth.js Credentials Provider + MSW/モック認証
 
 ### テストユーザー
 
-テスト実行時に使用する認証情報（Docker開発環境）：
+テスト実行時に使用する認証情報（ローカル/CIのMSW環境）：
 
-| ユーザータイプ   | メールアドレス       | パスワード     | 説明                           |
-| ---------------- | -------------------- | -------------- | ------------------------------ |
-| 開発環境ユーザー | dev.user@todoapp.com | devpassword123 | Docker開発環境用テストユーザー |
+| ユーザータイプ | メールアドレス   | パスワード | 説明                |
+| -------------- | ---------------- | ---------- | ------------------- |
+| モックユーザー | example@test.com | password   | MSW用テストユーザー |
 
 ### テスト実行方法
 
 ```bash
-# Docker開発環境起動（別ターミナル）
-npm run docker:dev
+# PlaywrightがMSW有効のNext.jsアプリを自動起動
+# E2EはDockerテスト環境やFirebase Emulatorでは実行しない
 
 # E2Eテスト実行
 npm run test:e2e           # ヘッドレスモードで実行
@@ -62,7 +62,7 @@ npm run test:e2e:debug     # デバッグモードで実行
 
 **事前条件**:
 
-- Docker開発環境が起動している（http://localhost:3000）
+- ローカルまたはCIでNext.jsアプリが起動している（http://localhost:3000）
 - ブラウザにセッション情報がない（初回アクセスまたはクリア済み）
 
 **ステップ**:
@@ -96,12 +96,12 @@ npm run test:e2e:debug     # デバッグモードで実行
 **事前条件**:
 
 - サインインページ（`/signin`）が表示されている
-- テストユーザーが存在する（dev.user@todoapp.com）
+- テストユーザーが存在する（example@test.com）
 
 **ステップ**:
 
-1. メールアドレス入力フィールドに `dev.user@todoapp.com` を入力
-2. パスワード入力フィールドに `devpassword123` を入力
+1. メールアドレス入力フィールドに `example@test.com` を入力
+2. パスワード入力フィールドに `password` を入力
 3. "ログイン"ボタンをクリック
 4. 認証処理が完了するまで待機（ローディング状態を確認）
 5. Todoページ（`/todo`）にリダイレクトされることを確認
@@ -255,12 +255,12 @@ npm run test:e2e:debug     # デバッグモードで実行
 **事前条件**:
 
 - サインアップページ（`/signup`）が表示されている
-- テストユーザー（dev.user@todoapp.com）が既に存在する
+- テストユーザー（example@test.com）が既に存在する
 
 **ステップ**:
 
-1. メールアドレス入力フィールドに `dev.user@todoapp.com` を入力
-2. パスワード入力フィールドに `devpassword123` を入力
+1. メールアドレス入力フィールドに `example@test.com` を入力
+2. パスワード入力フィールドに `password` を入力
 3. "登録"ボタンをクリック
 4. エラーメッセージが表示されることを確認
 
@@ -287,8 +287,8 @@ npm run test:e2e:debug     # デバッグモードで実行
 
 **事前条件**:
 
-- ユーザーが認証済み（dev.user@todoapp.com）
-- Docker開発環境のテストユーザーに既存のTodoとリストが存在する
+- ユーザーが認証済み（example@test.com）
+- MSWのテストユーザーに既存のTodoとリストが存在する
 
 **ステップ**:
 
@@ -1378,8 +1378,9 @@ npm run test:e2e:debug     # デバッグモードで実行
 
 ### テスト前の準備
 
-- Docker開発環境が起動していることを確認（`npm run docker:dev`）
-- テストユーザー（dev.user@todoapp.com / devpassword123）が存在することを確認
+- ローカルまたはCIでNext.jsアプリが起動していることを確認（`http://localhost:3000`）
+- MSW有効のNext.jsアプリが起動していることを確認
+- テストユーザー（example@test.com / password）が存在することを確認
 - ブラウザのセッション情報をクリア（初回テスト時）
 
 ### テスト後のクリーンアップ
@@ -1434,12 +1435,12 @@ npm run test:e2e:debug     # デバッグモードで実行
 ### 技術的制約
 
 - NextAuth.js v5はベータ版のため、認証フローが変更される可能性
-- Firebase Emulator使用時、本番環境と動作が異なる場合がある
+- MSW使用時、本番環境と動作が異なる場合がある
 - @dnd-kit/coreのモバイル対応は環境に依存
 
 ### テスト環境の制約
 
-- Docker開発環境（localhost:3000）でのテストのため、本番環境と完全には一致しない
+- ローカル/CIのMSW環境（localhost:3000）でのテストのため、本番環境と完全には一致しない
 - ネットワーク遅延のシミュレーションが必要な場合、開発者ツールを使用
 - マルチユーザー同時編集のテストは限定的
 

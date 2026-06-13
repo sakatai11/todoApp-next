@@ -18,7 +18,7 @@ todoApp-next プロジェクト専用のDocker環境管理スキル。開発環�
 | **環境変数**       | `USE_DEV_DB_DATA=true`           | `USE_TEST_DB_DATA=true`        |
 | **テストユーザー** | `dev-user-1` / `dev-admin-1`     | `test-user-1` / `test-admin-1` |
 | **データ永続化**   | セッション中保持、停止時リセット | 毎回クリーン状態               |
-| **用途**           | 日常の開発作業・E2Eテスト        | 統合テスト                     |
+| **用途**           | 日常の開発作業                   | 統合テスト                     |
 
 ### サービス構成
 
@@ -350,12 +350,10 @@ Docker環境に深刻な問題が検出されました。
 ### テストワークフロー
 
 1. **統合テスト**: `npm run docker:test:run`（全自動）
-2. **E2Eテスト**: `npm run docker:e2e:run`
-   - **⚠️ 前提条件**: 開発環境（ポート3000）が起動していること（`npm run docker:dev`）
+2. **E2Eテスト**: `npm run test:e2e`
+   - Dockerテスト環境では実行しない
    - Playwright の `baseURL` は `http://localhost:3000`（ポート3000）固定
-   - E2Eテストは**開発環境（ポート3000）**に対して実行される
-   - `docker:e2e:run` はテスト環境（docker-compose.test.yml）を起動するが、Playwright接続先はポート3000
-   - 開発環境が起動していない場合、Playwrightがポート3000に接続できずテストが失敗する
+   - ローカルまたはCIでFirebase Emulator、初期データ投入、Next.jsアプリを起動してから実行する
 3. **手動確認**: `npm run docker:test` → `http://localhost:3002`
 
 ### データ管理のポイント
@@ -391,7 +389,6 @@ npm run docker:dev:down         # 開発環境停止 + テストユーザーク�
 npm run docker:test             # テスト環境起動
 npm run docker:test:run         # 統合テスト実行（全自動）
 npm run docker:test:down        # テスト環境停止
-npm run docker:e2e:run          # E2Eテスト実行
 
 # Firebase Emulator
 npm run emulator:start          # 開発用Emulator起動
