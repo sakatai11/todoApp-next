@@ -63,6 +63,22 @@ const StatusTitle = React.memo(
       };
     }, [handleClickOutside]);
 
+    // メニュー（SelectListModal）はキーボードのみのユーザーが Escape で閉じられるようにする
+    // （メニューボタンの aria-haspopup が示す disclosure パターンへの準拠）
+    const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectModalIsOpen(false);
+      }
+    }, []);
+
+    useEffect(() => {
+      if (!selectModalIsOpen) return;
+      document.addEventListener('keydown', handleEscapeKey);
+      return () => {
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
+    }, [selectModalIsOpen, handleEscapeKey]);
+
     // リスト名の更新およびバリデーション処理
     // useCallbackを使用
     const handleBlur = useCallback(async () => {
@@ -136,6 +152,7 @@ const StatusTitle = React.memo(
         <IconButton
           {...listeners}
           {...attributes}
+          aria-label="リストを並び替え"
           sx={{
             p: '4px',
             position: 'absolute',
@@ -148,6 +165,7 @@ const StatusTitle = React.memo(
           }}
         >
           <SwipeOutlinedIcon
+            aria-hidden="true"
             sx={{
               fontSize: 20,
               color: '#fff',
@@ -155,6 +173,9 @@ const StatusTitle = React.memo(
           />
         </IconButton>
         <IconButton
+          aria-label="リスト操作メニュー"
+          aria-haspopup="true"
+          aria-expanded={selectModalIsOpen}
           onClick={() => setSelectModalIsOpen(true)}
           sx={{
             p: 0,
@@ -163,7 +184,7 @@ const StatusTitle = React.memo(
             right: 0,
           }}
         >
-          <MoreVertIcon />
+          <MoreVertIcon aria-hidden="true" />
         </IconButton>
         {selectModalIsOpen && (
           <div ref={modalRef}>

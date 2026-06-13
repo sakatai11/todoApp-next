@@ -126,6 +126,21 @@ describe('TodoList', () => {
       expect(screen.getByTestId('DeleteIcon')).toBeInTheDocument();
     });
 
+    it('各操作ボタンにアクセシブルネームが付与されている', () => {
+      // bool: false のTodoでピン留めラベルを検証
+      const unpinnedTodo =
+        mockTodos.find((todo) => todo.bool === false) || mockTodos[1];
+
+      render(<TodoList todo={unpinnedTodo} />);
+
+      // ピン留め・編集・削除の3ボタンがアクセシブルネームで識別できる
+      expect(
+        screen.getByRole('button', { name: 'ピン留め' }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '編集' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '削除' })).toBeInTheDocument();
+    });
+
     it('ピンボタンの状態がbool値に応じて変化する', () => {
       // サブモジュールから bool: true と bool: false のTodoを取得
       const pinnedTodo =

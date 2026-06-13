@@ -12,6 +12,9 @@ commit-msg:
   commands:
     validate-message:
       run: |
+        if [ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]; then
+          exit 0
+        fi
         commit_header=$(sed -n '1p' "{1}")
         if ! printf '%s\n' "$commit_header" | grep -qE '^(feat|fix|refactor|test|docs|chore|style|perf|ci|build|revert)(\([^)]+\))?(!)?: .+'; then
           echo "❌ コミットメッセージが規約に従っていません。" >&2
