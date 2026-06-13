@@ -166,9 +166,10 @@ gh run list --workflow "<workflowName>" \
 
 選択数:
 
-- 既定: 1 件
-- `--max-items=N`: `N` 件を選択。ただし `N > 2` の場合は 2 にクランプする。
-- 進行中項目がある場合: 進行中を 1 件として扱い、新規選択枠を消費する
+- カウント単位は **PR 単位**（複数 issue を 1 PR にまとめる場合も 1 件として数える）
+- 既定: 1 件（PR）
+- `--max-items=N`: `N` 件（PR）を選択。ただし `N > 2` の場合は 2 にクランプする。
+- 進行中項目がある場合: 進行中を 1 件としてカウントし、新規選択枠は `max-items - 進行中件数` で決定する（例: 進行中1件 + `--max-items=2` → 新規選択は1件）
 
 選択結果を必ず表示する。
 
@@ -176,6 +177,16 @@ gh run list --workflow "<workflowName>" \
 | item_id | 種別 | スコア | ルート | 判断理由 |
 | ------- | ---- | ------ | ------ | -------- |
 ```
+
+### 複数 issue を 1 PR にまとめる判断基準
+
+以下の条件を**すべて満たす**場合に複数 issue を 1 PR にまとめてよい。
+
+1. 変更ファイルが重複している（同じファイルを両方が修正する）
+2. issue 同士が同一機能・同一コンポーネントに属する（関係性が明確）
+3. 分割するとテストやレビューが冗長になる
+
+いずれか1つでも欠ける場合は、issue ごとに独立した PR を作成する。また、変更ファイルが重複するが条件2・3を満たさず1PRにまとめられない複数項目は、マージコンフリクトを避けるため**同一サイクルで同時に選択しない**。優先度の低い方を繰越キューに回し、後続サイクルで処理すること。
 
 `--dry-run` の終了条件:
 
@@ -185,7 +196,18 @@ gh run list --workflow "<workflowName>" \
 
 ## Phase 3: Creator Execution
 
-選択項目ごとに順次実行する。並列処理はこのスキルでは行わない。
+**実行方針の決定（Phase 2 選択直後、Phase 3 実行開始前に実施）:**
+
+複数項目を選択した場合、以下の手順で順次/並列を決定してから実行に入る。
+
+1. 各項目の変更予定ファイルを洗い出す（issue 本文・関連コードを確認）
+2. 項目間でファイル重複の有無を確認する
+3. 重複の有無で実行方式を決定する
+
+**順次実行（sequential）**: 選択項目間で変更ファイルが重複する場合。コンフリクトリスクを避けるため1件ずつ処理する。
+
+**並列実行（worktree）**: 選択項目間で変更ファイルが完全に独立している場合。`isolation: "worktree"` で並列化して効率を上げる。
+
 creator へ委譲する場合は `references/subagent-contracts.md` の `Creator` 戻り値を必須とする。
 creator は実装・テスト・コミットまでを担当し、PR作成、state 更新、最終 `LOOP_RESULT` は担当しない。
 
@@ -201,21 +223,26 @@ creator は実装・テスト・コミットまでを担当し、PR作成、stat
 
 ### GitHub Issue / Bug / Feature
 
-受け入れ条件が明確な issue は `todoapp-orchestrator` を使う。
+#### creator委譲 vs 直接実行の判断基準
 
-実行方法:
+委譲はメインコンテキストの逼迫を防ぐ手段でもある。直接実行は実装差分・検証ログがすべてメインコンテキストに蓄積するため、1サイクルで複数件を扱う場合や変更規模が大きい場合は委譲を優先する。直接実行は「1〜2ファイルの局所修正」に限定する。
 
-1. `.agents/skills/todoapp-orchestrator/SKILL.md` を読む。
-2. `triggers/github-issue.md` と必要な phase ファイルを読む。
-3. 次の制約を追加して実行する。
+| 条件                                                | 方式                                    |
+| --------------------------------------------------- | --------------------------------------- |
+| 変更ファイルが3つ以上、またはテスト追加・更新が必要 | `loop-creator` に委譲                   |
+| 1〜2ファイルの局所的な修正で受け入れ条件が自明      | backlog-loop 内で直接実行               |
+| 複数 issue を1PRにまとめる場合                      | `loop-creator` に委譲（1ブランチ・1PR） |
 
-```text
-この作業は todoapp-backlog-loop の creator フェーズです。
-Phase 5 Cross-Model Review と Phase 7 Draft PR Creation は実行しないでください。
-Phase 6 Commit & Push まで完了したら、ブランチ名、コミットSHA、実行した検証コマンドを返してください。
-レビューとPR作成は loop 側の verifier / PR phase が担当します。
-戻り値は references/subagent-contracts.md の creator_result 形式で返してください。
-```
+直接実行する場合も `references/subagent-contracts.md` の `Creator` 戻り値形式で記録すること。
+
+実行方法（委譲）:
+
+1. `loop-creator` サブエージェント（`.claude/agents/loop-creator.md`）に委譲する。
+2. 入力は `references/subagent-contracts.md` の `Creator` 入力形式（`items` / `route` / `constraints`）に従う。
+3. 複数 issue を1PRにまとめる場合は `items` に複数渡す。issue ごとに委譲を繰り返さない。これにより各 issue の実装差分がメインコンテキストに展開されるのを防ぐ。
+4. 戻り値は `creator_result` 形式で受け取る。
+
+`loop-creator` は `route` に応じて `todoapp-orchestrator` または `fix-security-ci` を読み、Cross-Model Review と Draft PR Creation を実行せず Commit & Push まで担当する。これらの制約は `loop-creator` の定義に固定済みのため、呼び出し側で都度指定しなくてよい。
 
 creator が人間確認を要求した場合:
 
