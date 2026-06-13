@@ -36,7 +36,7 @@ const name = user.name || 'Unknown';
 
 ```typescript
 // ✅ 推奨
-interface ButtonProps {
+type ButtonProps = {
   label: string;
   onClick: () => void;
   disabled?: boolean;
