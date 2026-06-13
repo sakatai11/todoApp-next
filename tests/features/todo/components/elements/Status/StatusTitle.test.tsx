@@ -111,6 +111,24 @@ describe('StatusTitle', () => {
       expect(screen.getByTestId('SwipeOutlinedIcon')).toBeInTheDocument();
       expect(screen.getByTestId('MoreVertIcon')).toBeInTheDocument();
     });
+
+    it('ドラッグハンドルとメニューボタンにアクセシブルネームが付与されている', () => {
+      render(<StatusTitle {...defaultProps} />, {
+        withTodoProvider: true,
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'リストを並び替え' }),
+      ).toBeInTheDocument();
+
+      const menuButton = screen.getByRole('button', {
+        name: 'リスト操作メニュー',
+      });
+      expect(menuButton).toBeInTheDocument();
+      // メニュー未展開時は aria-expanded=false
+      expect(menuButton).toHaveAttribute('aria-haspopup', 'true');
+      expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    });
   });
 
   describe('モーダル操作', () => {
@@ -237,6 +255,22 @@ describe('StatusTitle', () => {
 
       // 外部クリックをシミュレート
       fireEvent.mouseDown(document.body);
+
+      expect(screen.queryByTestId('select-list-modal')).not.toBeInTheDocument();
+    });
+
+    it('Escapeキー押下でメニューが閉じる', () => {
+      render(<StatusTitle {...defaultProps} />, {
+        withTodoProvider: true,
+      });
+
+      // メニューを開く
+      const moreVertIcon = screen.getByTestId('MoreVertIcon');
+      fireEvent.click(moreVertIcon);
+      expect(screen.getByTestId('select-list-modal')).toBeInTheDocument();
+
+      // Escapeキーでキーボードユーザーが閉じられる
+      fireEvent.keyDown(document, { key: 'Escape' });
 
       expect(screen.queryByTestId('select-list-modal')).not.toBeInTheDocument();
     });

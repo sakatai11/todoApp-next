@@ -120,8 +120,9 @@ describe('DeleteModal', () => {
         <DeleteModal {...defaultProps} setModalIsOpen={mockSetModalIsOpen} />,
       );
 
-      const closeIcon = screen.getByTestId('CloseIcon');
-      fireEvent.click(closeIcon);
+      // 閉じるボタンはアクセシブルネームを持つ<button>として到達可能
+      const closeButton = screen.getByRole('button', { name: '閉じる' });
+      fireEvent.click(closeButton);
 
       expect(mockSetModalIsOpen).toHaveBeenCalledWith(false);
     });
