@@ -311,6 +311,7 @@ describe('useUpdateStatusAndCategory', () => {
       expect(mockShowError).toHaveBeenCalledWith(
         ERROR_MESSAGES.LIST.UPDATE_FAILED,
       );
+      expect(mockUpdateListsAndTodos).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
