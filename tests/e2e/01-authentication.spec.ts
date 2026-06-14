@@ -4,10 +4,10 @@ import { test, expect } from '@playwright/test';
 // テストプラン: 1. 認証フロー（Critical）
 
 test.describe('認証フロー（Critical）', () => {
-  // テスト用ユーザー情報（Docker開発環境）
+  // テスト用ユーザー情報（ローカル/CIのMSW環境）
   const TEST_USER = {
-    email: 'dev.user@todoapp.com', // Docker開発環境用テストユーザー
-    password: 'devpassword123', // E2E_TEST_PLAN.mdに記載の正しいパスワード
+    email: 'example@test.com', // MSW用テストユーザー
+    password: 'password', // MockIndicatorに表示している固定パスワード
   };
 
   const INVALID_USER = {
@@ -47,10 +47,10 @@ test.describe('認証フロー（Critical）', () => {
     // サインインページにアクセス
     await page.goto('/signin');
 
-    // 1. メールアドレス入力フィールドに test-user-1@example.com を入力
+    // 1. メールアドレス入力フィールドにMSW用テストユーザーを入力
     await page.fill('input[name="email"]', TEST_USER.email);
 
-    // 2. パスワード入力フィールドに devpassword123 を入力
+    // 2. パスワード入力フィールドにMSW用テストパスワードを入力
     await page.fill('input[name="password"]', TEST_USER.password);
 
     // 3. "サインイン"ボタンをクリック
@@ -161,9 +161,10 @@ test.describe('認証フロー（Critical）', () => {
 
     // 4. トップページ（/）にリダイレクトされることを確認（signOut.ts: redirectTo: '/'）
     await expect(page).toHaveURL('/', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
     // 5. Todoページ（/todo）に直接アクセスしようとすると、サインインページにリダイレクトされることを確認
-    await page.goto('/todo');
+    await page.goto('/todo', { waitUntil: 'commit' });
     await expect(page).toHaveURL(/\/signin/, { timeout: 10000 });
   });
 
@@ -207,10 +208,10 @@ test.describe('認証フロー（Critical）', () => {
     // サインアップページにアクセス
     await page.goto('/signup');
 
-    // 1. メールアドレス入力フィールドに test-user-1@example.com を入力
+    // 1. メールアドレス入力フィールドにMSW用テストユーザーを入力
     await page.fill('input[name="email"]', TEST_USER.email);
 
-    // 2. パスワード入力フィールドに devpassword123 を入力
+    // 2. パスワード入力フィールドにMSW用テストパスワードを入力
     await page.fill('input[name="password"]', TEST_USER.password);
 
     // 3. "登録する"ボタンをクリック

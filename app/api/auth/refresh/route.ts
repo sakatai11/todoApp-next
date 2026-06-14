@@ -1,5 +1,4 @@
 // /app/api/auth/refresh/route.ts
-import { adminAuth } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { AuthDecodedTokenSchema } from '@/data/validatedData';
 
@@ -23,6 +22,19 @@ export async function POST(req: Request) {
     }
 
     const { uid } = validatedData.data;
+
+    if (
+      process.env.NODE_ENV === 'development' &&
+      process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+    ) {
+      return NextResponse.json({
+        customToken: `mock-custom-token-${uid}`,
+        success: true,
+        message: 'トークンが更新されました',
+      });
+    }
+
+    const { adminAuth } = await import('@/app/libs/firebaseAdmin');
 
     // Firebase Admin SDK を使って新しいカスタムトークンを発行
     const customToken = await adminAuth.createCustomToken(uid);
