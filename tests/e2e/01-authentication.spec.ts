@@ -164,8 +164,6 @@ test.describe('認証フロー（Critical）', () => {
     await page.waitForLoadState('networkidle');
 
     // 5. Todoページ（/todo）に直接アクセスしようとすると、サインインページにリダイレクトされることを確認
-    // MSW環境ではNextAuthのsignOutがCookieを完全にクリアしない場合があるため明示的にクリアする
-    await page.context().clearCookies();
     await page.goto('/todo', { waitUntil: 'commit' });
     await expect(page).toHaveURL(/\/signin/, { timeout: 10000 });
   });

@@ -24,24 +24,39 @@ export async function signInAndOpenBoard(page: Page): Promise<void> {
   ).toBeVisible({ timeout: 15000 });
 }
 
+function toXPathLiteral(value: string): string {
+  if (!value.includes("'")) {
+    return `'${value}'`;
+  }
+
+  if (!value.includes('"')) {
+    return `"${value}"`;
+  }
+
+  return `concat(${value
+    .split("'")
+    .map((part) => `'${part}'`)
+    .join(`, "'", `)})`;
+}
+
 /**
  * 指定テキストのTodoカード（親Box）を返す。
  * カードは「テキスト専用の子div」を直接子に持つdivとして特定する。
  * 単一行テキストのTodoにのみ使用すること。
  */
 export function todoCard(page: Page, text: string): Locator {
-  const escaped = JSON.stringify(text);
+  const literal = toXPathLiteral(text.trim());
   // テキスト専用の子divを持つdivはカードと親グループの両方がマッチするため、
   // ドキュメント順で最も内側（カード本体）になる .last() を採用する。
-  return page.locator(`xpath=//div[div[normalize-space(.)=${escaped}]]`).last();
+  return page.locator(`xpath=//div[div[normalize-space(.)=${literal}]]`).last();
 }
 
 /**
  * 指定カテゴリ名のリストタイトル（StatusTitleのBox）を返す。
  */
 export function listTitleBox(page: Page, category: string): Locator {
-  const escaped = JSON.stringify(category);
-  return page.locator(`xpath=//div[normalize-space(.)=${escaped}]`).first();
+  const literal = toXPathLiteral(category.trim());
+  return page.locator(`xpath=//div[normalize-space(.)=${literal}]`).first();
 }
 
 /**

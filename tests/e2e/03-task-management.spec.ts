@@ -122,4 +122,24 @@ test.describe('タスク管理機能（Critical）', () => {
     await expect(link).toHaveAttribute('href', url);
     await expect(link).toHaveAttribute('target', '_blank');
   });
+
+  test('3.9 ダブルクォーテーションを含むTodoを正常に特定する', async ({
+    page,
+  }) => {
+    const text = `foo"bar-${Date.now()}`;
+
+    await createTodoViaModal(page, text, 'in-progress');
+
+    await expect(todoCard(page, text)).toBeVisible({ timeout: 10000 });
+  });
+
+  test('3.10 シングルクォーテーションを含むTodoを正常に特定する', async ({
+    page,
+  }) => {
+    const text = `foo'bar-${Date.now()}`;
+
+    await createTodoViaModal(page, text, 'in-progress');
+
+    await expect(todoCard(page, text)).toBeVisible({ timeout: 10000 });
+  });
 });

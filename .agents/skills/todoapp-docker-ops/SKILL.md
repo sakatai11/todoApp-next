@@ -353,7 +353,8 @@ Docker環境に深刻な問題が検出されました。
 2. **E2Eテスト**: `npm run test:e2e`
    - Dockerテスト環境では実行しない
    - Playwright の `baseURL` は `http://localhost:3000`（ポート3000）固定
-   - ローカルまたはCIでFirebase Emulator、初期データ投入、Next.jsアプリを起動してから実行する
+   - ローカルまたはCIでNext.jsアプリを起動し、MSWハンドラーでAPIモックと初期データを適用してから実行する
+   - Firebase Emulator の起動・初期データ投入は不要
 3. **手動確認**: `npm run docker:test` → `http://localhost:3002`
 
 ### データ管理のポイント

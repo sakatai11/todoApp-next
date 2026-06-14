@@ -88,4 +88,28 @@ test.describe('リスト管理機能（High）', () => {
     await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
     await expect(listTitleBox(page, 'in-progress')).toBeVisible();
   });
+
+  test('4.7 ダブルクォーテーションを含むリスト名を正常に特定する', async ({
+    page,
+  }) => {
+    const name = `foo"bar-${Date.now()}`;
+
+    await page.getByRole('button', { name: 'リストを追加する' }).click();
+    await page.getByLabel('リスト名を入力').fill(name);
+    await page.getByRole('button', { name: '追加する', exact: true }).click();
+
+    await expect(listTitleBox(page, name)).toBeVisible({ timeout: 10000 });
+  });
+
+  test('4.8 シングルクォーテーションを含むリスト名を正常に特定する', async ({
+    page,
+  }) => {
+    const name = `foo'bar-${Date.now()}`;
+
+    await page.getByRole('button', { name: 'リストを追加する' }).click();
+    await page.getByLabel('リスト名を入力').fill(name);
+    await page.getByRole('button', { name: '追加する', exact: true }).click();
+
+    await expect(listTitleBox(page, name)).toBeVisible({ timeout: 10000 });
+  });
 });

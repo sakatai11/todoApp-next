@@ -96,32 +96,32 @@ export async function signUpData(
     return { success: true, message: '登録しました！' };
   }
 
-  const { adminAuth, adminDB } = await import('@/app/libs/firebaseAdmin');
-  const admin = await import('firebase-admin');
-
   try {
+    const { adminAuth, adminDB } = await import('@/app/libs/firebaseAdmin');
+    const admin = await import('firebase-admin');
+
     // Firebase Authenticationを使ってメール重複チェック
-    const existingUser = await adminAuth.getUserByEmail(rawFormData.email);
-    if (existingUser) {
-      return {
-        success: false,
-        option: 'email',
-        message: messageType.mailError,
-      };
+    try {
+      const existingUser = await adminAuth.getUserByEmail(rawFormData.email);
+      if (existingUser) {
+        return {
+          success: false,
+          option: 'email',
+          message: messageType.mailError,
+        };
+      }
+    } catch (error: unknown) {
+      // getUserByEmailでエラーが出た場合（ユーザーが存在しない場合）
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code: string }).code !== 'auth/user-not-found'
+      ) {
+        throw error;
+      }
     }
-  } catch (error: unknown) {
-    // getUserByEmailでエラーが出た場合（ユーザーが存在しない場合）
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'code' in error &&
-      (error as { code: string }).code !== 'auth/user-not-found'
-    ) {
-      return handleError(error);
-    }
-  }
 
-  try {
     // firestore内のメール重複チェック
     const existingUser = await getServerApiRequest(rawFormData.email);
     if (existingUser) {
