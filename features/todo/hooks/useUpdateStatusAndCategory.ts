@@ -9,6 +9,8 @@ import {
   updateListsAndTodos,
 } from '@/features/utils/updateStatusUtils';
 import { apiRequest } from '@/features/libs/apis';
+import { useError } from '@/features/todo/contexts/ErrorContext';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 type UpdateDataProp = {
   todos: TodoListProps[];
@@ -25,6 +27,7 @@ export const useUpdateStatusAndCategory = ({
   //
   // ***** state ******
   //
+  const { showError } = useError(); // グローバルエラー（APIエラー等）
   const [editId, setEditId] = useState<string | null>(null);
 
   //
@@ -71,12 +74,17 @@ export const useUpdateStatusAndCategory = ({
 
         // client
         updateListsAndTodos(setLists, setTodos, id, finalCategory, oldCategory);
+
+        // 全ての処理が成功した場合のみ true を返す
+        return true;
       } catch (error) {
         console.error('Error puting list or todo:', error);
+        // API失敗時はUIに成功表示させず、エラーを通知して false を返す
+        showError(ERROR_MESSAGES.LIST.UPDATE_FAILED);
+        return false;
       }
-      return true;
     },
-    [lists, setLists, setTodos],
+    [lists, setLists, setTodos, showError],
   );
 
   return {

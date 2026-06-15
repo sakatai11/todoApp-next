@@ -18,6 +18,7 @@ export const LIST_ERROR_MESSAGES = {
   ADD_FAILED: 'リストの追加に失敗しました',
   SORT_FAILED: 'リストの並び替えに失敗しました',
   MOVE_FAILED: 'リストの移動に失敗しました',
+  UPDATE_FAILED: 'リスト名の更新に失敗しました',
 } as const;
 
 // 認証関連のエラーメッセージ
