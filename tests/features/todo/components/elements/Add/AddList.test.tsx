@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/tests/test-utils';
+import { render, screen, fireEvent, waitFor, within } from '@/tests/test-utils';
 import AddList from '@/features/todo/components/elements/Add/AddList';
+import { http, HttpResponse, delay } from 'msw';
+import { server } from '@/todoApp-submodule/mocks/server';
 
 describe('AddList', () => {
   beforeEach(() => {
@@ -345,6 +347,78 @@ describe('AddList', () => {
           screen.getByText('同じリスト名が存在します'),
         ).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('二重送信防止・ローディング表示', () => {
+    it('送信中はボタンが無効化されローディングが表示される', async () => {
+      server.use(
+        http.post('/api/lists', async () => {
+          await delay(50);
+          return HttpResponse.json(
+            { id: 'list-loading', category: 'Unique List', number: 99 },
+            { status: 200 },
+          );
+        }),
+      );
+
+      render(<AddList />, { withTodoProvider: true });
+      fireEvent.click(
+        screen.getByRole('button', { name: /リストを追加する/i }),
+      );
+      fireEvent.change(screen.getByLabelText('リスト名を入力'), {
+        target: { value: 'Unique List' },
+      });
+
+      const submitButton = screen.getByRole('button', { name: '追加する' });
+      fireEvent.click(submitButton);
+
+      // 送信中はボタンが無効化され、スピナーが表示される
+      expect(submitButton).toBeDisabled();
+      expect(within(submitButton).getByRole('progressbar')).toBeInTheDocument();
+
+      // 成功後はフォームが閉じる
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: /リストを追加する/i }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('送信中に再クリックしても重複リクエストが送信されない', async () => {
+      let postCount = 0;
+      server.use(
+        http.post('/api/lists', async () => {
+          postCount += 1;
+          await delay(50);
+          return HttpResponse.json(
+            { id: 'list-dup', category: 'Unique List', number: 99 },
+            { status: 200 },
+          );
+        }),
+      );
+
+      render(<AddList />, { withTodoProvider: true });
+      fireEvent.click(
+        screen.getByRole('button', { name: /リストを追加する/i }),
+      );
+      fireEvent.change(screen.getByLabelText('リスト名を入力'), {
+        target: { value: 'Unique List' },
+      });
+
+      const submitButton = screen.getByRole('button', { name: '追加する' });
+      // 連打
+      fireEvent.click(submitButton);
+      fireEvent.click(submitButton);
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: /リストを追加する/i }),
+        ).toBeInTheDocument();
+      });
+
+      expect(postCount).toBe(1);
     });
   });
 });

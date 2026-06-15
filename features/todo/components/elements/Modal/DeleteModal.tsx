@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button, Box, Typography, IconButton } from '@mui/material';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
@@ -10,6 +11,9 @@ const DeleteModal = ({
   setModalIsOpen,
   setSelectModalIsOpen,
 }: DeletePropType) => {
+  // 送信中フラグ（二重送信防止・ローディング表示）
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   return (
     <>
       <Modal //モーダル
@@ -77,7 +81,11 @@ const DeleteModal = ({
               <Button
                 variant="contained"
                 sx={{ maxWidth: '120px ', width: '100%' }}
+                disabled={isSubmitting}
                 onClick={() => {
+                  // 削除は楽観的更新で即時実行されモーダルがアンマウントされるため、
+                  // disabled により連打での重複リクエストを防止する
+                  setIsSubmitting(true);
                   onDelete();
                   if (setSelectModalIsOpen) {
                     setSelectModalIsOpen(false);
