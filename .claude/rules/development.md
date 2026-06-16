@@ -261,9 +261,9 @@ Task({ isolation: "worktree", ... })
 **対処法（worktree を使いたい場合）**:
 
 ```bash
-# worktree 内で必ず develop-v2 を起点にリベースする
+# worktree 内で必ず develop-v2 を起点にリセットする
 git fetch origin develop-v2
-git rebase origin/develop-v2
+git reset --hard origin/develop-v2
 ```
 
 あるいは worktree を使わず、**主ツリーで `develop-v2` から手動でブランチを切って逐次実装する**。
