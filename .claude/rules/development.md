@@ -253,6 +253,22 @@ Task({ isolation: "worktree", ... })
 Task({ isolation: "worktree", ... })
 ```
 
+### ⚠️ 既知の不具合：worktree の起点ブランチ
+
+`isolation: "worktree"` はリポジトリの **default branch**（`main`）を起点にする。
+このプロジェクトでは開発ブランチが `develop-v2` のため、**worktree 内のベースが古い main コミットになり差分が壊れる**。
+
+**対処法（worktree を使いたい場合）**:
+
+```bash
+# worktree 内で必ず develop-v2 を起点にリベースする
+git fetch origin develop-v2
+git rebase origin/develop-v2
+```
+
+あるいは worktree を使わず、**主ツリーで `develop-v2` から手動でブランチを切って逐次実装する**。
+`todoapp-backlog-loop` スキルでは後者（主ツリー逐次）を優先する。
+
 ### Worktreeを使わない場合
 
 以下はWorktreeなしで通常実行する：
@@ -260,6 +276,7 @@ Task({ isolation: "worktree", ... })
 - 単一タスクの実装・修正
 - 既存コードの調査・読み取りのみ
 - ユニットテスト（MSWモードで動作するため Docker 不要）
+- `develop-v2` が default branch でない間の並列実装（worktree 起点問題を避けるため）
 
 ## Git ワークフロー
 
