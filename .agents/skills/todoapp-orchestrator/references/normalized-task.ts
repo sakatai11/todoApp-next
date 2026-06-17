@@ -41,12 +41,6 @@ type FactoryResult = {
   integrationTest: IntegrationTestPlan;
 };
 
-type ReviewSeveritySummary = {
-  critical: number;
-  high: number;
-  mediumLow: number;
-};
-
 type DraftPullRequestPlan = {
   draft: true; // Phase 7 では常に Draft PR を作成する
   baseBranch: string;
