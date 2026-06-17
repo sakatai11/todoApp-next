@@ -1,0 +1,54 @@
+{
+  "skill_name": "todoapp-orchestrator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "GitHub Issue から実装して Draft PR まで進めて。Issue の本文には Acceptance Criteria が不足している。",
+      "expected_output": "triggers/github-issue.md に従って Issue を取得し、Acceptance Criteria 不足を Phase 1 で検出して人間に確認する。曖昧なまま Phase 2 以降へ進まない。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/SKILL.md",
+        ".agents/skills/todoapp-orchestrator/triggers/github-issue.md",
+        ".agents/skills/todoapp-orchestrator/phases/phase1-spec-quality-gate.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "API 変更を含む bugfix Issue を orchestrator で処理して。Factory の返却では app/api と Firestore の変更がある。",
+      "expected_output": "FactoryResult.integrationTest を IntegrationTestPlan として扱い、required: true と api-route-changed / firestore-changed の理由を Phase 4 に渡す。IT を必須として扱い、skip する場合は Markdown 手順に従って明示承認を取る。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts",
+        ".agents/skills/todoapp-orchestrator/phases/phase3-factory-execution.md",
+        ".agents/skills/todoapp-orchestrator/phases/phase4-quality-gate.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "スキル文書だけを変更する改善 Issue を orchestrator で処理して。アプリ本体や API は変更しない。",
+      "expected_output": "FactoryResult.integrationTest を required: false / reason: skill-only として扱う。Phase 4 で統合テストをスキップ可能と判断しつつ、format・lint・参照 TypeScript の typecheck など変更種別に合う検証を行う。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/SKILL.md",
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts",
+        ".agents/skills/todoapp-orchestrator/phases/phase4-quality-gate.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "PR 作成前に High のレビュー指摘が 1 件ある。orchestrator としてどう進めるべきか判断して。",
+      "expected_output": "レビュー件数そのものを NormalizedTask に混ぜず、Phase 5 の Markdown 手順に従って High 指摘をユーザーに確認する。即修正・PR 後修正・無視の判断を得るまで自動で Draft PR 作成へ進まない。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/SKILL.md",
+        ".agents/skills/todoapp-orchestrator/phases/phase5-cross-model-review.md",
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "TypeScript で管理しているフラグを見直して、改善案を PR に反映して。",
+      "expected_output": "TypeScript は Phase 間データ契約、Markdown は承認・skip・リトライなどの運用手順という役割分担を維持する。boolean だけで理由が落ちる判定は理由付き union に寄せ、運用判断を TypeScript 型へ過剰に閉じ込めない。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/SKILL.md",
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
+      ]
+    }
+  ]
+}

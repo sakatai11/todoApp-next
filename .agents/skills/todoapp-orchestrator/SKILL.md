@@ -91,6 +91,17 @@ description: |-
 type / source / title / description / acceptanceCriteria / context? / branchSlug
 ```
 
+## TypeScript + Markdown 手順の役割分担
+
+`references/normalized-task.ts` はフェーズ間で受け渡すデータ契約だけを型で固定し、実行中の判断手順は各 Phase の Markdown に残す。
+
+- TypeScript: `NormalizedTask.type` / `source`、`FactoryResult.integrationTest`、`DraftPullRequestPlan.draft` など、後続 Phase が読み取る構造化データを管理する
+- Markdown: ユーザー承認、リトライ可否、skip 判断、High 指摘への対応方針など、状況依存の運用手順を管理する
+- boolean だけでは判断理由が失われる実行判定は、`IntegrationTestPlan` のように理由付き union として TypeScript 側に渡す
+- 実行結果の採否や例外処理は TypeScript 型に閉じ込めず、Phase 手順で明示する
+
+`NormalizedTask` は仕様を表す入力モデルであり、実行中に変わるテスト実行判断やレビュー件数などを追加しない。実行時の判定は Phase 3 以降の結果型として扱い、判断の進め方は Markdown の Phase 手順に従う。
+
 ---
 
 ## 実行手順
@@ -125,3 +136,5 @@ type / source / title / description / acceptanceCriteria / context? / branchSlug
 - ルール: `.claude/rules/development.md`, `.claude/rules/code-quality.md`, `.claude/rules/security.md`
 - triggers: `triggers/spec.md`, `triggers/qa.md`, `triggers/github-issue.md`, `triggers/ui-annotator.md`, `triggers/posthog.md`
 - factories: `factories/feature.md`, `factories/bugfix.md`, `factories/ui-change.md`
+- phase result types: `references/normalized-task.ts`
+- evals: `evals/evals.json`
