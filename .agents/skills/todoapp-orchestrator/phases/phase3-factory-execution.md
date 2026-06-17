@@ -116,8 +116,9 @@ worktree が残存している場合は `git merge` か `git rebase` でメイ�
 
 ## Agent 完了後の受け取り情報
 
-Agent が完了したら、以下の情報を受け取って Phase 4 へ進む：
+Agent が完了したら、`references/normalized-task.ts` の `FactoryResult` に相当する以下の情報を受け取って Phase 4 へ進む：
 
 - 変更ファイル一覧
-- `app/api/` 変更の有無（IT 実行フラグ）
+- `integrationTest.required` と判断理由（`app/api/` または Firebase Auth/Firestore 変更の有無）
+- `integrationTest.changedApiRoutes`（該当する場合）
 - 作成・更新した UT ファイル一覧

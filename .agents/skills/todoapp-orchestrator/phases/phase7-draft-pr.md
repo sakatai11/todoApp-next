@@ -38,6 +38,8 @@ PR を作成する前に、以下の内容をユーザーに提示して確認�
 Skill ツールで skill: "todoapp-pr-creator" を起動（引数に draft: true を指定）
 ```
 
+`references/normalized-task.ts` の `DraftPullRequestPlan` に相当する値として、`draft: true` / `baseBranch` / `headBranch` / `title` / `closesIssueNumber` を確定してから渡す。
+
 PR 本文には以下を含めるよう指示する：
 
 ```markdown

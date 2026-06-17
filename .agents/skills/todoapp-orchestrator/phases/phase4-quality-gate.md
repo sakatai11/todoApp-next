@@ -57,6 +57,7 @@ npm run build
 ## 4-5: IT（統合テスト）（人間確認）
 
 API ルートや Firebase Emulator との連携が変更に含まれる場合のみ実行する。
+Phase 3 の `FactoryResult.integrationTest.required` が `true` の場合は必須、`false` の場合は `reason` を確認した上でスキルファイル・ドキュメントのみの変更と同様にスキップできる。実行するか、明示承認で skip するかの判断手順はこの Markdown に従う。
 
 **実行判断基準**:
 
