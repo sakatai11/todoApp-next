@@ -72,7 +72,7 @@ Agent ツールで以下を実行:
   - <変更ファイルのパス一覧>
 
   ## IT 必要性
-  - app/api/ 変更あり: <yes/no>
+  - app/api/ または Firebase Auth/Firestore 変更あり: <yes/no>
   - 変更した API ルート: <パス一覧（あれば）>
 
   ## 作成・更新した UT ファイル
