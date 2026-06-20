@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/todoApp-submodule/*": ["./todoApp-submodule/*"]
     }
   },
   "include": [

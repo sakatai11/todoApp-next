@@ -1,0 +1,19 @@
+# Gitleaks configuration file
+# https://github.com/gitleaks/gitleaks
+
+title = "Gitleaks Configuration"
+
+# Allow documentation and example files
+[allowlist]
+  description = "Allow documentation examples and test data"
+  paths = [
+    '''.claude/agents/.*\.md''',
+    '''.claude/rules/.*\.md''',
+  ]
+
+  # Allow specific example secrets in documentation
+  regexes = [
+    '''password 123456''',                    # Example password in docs
+    '''sk-1234567890abcdef''',                # Example API key in security docs
+    '''admin@test\.com''',                    # Example email in test docs
+  ]
