@@ -9,7 +9,6 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-/scripts
 
 # testing
 /coverage
@@ -53,10 +52,10 @@ firestore.indexes.json
 firestore.rules
 firestore.test.rules
 CLAUDE.local.md
-.github/*
 test-results/*
 # ↑CI/CD用ファイルをコミットする場合はコメントアウト
-.claude/*
+# Claude Code - ローカル設定のみ除外
+.claude/settings.local.json
 .claude-pr-config.json
 
 
@@ -77,7 +76,7 @@ playwright-report/*
 
 # Submodule
 todoApp-submodule
-
-tests/*
 # next-agents-md
 .next-docs/*
+.claude/worktrees/
+.claude/state/
