@@ -1,7 +1,8 @@
 import { auth } from '@/auth';
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { NextResponse } from 'next/server';
-import { UserData } from '@/types/auth/authData';
+import { AdminUser } from '@/types/auth/authData';
+import { AdminUserFirestoreDocSchema } from '@/data/validatedData';
 
 export async function GET(
   _request: Request,
@@ -16,7 +17,7 @@ export async function GET(
     }
 
     // 管理者権限チェック（セッションに role が設定されている前提）
-    if (session.user.role !== 'ADMIN') {
+    if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -26,14 +27,22 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     const data = userDoc.data();
-    const user: UserData = {
+    const parseResult = AdminUserFirestoreDocSchema.safeParse(data);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid user data format' },
+        { status: 500 },
+      );
+    }
+    const { email, role, createdAt, name, image, updatedAt } = parseResult.data;
+    const user: AdminUser = {
       id: userDoc.id,
-      email: data?.email,
-      role: data?.role,
-      createdAt: data?.createdAt.toMillis(),
-      name: data?.name ?? null,
-      image: data?.image ?? null,
-      updatedAt: data?.updatedAt?.toMillis() ?? null,
+      email,
+      role,
+      createdAt: createdAt.toMillis(),
+      name: name ?? undefined,
+      image: image ?? undefined,
+      updatedAt: updatedAt?.toMillis(),
     };
 
     return NextResponse.json({ user }, { status: 200 });

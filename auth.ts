@@ -75,14 +75,18 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             throw new AuthenticationFailedError('ログインに失敗しました');
           }
 
-          const { customToken, decodedToken, tokenExpiry, userRole } =
-            await res.json();
+          const loginData = (await res.json()) as {
+            customToken: string;
+            decodedToken: { uid: string; email: string };
+            tokenExpiry: number;
+            userRole: string;
+          };
           return {
-            id: decodedToken.uid,
-            email: decodedToken.email,
-            customToken,
-            tokenExpiry,
-            role: userRole, // server-loginから返されたroleを使用
+            id: loginData.decodedToken.uid,
+            email: loginData.decodedToken.email,
+            customToken: loginData.customToken,
+            tokenExpiry: loginData.tokenExpiry,
+            role: loginData.userRole,
           };
         } catch (error) {
           // カスタムエラーはそのまま再スロー（error.codeを保持）

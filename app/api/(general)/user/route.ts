@@ -1,7 +1,8 @@
 import { adminDB } from '@/app/libs/firebaseAdmin';
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-import { UserData } from '@/types/auth/authData';
+import { AdminUser } from '@/types/auth/authData';
+import { AdminUserFirestoreDocSchema } from '@/data/validatedData';
 
 // ユーザー情報を取得する関数
 export async function GET() {
@@ -9,26 +10,38 @@ export async function GET() {
     const session = await auth();
     console.log(`sessionData:${JSON.stringify(session, null, 2)}`);
 
-    if (!session || !session.user?.id) {
+    const sessionUserId = session?.user?.id;
+    if (!session || !sessionUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const uid = session.user.id;
+    const uid = sessionUserId;
 
     // Firestoreのusersコレクションからuidが一致するドキュメントを取得
     const doc = await adminDB.collection('users').doc(uid).get();
     const data = doc.data();
-    // 各データマッピング
-    const userData: UserData[] = data
-      ? [
-          {
-            id: uid,
-            email: data.email,
-            role: data.role,
-            createdAt: data.createdAt.toMillis(),
-          },
-        ]
-      : [];
+
+    let userData: AdminUser[] = [];
+    if (data) {
+      const parseResult = AdminUserFirestoreDocSchema.safeParse(data);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: 'Invalid user data format' },
+          { status: 500 },
+        );
+      }
+      const { email, role, createdAt, name, image } = parseResult.data;
+      userData = [
+        {
+          id: uid,
+          email,
+          role,
+          createdAt: createdAt.toMillis(),
+          name: name ?? undefined,
+          image: image ?? undefined,
+        },
+      ];
+    }
 
     // JSONレスポンスを返す
     return NextResponse.json({ user: userData }, { status: 200 });

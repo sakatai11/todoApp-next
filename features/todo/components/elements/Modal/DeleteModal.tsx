@@ -1,4 +1,5 @@
-import { Button, Box, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Button, Box, Typography, IconButton } from '@mui/material';
 import Modal from '@mui/material/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 import { DeletePropType } from '@/types/components';
@@ -10,6 +11,9 @@ const DeleteModal = ({
   setModalIsOpen,
   setSelectModalIsOpen,
 }: DeletePropType) => {
+  // 送信中フラグ（二重送信防止・ローディング表示）
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   return (
     <>
       <Modal //モーダル
@@ -43,18 +47,24 @@ const DeleteModal = ({
               position: 'relative',
             }}
           >
-            <CloseIcon
-              // 閉じる
+            <IconButton
+              aria-label="閉じる"
+              onClick={() => setModalIsOpen(false)}
               sx={{
                 position: 'absolute',
                 top: '-27px',
                 right: 0,
                 color: '#FFF',
-                cursor: 'pointer',
+                p: 0,
               }}
-              onClick={() => setModalIsOpen(false)}
-            />
-            <Typography variant="h6" sx={{ textAlign: 'center' }}>
+            >
+              <CloseIcon aria-hidden="true" />
+            </IconButton>
+            <Typography
+              id="modal-modal-text"
+              variant="h6"
+              sx={{ textAlign: 'center' }}
+            >
               削除しても問題ないですか？
             </Typography>
             <Typography variant="subtitle2" sx={{ textAlign: 'center' }}>
@@ -71,7 +81,11 @@ const DeleteModal = ({
               <Button
                 variant="contained"
                 sx={{ maxWidth: '120px ', width: '100%' }}
+                disabled={isSubmitting}
                 onClick={() => {
+                  // 削除は楽観的更新で即時実行されモーダルがアンマウントされるため、
+                  // disabled により連打での重複リクエストを防止する
+                  setIsSubmitting(true);
                   onDelete();
                   if (setSelectModalIsOpen) {
                     setSelectModalIsOpen(false);

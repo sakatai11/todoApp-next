@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: false
+  commands:
+    prettier:
+      run: npm run prettier
+      stage_fixed: true
+    lint:
+      run: npm run lint
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    validate-message:
+      run: |
+        if [ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]; then
+          exit 0
+        fi
+        commit_header=$(sed -n '1p' "{1}")
+        if ! printf '%s\n' "$commit_header" | grep -qE '^(feat|fix|refactor|test|docs|chore|style|perf|ci|build|revert)(\([^)]+\))?(!)?: .+'; then
+          echo "❌ コミットメッセージが規約に従っていません。" >&2
+          echo "   形式: <type>: <subject>" >&2
+          echo "   type: feat, fix, refactor, test, docs, chore, style, perf, ci, build, revert" >&2
+          exit 1
+        fi

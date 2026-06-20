@@ -72,14 +72,12 @@ export async function signInData(
     };
   }
 
-  // 認証試行
   try {
-    const result = await signIn('credentials', {
+    const result = (await signIn('credentials', {
       email: rawFormData.email,
       password: rawFormData.password,
       redirect: false,
-    });
-    // 認証失敗時は NextAuth の結果を参照
+    })) as { error?: string } | undefined;
     if (result?.error) {
       return {
         success: false,

@@ -1,0 +1,13 @@
+{
+  "baseBranches": {
+    "feature/*": "develop-v2",
+    "hotfix/*": "main",
+    "release/*": "main",
+    "bugfix/*": "develop-v2"
+  },
+  "defaultBranch": "develop-v2",
+  "prTemplate": {
+    "format": "summary-testplan",
+    "includeClaudeSignature": true
+  }
+}

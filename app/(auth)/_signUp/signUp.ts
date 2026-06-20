@@ -6,8 +6,6 @@ import { PrevState } from '@/types/form/formData';
 import { messageType } from '@/data/form';
 import { getServerApiRequest } from '@/app/libs/apis';
 import { handleError } from '@/app/utils/authUtils';
-import { adminAuth, adminDB } from '@/app/libs/firebaseAdmin';
-import * as admin from 'firebase-admin';
 // import { redirect } from 'next/navigation';
 // import { signIn } from '@/auth';
 // import { AuthError } from 'next-auth';
@@ -78,29 +76,52 @@ export async function signUpData(
     };
   }
 
-  try {
-    // Firebase Authenticationを使ってメール重複チェック
-    const existingUser = await adminAuth.getUserByEmail(rawFormData.email);
-    if (existingUser) {
+  if (
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'
+  ) {
+    const { findMockAuthUser, createMockAuthUser } = await import(
+      '@/todoApp-submodule/mocks/data/authUsers'
+    );
+    if (findMockAuthUser(rawFormData.email)) {
       return {
         success: false,
         option: 'email',
         message: messageType.mailError,
       };
     }
-  } catch (error: unknown) {
-    // getUserByEmailでエラーが出た場合（ユーザーが存在しない場合）
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'code' in error &&
-      (error as { code: string }).code !== 'auth/user-not-found'
-    ) {
-      return handleError(error);
-    }
+
+    createMockAuthUser(rawFormData.email, rawFormData.password);
+    revalidatePath('/signup');
+    return { success: true, message: '登録しました！' };
   }
 
   try {
+    const { adminAuth, adminDB } = await import('@/app/libs/firebaseAdmin');
+    const admin = await import('firebase-admin');
+
+    // Firebase Authenticationを使ってメール重複チェック
+    try {
+      const existingUser = await adminAuth.getUserByEmail(rawFormData.email);
+      if (existingUser) {
+        return {
+          success: false,
+          option: 'email',
+          message: messageType.mailError,
+        };
+      }
+    } catch (error: unknown) {
+      // getUserByEmailでエラーが出た場合（ユーザーが存在しない場合）
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code: string }).code !== 'auth/user-not-found'
+      ) {
+        throw error;
+      }
+    }
+
     // firestore内のメール重複チェック
     const existingUser = await getServerApiRequest(rawFormData.email);
     if (existingUser) {

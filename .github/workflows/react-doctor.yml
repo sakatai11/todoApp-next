@@ -1,0 +1,30 @@
+name: React Doctor
+
+on:
+  pull_request:
+    branches: [main, develop-v2]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  react-doctor:
+    name: React Doctor
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.0
+        with:
+          fetch-depth: 0
+
+      # `@main` は action.yml と CLI（version 既定: latest）が共に流動するため、
+      # 上流の更新で CI が不安定化する。アクションは安定版タグ、CLI は固定
+      # バージョンにピン留めして再現性を確保する。
+      - uses: millionco/react-doctor@547e1e4ecdb70315d81a91ec3605701d58616ee2 # v2.1.0
+        with:
+          version: '0.5.1'

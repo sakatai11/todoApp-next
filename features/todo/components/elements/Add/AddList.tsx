@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
-import { Button, TextField, Box } from '@mui/material';
+import { Button, TextField, Box, CircularProgress } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
 const AddList = () => {
@@ -10,13 +10,19 @@ const AddList = () => {
     listHooks;
 
   const [addBtn, setAddBtn] = useState(false);
+  // 送信中フラグ（二重送信防止・ローディング表示）
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddList = async () => {
-    const errorFlag = await addList();
-    if (errorFlag) {
-      setAddBtn(false);
-    } else {
-      setAddBtn(true);
+    // 送信中は disabled でクリックが抑止されるため、ここでのガードは不要
+    setIsSubmitting(true);
+    try {
+      const isSuccess = await addList();
+      if (isSuccess) {
+        setAddBtn(false);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -51,7 +57,17 @@ const AddList = () => {
               gap: '12px',
             }}
           >
-            <Button variant="outlined" fullWidth onClick={handleAddList}>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={handleAddList}
+              disabled={isSubmitting}
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : undefined
+              }
+            >
               追加する
             </Button>
             <Button

@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -28,6 +28,40 @@ const MainContainer = () => {
   const { todoHooks, listHooks } = useTodoContext();
   const { todos } = todoHooks;
   const { lists, handleDragEnd } = listHooks;
+
+  // リストが0件のときは、初回ユーザー向けの空状態ガイドを表示する
+  if (lists.length === 0) {
+    return (
+      <Box
+        sx={{
+          maxWidth: '1660px',
+          paddingTop: '80px',
+          width: '100%',
+          margin: '0 auto',
+        }}
+      >
+        <Stack
+          spacing={2}
+          alignItems="center"
+          sx={{
+            mt: 4,
+            px: { xs: 2, sm: 3 },
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="h6" component="h2">
+            まだリストがありません
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            最初のリストを作成して、TODO管理を始めましょう。
+          </Typography>
+          <Box sx={{ width: '100%', maxWidth: 320 }}>
+            <AddList />
+          </Box>
+        </Stack>
+      </Box>
+    );
+  }
 
   return (
     <DndContext

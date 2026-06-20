@@ -1,0 +1,80 @@
+name: Auto Close Issues on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main, develop-v2]
+
+jobs:
+  close-issues:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+
+    steps:
+      - name: Close related issues
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const prBody = context.payload.pull_request.body || '';
+            const prTitle = context.payload.pull_request.title || '';
+            const branchName = context.payload.pull_request.head.ref;
+
+            const issueNumbers = new Set();
+
+            const keywordPattern = /(?:closes?|fixes?|resolves?)\s*#(\d+)/gi;
+            for (const text of [prBody, prTitle]) {
+              let match;
+              while ((match = keywordPattern.exec(text)) !== null) {
+                issueNumbers.add(parseInt(match[1]));
+              }
+            }
+
+            const branchPattern = /(?:feature|fix|hotfix|chore|refactor|docs|test|improve|release)\/(\d+)/;
+            const branchMatch = branchName.match(branchPattern);
+            if (branchMatch) {
+              issueNumbers.add(parseInt(branchMatch[1]));
+            }
+
+            if (issueNumbers.size === 0) {
+              console.log('関連する Issue が見つかりませんでした。');
+              return;
+            }
+
+            for (const issueNumber of issueNumbers) {
+              try {
+                const { data: issue } = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                });
+
+                if (issue.state === 'closed') {
+                  console.log(`Issue #${issueNumber} は既にクローズされています。`);
+                  continue;
+                }
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: `PR #${prNumber} のマージにより自動クローズされました。`,
+                });
+
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  state: 'closed',
+                  state_reason: 'completed',
+                });
+
+                console.log(`Issue #${issueNumber} をクローズしました。`);
+              } catch (error) {
+                console.error(`Issue #${issueNumber} の処理中にエラーが発生しました: ${error.message}`);
+              }
+            }

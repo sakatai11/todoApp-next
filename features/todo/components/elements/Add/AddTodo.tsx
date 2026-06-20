@@ -1,6 +1,7 @@
 'use client';
+import { useState } from 'react';
 import { useTodoContext } from '@/features/todo/contexts/TodoContext';
-import { Button, TextField, Box } from '@mui/material';
+import { Button, TextField, Box, CircularProgress } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
 type AddTodoProps = {
@@ -19,16 +20,25 @@ const AddTodo = ({ status }: AddTodoProps) => {
     setAddTodoOpenStatus,
   } = todoHooks;
 
+  // 送信中フラグ（二重送信防止・ローディング表示）
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // このAddTodoコンポーネントが開いているかどうかを判定
   const isOpen = addTodoOpenStatus === status;
 
   const handleAddTodo = async () => {
-    const errorFlag = await addTodo();
-    if (errorFlag) {
-      // 成功した場合は閉じる
-      setAddTodoOpenStatus(null);
+    // 送信中は disabled でクリックが抑止されるため、ここでのガードは不要
+    setIsSubmitting(true);
+    try {
+      const errorFlag = await addTodo();
+      if (errorFlag) {
+        // 成功した場合は閉じる
+        setAddTodoOpenStatus(null);
+      }
+      // エラーの場合は開いたままにする
+    } finally {
+      setIsSubmitting(false);
     }
-    // エラーの場合は開いたままにする
   };
 
   return (
@@ -67,7 +77,17 @@ const AddTodo = ({ status }: AddTodoProps) => {
               gap: '12px',
             }}
           >
-            <Button variant="outlined" fullWidth onClick={handleAddTodo}>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={handleAddTodo}
+              disabled={isSubmitting}
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : undefined
+              }
+            >
               追加する
             </Button>
             <Button

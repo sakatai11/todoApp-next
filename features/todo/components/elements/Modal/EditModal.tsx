@@ -1,5 +1,12 @@
-import React, { useCallback } from 'react';
-import { Button, Box, Typography, TextField } from '@mui/material';
+import React, { useCallback, useState } from 'react';
+import {
+  Button,
+  Box,
+  Typography,
+  TextField,
+  IconButton,
+  CircularProgress,
+} from '@mui/material';
 import { ModalPropType } from '@/types/components';
 import { jstFormattedDate, getTime } from '@/features/utils/dateUtils';
 import Modal from '@mui/material/Modal';
@@ -24,6 +31,9 @@ const EditModal = React.memo(
     const statusPull = listHooks.lists;
     const isPushContainer = id === 'pushContainer' ? true : false;
 
+    // 送信中フラグ（二重送信防止・ローディング表示）
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleClose = useCallback(() => {
       setModalIsOpen(false);
       setValidationError({ listPushArea: false, listModalArea: false }); // バリデーションエラーリセット
@@ -32,15 +42,21 @@ const EditModal = React.memo(
     }, [setModalIsOpen, setValidationError, setEditId, setInput]);
 
     const handleSubmit = useCallback(async () => {
-      let success = false;
-      if (isPushContainer) {
-        success = await addTodo();
-      } else {
-        success = await saveTodo();
-      }
+      // 送信中は disabled でクリックが抑止されるため、ここでのガードは不要
+      setIsSubmitting(true);
+      try {
+        let success = false;
+        if (isPushContainer) {
+          success = await addTodo();
+        } else {
+          success = await saveTodo();
+        }
 
-      if (success) {
-        setModalIsOpen(false);
+        if (success) {
+          setModalIsOpen(false);
+        }
+      } finally {
+        setIsSubmitting(false);
       }
     }, [isPushContainer, addTodo, saveTodo, setModalIsOpen]);
 
@@ -75,6 +91,19 @@ const EditModal = React.memo(
               position: 'relative',
             }}
           >
+            <IconButton
+              aria-label="閉じる"
+              onClick={handleClose}
+              sx={{
+                position: 'absolute',
+                top: '-27px',
+                right: 0,
+                color: '#FFF',
+                p: 0,
+              }}
+            >
+              <CloseIcon aria-hidden="true" />
+            </IconButton>
             {todo?.updateTime && (
               <Typography
                 component="span"
@@ -133,16 +162,6 @@ const EditModal = React.memo(
                 }
               }}
             />
-            <CloseIcon
-              sx={{
-                position: 'absolute',
-                top: '-27px',
-                right: 0,
-                color: '#FFF',
-                cursor: 'pointer',
-              }}
-              onClick={handleClose}
-            />
             <Box
               sx={{
                 width: '100%',
@@ -155,6 +174,12 @@ const EditModal = React.memo(
                 variant="contained"
                 sx={{ display: 'block' }}
                 onClick={handleSubmit}
+                disabled={isSubmitting}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : undefined
+                }
               >
                 {isPushContainer ? '追加' : '保存'}
               </Button>
