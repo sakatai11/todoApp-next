@@ -248,7 +248,7 @@ describe('DeleteModal', () => {
   });
 
   describe('エッジケース', () => {
-    it('複数回のボタンクリックが正常に処理される', () => {
+    it('OKボタンを連打しても重複してonDeleteが呼ばれない', () => {
       const mockOnDelete = vi.fn();
       const mockSetModalIsOpen = vi.fn();
       render(
@@ -261,9 +261,12 @@ describe('DeleteModal', () => {
 
       const okButton = screen.getByRole('button', { name: 'OK' });
       fireEvent.click(okButton);
+      // 送信中はボタンが無効化されるため、連打しても重複実行されない
+      fireEvent.click(okButton);
       fireEvent.click(okButton);
 
-      expect(mockOnDelete).toHaveBeenCalledTimes(2);
+      expect(mockOnDelete).toHaveBeenCalledTimes(1);
+      expect(okButton).toBeDisabled();
     });
 
     it('同時に複数のボタンクリックが処理される', () => {

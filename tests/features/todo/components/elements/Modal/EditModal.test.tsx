@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/tests/test-utils';
+import { render, screen, fireEvent, waitFor, within } from '@/tests/test-utils';
 import EditModal from '@/features/todo/components/elements/Modal/EditModal';
 import { mockTodos } from '@/tests/test-utils';
 import { Timestamp } from 'firebase-admin/firestore';
+import { http, HttpResponse, delay } from 'msw';
+import { server } from '@/todoApp-submodule/mocks/server';
 
 // StatusPullListをモック
 vi.mock('@/features/todo/components/elements/Status/StatusPullList', () => ({
@@ -540,6 +542,105 @@ describe('EditModal', () => {
 
       // ボタンの基本動作を確認
       expect(saveButton).toBeInTheDocument();
+    });
+  });
+
+  describe('二重送信防止・ローディング表示', () => {
+    it('送信中はボタンが無効化されローディングが表示される', async () => {
+      server.use(
+        http.post('/api/todos', async () => {
+          await delay(50);
+          const currentTime = new Date().toISOString();
+          return HttpResponse.json(
+            {
+              id: 'todo-loading',
+              text: 'New Item',
+              status: 'todo',
+              bool: false,
+              createdTime: currentTime,
+              updateTime: currentTime,
+            },
+            { status: 200 },
+          );
+        }),
+      );
+
+      render(<EditModal {...defaultProps} id="pushContainer" />, {
+        withTodoProvider: true,
+      });
+
+      // 本文とステータスを入力
+      fireEvent.change(screen.getByDisplayValue(''), {
+        target: { value: 'New Item' },
+      });
+      fireEvent.change(screen.getByTestId('status-select'), {
+        target: { value: 'todo' },
+      });
+
+      const submitButton = screen.getByRole('button', { name: '追加' });
+      fireEvent.click(submitButton);
+
+      // 送信中はボタンが無効化され、スピナーが表示される
+      expect(submitButton).toBeDisabled();
+      expect(within(submitButton).getByRole('progressbar')).toBeInTheDocument();
+
+      // 完了後はボタンが再び有効化される
+      await waitFor(() => {
+        expect(submitButton).not.toBeDisabled();
+      });
+    });
+
+    it('送信中に再クリックしても重複リクエストが送信されない', async () => {
+      let postCount = 0;
+      server.use(
+        http.post('/api/todos', async () => {
+          postCount += 1;
+          await delay(50);
+          const currentTime = new Date().toISOString();
+          return HttpResponse.json(
+            {
+              id: 'todo-dup',
+              text: 'New Item',
+              status: 'todo',
+              bool: false,
+              createdTime: currentTime,
+              updateTime: currentTime,
+            },
+            { status: 200 },
+          );
+        }),
+      );
+
+      const mockSetModalIsOpen = vi.fn();
+      render(
+        <EditModal
+          {...defaultProps}
+          id="pushContainer"
+          setModalIsOpen={mockSetModalIsOpen}
+        />,
+        {
+          withTodoProvider: true,
+        },
+      );
+
+      fireEvent.change(screen.getByDisplayValue(''), {
+        target: { value: 'New Item' },
+      });
+      fireEvent.change(screen.getByTestId('status-select'), {
+        target: { value: 'todo' },
+      });
+
+      const submitButton = screen.getByRole('button', { name: '追加' });
+      // 連打
+      fireEvent.click(submitButton);
+      fireEvent.click(submitButton);
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockSetModalIsOpen).toHaveBeenCalledWith(false);
+      });
+
+      expect(postCount).toBe(1);
     });
   });
 });

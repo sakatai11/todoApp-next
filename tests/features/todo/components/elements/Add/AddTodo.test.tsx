@@ -1,7 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent, act } from '@/tests/test-utils';
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+  within,
+} from '@/tests/test-utils';
 import AddTodo from '@/features/todo/components/elements/Add/AddTodo';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse, delay } from 'msw';
+import { server } from '@/todoApp-submodule/mocks/server';
 
 describe('AddTodo', () => {
   const defaultProps = {
@@ -261,6 +270,86 @@ describe('AddTodo', () => {
 
       rerender(<AddTodo status="completed" />);
       expect(screen.getByText('TODOを追加する')).toBeInTheDocument();
+    });
+  });
+
+  describe('二重送信防止・ローディング表示', () => {
+    it('送信中はボタンが無効化されローディングが表示される', async () => {
+      server.use(
+        http.post('/api/todos', async () => {
+          await delay(50);
+          const currentTime = new Date().toISOString();
+          return HttpResponse.json(
+            {
+              id: 'todo-loading',
+              text: 'New Todo',
+              status: 'pending',
+              bool: false,
+              createdTime: currentTime,
+              updateTime: currentTime,
+            },
+            { status: 200 },
+          );
+        }),
+      );
+
+      const user = userEvent.setup();
+      render(<AddTodo status="pending" />);
+
+      await user.click(screen.getByText('TODOを追加する'));
+      await user.type(screen.getByLabelText('TODOを入力'), 'New Todo');
+
+      const submitButton = screen.getByRole('button', { name: '追加する' });
+      fireEvent.click(submitButton);
+
+      // 送信中はボタンが無効化され、スピナーが表示される
+      expect(submitButton).toBeDisabled();
+      expect(within(submitButton).getByRole('progressbar')).toBeInTheDocument();
+
+      // 成功後は入力モードが閉じる
+      await waitFor(() => {
+        expect(screen.getByText('TODOを追加する')).toBeInTheDocument();
+      });
+    });
+
+    it('送信中に再クリックしても重複リクエストが送信されない', async () => {
+      let postCount = 0;
+      server.use(
+        http.post('/api/todos', async () => {
+          postCount += 1;
+          await delay(50);
+          const currentTime = new Date().toISOString();
+          return HttpResponse.json(
+            {
+              id: 'todo-dup',
+              text: 'New Todo',
+              status: 'pending',
+              bool: false,
+              createdTime: currentTime,
+              updateTime: currentTime,
+            },
+            { status: 200 },
+          );
+        }),
+      );
+
+      const user = userEvent.setup();
+      render(<AddTodo status="pending" />);
+
+      await user.click(screen.getByText('TODOを追加する'));
+      await user.type(screen.getByLabelText('TODOを入力'), 'New Todo');
+
+      const submitButton = screen.getByRole('button', { name: '追加する' });
+      // 連打
+      fireEvent.click(submitButton);
+      fireEvent.click(submitButton);
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('TODOを追加する')).toBeInTheDocument();
+      });
+
+      expect(postCount).toBe(1);
     });
   });
 });
