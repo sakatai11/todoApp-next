@@ -17,11 +17,9 @@ const AddList = () => {
     // 送信中は disabled でクリックが抑止されるため、ここでのガードは不要
     setIsSubmitting(true);
     try {
-      const errorFlag = await addList();
-      if (errorFlag) {
+      const isSuccess = await addList();
+      if (isSuccess) {
         setAddBtn(false);
-      } else {
-        setAddBtn(true);
       }
     } finally {
       setIsSubmitting(false);

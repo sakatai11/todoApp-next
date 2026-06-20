@@ -420,5 +420,35 @@ describe('AddList', () => {
 
       expect(postCount).toBe(1);
     });
+
+    it('送信失敗前に戻った場合はフォームを再表示しない', async () => {
+      server.use(
+        http.post('/api/lists', async () => {
+          await delay(50);
+          return HttpResponse.json(
+            { error: 'Internal Server Error' },
+            { status: 500 },
+          );
+        }),
+      );
+
+      render(<AddList />, { withTodoProvider: true });
+      fireEvent.click(
+        screen.getByRole('button', { name: /リストを追加する/i }),
+      );
+      fireEvent.change(screen.getByLabelText('リスト名を入力'), {
+        target: { value: 'Failure List' },
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: '追加する' }));
+      fireEvent.click(screen.getByRole('button', { name: '戻る' }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: /リストを追加する/i }),
+        ).toBeInTheDocument();
+      });
+      expect(screen.queryByLabelText('リスト名を入力')).not.toBeInTheDocument();
+    });
   });
 });
