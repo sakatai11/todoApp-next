@@ -45,11 +45,8 @@ const MainContainer = () => {
           alignItems="center"
           sx={{
             mt: 4,
-            px: 3,
+            px: { xs: 2, sm: 3 },
             textAlign: 'center',
-            '@media (max-width: 767px)': {
-              px: 2,
-            },
           }}
         >
           <Typography variant="h6" component="h2">
