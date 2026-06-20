@@ -80,3 +80,4 @@ todoApp-submodule
 .next-docs/*
 .claude/worktrees/
 .claude/state/
+.claude/plans/
