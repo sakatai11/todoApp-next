@@ -233,7 +233,7 @@ describe('MainContainer', () => {
       }).not.toThrow();
     });
 
-    it('空のリスト配列でも正常に動作する', () => {
+    it('空のリスト配列のときは空状態ガイドを表示しクラッシュしない', () => {
       expect(() => {
         render(<MainContainer />, {
           initialTodos: mockTodos,
@@ -263,6 +263,52 @@ describe('MainContainer', () => {
           initialLists: mockLists,
         });
       }).not.toThrow();
+    });
+  });
+
+  describe('空状態ガイド', () => {
+    it('リスト0件のときに説明的な空状態メッセージが表示される', () => {
+      render(<MainContainer />, {
+        initialTodos: [],
+        initialLists: [],
+      });
+
+      expect(screen.getByText('まだリストがありません')).toBeInTheDocument();
+      expect(
+        screen.getByText('最初のリストを作成して、TODO管理を始めましょう。'),
+      ).toBeInTheDocument();
+    });
+
+    it('リスト0件のときにリスト作成への導線が表示される', () => {
+      render(<MainContainer />, {
+        initialTodos: [],
+        initialLists: [],
+      });
+
+      expect(
+        screen.getByRole('button', { name: /リストを追加する/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('リスト0件のときは通常のダッシュボード（DnD）は表示されない', () => {
+      render(<MainContainer />, {
+        initialTodos: [],
+        initialLists: [],
+      });
+
+      expect(screen.queryByTestId('dnd-context')).not.toBeInTheDocument();
+    });
+
+    it('リストが存在するときは空状態メッセージが表示されない', () => {
+      render(<MainContainer />, {
+        initialTodos: mockTodos,
+        initialLists: mockLists,
+      });
+
+      expect(
+        screen.queryByText('まだリストがありません'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId('dnd-context')).toBeInTheDocument();
     });
   });
 });
