@@ -4,6 +4,8 @@ import { useCallback } from 'react';
 import { TodoListProps, TodoPayload, TodoResponse } from '@/types/todos';
 import { StatusListProps, ListPayload, ListResponse } from '@/types/lists';
 import { apiRequest } from '@/features/libs/apis';
+import { useError } from '@/features/todo/contexts/ErrorContext';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 type DeleteListProps = {
   todos: TodoListProps[];
@@ -16,6 +18,8 @@ export const useDeleteList = ({
   setTodos,
   setLists,
 }: DeleteListProps) => {
+  const { showError } = useError();
+
   //
   // ***** actions ******
   //
@@ -29,19 +33,6 @@ export const useDeleteList = ({
           'DELETE',
           { id },
         );
-        // client
-        setLists((prevLists) => {
-          // todo.id が id と一致しない list だけを残す新しい配列を作成
-          const updatedLists = prevLists
-            .filter((list) => list.id !== id)
-            .sort((a, b) => a.number - b.number);
-
-          // `number` を 1, 2, 3, ... と再設定
-          return updatedLists.map((list, index) => ({
-            ...list,
-            number: index + 1, // 新しいインデックスに基づいて番号を設定
-          }));
-        });
 
         // server side
         // 該当するtodosを削除
@@ -61,17 +52,33 @@ export const useDeleteList = ({
               ),
             ),
           );
+        }
 
-          // client
+        // client
+        setLists((prevLists) => {
+          // todo.id が id と一致しない list だけを残す新しい配列を作成
+          const updatedLists = prevLists
+            .filter((list) => list.id !== id)
+            .sort((a, b) => a.number - b.number);
+
+          // `number` を 1, 2, 3, ... と再設定
+          return updatedLists.map((list, index) => ({
+            ...list,
+            number: index + 1, // 新しいインデックスに基づいて番号を設定
+          }));
+        });
+
+        if (todosToDelete.length > 0) {
           setTodos((prevTodos) =>
             prevTodos.filter((todo) => todo.status !== title),
           ); // todo.id が id と一致しない todo だけを残す新しい配列を作成
         }
       } catch (error) {
         console.error('Failed to delete list and related todos:', error);
+        showError(ERROR_MESSAGES.LIST.DELETE_FAILED);
       }
     },
-    [todos, setTodos, setLists], // 第二引数に依存配列を指定
+    [todos, setTodos, setLists, showError], // 第二引数に依存配列を指定
   );
   return {
     deleteList,

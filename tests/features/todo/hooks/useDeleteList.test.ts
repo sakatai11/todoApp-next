@@ -5,10 +5,19 @@ import { TodoListProps } from '@/types/todos';
 import { StatusListProps } from '@/types/lists';
 import { mockTodos, mockLists } from '@/tests/test-utils';
 import { Timestamp } from 'firebase-admin/firestore';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
 
 // Mock apiRequest
 vi.mock('@/features/libs/apis', () => ({
   apiRequest: vi.fn(),
+}));
+
+// Mock useError
+const mockShowError = vi.fn();
+vi.mock('@/features/todo/contexts/ErrorContext', () => ({
+  useError: () => ({
+    showError: mockShowError,
+  }),
 }));
 
 // Get the mocked function
@@ -236,11 +245,16 @@ describe('useDeleteList', () => {
         'Failed to delete list and related todos:',
         expect.any(Error),
       );
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.LIST.DELETE_FAILED,
+      );
+      expect(mockSetLists).not.toHaveBeenCalled();
+      expect(mockSetTodos).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
 
-    it('Todo削除のAPI呼び出しが部分的に失敗しても処理が継続される', async () => {
+    it('Todo削除のAPI呼び出しが部分的に失敗した場合、通知してクライアント状態を更新しない', async () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -266,6 +280,11 @@ describe('useDeleteList', () => {
         'Failed to delete list and related todos:',
         expect.any(Error),
       );
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.LIST.DELETE_FAILED,
+      );
+      expect(mockSetLists).not.toHaveBeenCalled();
+      expect(mockSetTodos).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });

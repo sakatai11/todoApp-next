@@ -16,6 +16,7 @@ export const TODO_ERROR_MESSAGES = {
 // リスト操作関連のエラーメッセージ
 export const LIST_ERROR_MESSAGES = {
   ADD_FAILED: 'リストの追加に失敗しました',
+  DELETE_FAILED: 'リストの削除に失敗しました',
   SORT_FAILED: 'リストの並び替えに失敗しました',
   MOVE_FAILED: 'リストの移動に失敗しました',
   UPDATE_FAILED: 'リスト名の更新に失敗しました',
