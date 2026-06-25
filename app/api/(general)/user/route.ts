@@ -8,7 +8,6 @@ import { AdminUserFirestoreDocSchema } from '@/data/validatedData';
 export async function GET() {
   try {
     const session = await auth();
-    console.log(`sessionData:${JSON.stringify(session, null, 2)}`);
 
     const sessionUserId = session?.user?.id;
     if (!session || !sessionUserId) {
