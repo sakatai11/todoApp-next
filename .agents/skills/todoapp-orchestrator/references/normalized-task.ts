@@ -35,8 +35,34 @@ type IntegrationTestPlan =
       reason: 'docs-only' | 'skill-only' | 'frontend-only';
     };
 
+// Phase 3a（Claude 設計）が出力する実装指示書の置き場所。
+// 実体は `.codex-tasks/<branchSlug>.md`（.gitignore 済み）。Phase 3b の Codex がこれを読んで実装する。
+type DesignDocPlan = {
+  designDocPath: string; // 例: '.codex-tasks/add-list-empty-state.md'
+  // 設計セレモニーの重さ。Phase 1 の規模判定（feature.md 等の大規模/小〜中規模）に対応する。
+  // - 'full': explorer/architect を複数 fan-out した上でフル指示書を生成
+  // - 'light': Claude 単発スコープ確定で最小指示書（1セクション）を生成。アーキ選択ゲートは省略
+  lane: 'full' | 'light';
+  approvedByHuman: boolean; // 指示書承認ゲート（Y/N/E）を通過したか。false のまま Phase 3b に進まない
+};
+
+// Phase 3b（Codex 実装）が返す完了サマリーの契約。
+// Codex は実装ログを返さず、この構造に対応した 500 トークン以内のサマリーだけを返す（質問3の返却契約）。
+// changedFiles は自己申告であり、コミット対象は常に実 diff（git status）を正とする。
+type CodexImplementationResult = {
+  changedFiles: string[]; // Codex 自己申告。実 diff と食い違う場合は実 diff を採用
+  updatedUnitTests: string[];
+  // Codex が指示書どおり format → lint → test:run → build の自己修正ループを緑にしたかの自己申告。
+  // orchestrator は Phase 4 でこれを鵜呑みにせず最終ゲートを 1 回決定論再実行する。
+  selfGateReportedGreen: boolean;
+  integrationTest: IntegrationTestPlan;
+};
+
+// Phase 3 全体の結果。3a の設計指示書と 3b の Codex 実装結果をまとめて Phase 4 へ渡す。
 type FactoryResult = {
-  changedFiles: string[];
+  designDoc: DesignDocPlan;
+  codex: CodexImplementationResult;
+  changedFiles: string[]; // codex.changedFiles と同義の集約ビュー（後続 Phase の参照用）
   updatedUnitTests: string[];
   integrationTest: IntegrationTestPlan;
 };

@@ -7,7 +7,7 @@ description: CodeRabbit CLIでコードレビューを実行（バックグラ�
 
 ## Overview
 
-CodeRabbit CLIを使用してコードレビューをバックグラウンドで実行し、進行状況を監視して、結果を整理してユーザーに報告する。
+CodeRabbit CLIを使用してコードレビューを実行し、結果を整理してユーザーに報告する。
 
 ## Workflow
 
@@ -24,28 +24,50 @@ git log --oneline -5
 git diff HEAD
 ```
 
-### 2. バックグラウンド実行
+### 2. 認証確認
 
-以下のコマンドをバックグラウンドで実行：
+レビュー前に認証状態を確認する：
 
 ```bash
-coderabbit --prompt-only
+coderabbit auth status
 ```
 
-**重要**: `run_in_background: true` パラメータを使用してバックグラウンドで実行すること。
+未認証の場合は **API key 認証を推奨**する。OAuth の `coderabbit auth login` はローカル callback server を立てるため、Codex/サンドボックス環境では失敗しやすい。
 
-### 3. 進行状況の監視
+API key は機密情報なので、チャットに貼らせない。ユーザー自身のターミナルで以下を実行してもらう：
 
-バックグラウンド実行後、以下の手順で進行状況を確認：
+```bash
+coderabbit auth login --api-key <YOUR_API_KEY>
+coderabbit auth status
+```
 
-1. **shell_id を記録** - バックグラウンド実行時に返される shell_id を保持
-2. **定期的に出力を確認** - BashOutput ツールを使用してバックグラウンドプロセスの出力を確認
-3. **ユーザーへの進行状況報告**
-   - レビュー開始時: 「CodeRabbitレビューをバックグラウンドで開始しました」
-   - 進行中: 定期的に出力をチェックして状況を報告
+### 3. レビュー実行
+
+以下のコマンドをフォアグラウンドで実行：
+
+```bash
+coderabbit review --agent --type uncommitted
+```
+
+対象に応じて変更する：
+
+```bash
+coderabbit review --agent --type committed
+coderabbit review --agent --base main
+```
+
+**重要**: agent-friendly な構造化出力が必要なため `--agent` を付ける。古い `coderabbit --prompt-only` は使用しない。
+
+### 4. 進行状況の監視
+
+レビュー実行後、以下の手順で進行状況を確認：
+
+1. **ユーザーへの進行状況報告**
+   - レビュー開始時: 「CodeRabbitレビューを開始しました」
+   - 進行中: 出力を確認して状況を報告
    - 完了時: レビュー結果のサマリーを表示
 
-### 4. レビュー結果の整理
+### 5. レビュー結果の整理
 
 レビューが完了したら、以下の情報を整理して報告：
 
@@ -79,20 +101,23 @@ coderabbit --prompt-only
 
 サポートされる引数：
 
-- `--verbose` - 詳細なログ出力を表示
-- `--files <pattern>` - 特定のファイルパターンのみをレビュー
-- `--severity <level>` - 特定の重要度以上の問題のみを表示
+- `committed` - コミット済み変更のみレビュー
+- `uncommitted` - 未コミット変更のみレビュー
+- `--base <branch>` - 指定ブランチとの差分をレビュー
+- `--dir <path>` - 指定ディレクトリ内の変更のみレビュー
 
 例：
 
 ```bash
-/coderabbit-review --files "**/*.ts" --severity high
+/coderabbit-review uncommitted
+/coderabbit-review --base main
 ```
 
-引数がある場合は `$ARGUMENTS` を使用してコマンドに追加：
+引数がある場合は内容を CodeRabbit CLI の現行オプションへ変換して実行する：
 
 ```bash
-coderabbit --prompt-only $ARGUMENTS
+coderabbit review --agent --type uncommitted
+coderabbit review --agent --base main
 ```
 
 ## エラーハンドリング
@@ -107,7 +132,9 @@ coderabbit --prompt-only $ARGUMENTS
 **認証エラー**
 
 - CodeRabbitの認証状態を確認
-- 再認証が必要かどうかを確認
+- 未認証なら API key 認証を案内する
+- API key はチャットに貼らせず、ユーザー自身のターミナルで `coderabbit auth login --api-key <YOUR_API_KEY>` を実行してもらう
+- OAuth callback server の起動エラー（`Failed to start server. Is port 0 in use?` / `listen EPERM`）では、OAuth 再試行より API key 認証を優先する
 
 **タイムアウト**
 
@@ -116,9 +143,8 @@ coderabbit --prompt-only $ARGUMENTS
 
 ## 注意事項
 
-- バックグラウンド実行により、他の作業を並行して実行できる
 - レビューには数分かかる場合がある（変更量により異なる）
-- `--prompt-only` オプションはプロンプト生成のみを行い、実際のAI呼び出しは行わない
+- `coderabbit --prompt-only` は現行 CLI では使用しない
 - ネットワーク接続が必要
 - レビュー結果は標準出力に表示される
 
