@@ -203,7 +203,7 @@ codex exec \
 
 Phase 1 で「B. 設計のみ並列化」が選ばれた場合：
 
-- **Phase 3a（Claude 設計）は並列 fan-out 可** — 複数タスクの探索・指示書生成を同一 worktree 上の読み取り専用 Agent で同時実行する。コードやファイルへの書き込みは発生させないため、追加 worktree は作成しない
+- **Phase 3a（Claude 設計）は並列 fan-out 可** — 複数タスクの探索・指示書生成を読み取り専用 Agent で同時実行する。`isolation: "worktree"` は使わない（CLAUDE.md 既知不具合: worktree 起点が default branch=`main` 固定で差分が壊れる）。代わりにメインツリーで起動し、各 Agent は**プロジェクトファイルへ書き込まない読み取り専用に限定**、`.codex-tasks/<slug>.md` の書き出しは orchestrator（メイン）が行う。並列数が多く Claude Code 内部状態（`.claude/state/` 等）の競合が疑われる場合は順次実行にフォールバックする
 - **Phase 3b（Codex 実装）は逐次** — `codex exec` のバックグラウンド起動自体は複数同時に走らせられるが、同一 worktree への並行書き込みはコンフリクトを生み、`codex exec resume --last` の差し戻し対象スレッドも特定不能になる。worktree 起点バグ（CLAUDE.md 既知不具合）の同時発生も避けるため、**指示書は1つずつ起動し、完了→ Phase 4〜8 → 次タスク**の順で進める
 
 > **将来課題**: タスクごとに別 worktree を割り当てた真の並列 Codex 実装（複数 `codex exec` を別ディレクトリで並行 + 各 `.result.md` をポーリング集約）は、worktree 起点バグ解消後の検討事項とする。現状は「設計 fan-out 可・Codex 実装逐次」とする。

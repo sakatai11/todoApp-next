@@ -113,10 +113,22 @@ coderabbit review --agent --base main
 /coderabbit-review --base main
 ```
 
-引数がある場合は内容を CodeRabbit CLI の現行オプションへ変換して実行する：
+引数がある場合は、以下の変換ルールに従って CodeRabbit CLI の現行オプションへ変換して実行する：
+
+| スキル引数        | CodeRabbit CLI への変換                        |
+| ----------------- | ---------------------------------------------- |
+| `committed`       | `coderabbit review --agent --type committed`   |
+| `uncommitted`     | `coderabbit review --agent --type uncommitted` |
+| `--base <branch>` | `coderabbit review --agent --base <branch>`    |
+| `--dir <path>`    | `coderabbit review --agent --dir <path>`       |
+| （引数なし）      | `coderabbit review --agent`（デフォルト）      |
+
+具体例：
 
 ```bash
+# /coderabbit-review uncommitted
 coderabbit review --agent --type uncommitted
+# /coderabbit-review --base main
 coderabbit review --agent --base main
 ```
 

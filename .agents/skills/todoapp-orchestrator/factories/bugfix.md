@@ -44,8 +44,10 @@
 ### Step 2: 既存テストの確認
 
 ```bash
-grep -r "<関連する関数名>" tests/ --include="*.test.ts" --include="*.test.tsx"
+grep -r "<関連する関数名>" tests/ features/ --include="*.test.ts" --include="*.test.tsx" --include="*.spec.ts" --include="*.spec.tsx"
 ```
+
+> このリポジトリは `tests/` だけでなく `features/` 配下の `__tests__` ディレクトリにも UT を置く。`tests/` だけを検索すると既存ケースを見落として重複追加につながるため、`features/` も併せて検索する。
 
 既存テストがあるか、ない場合はどこに追加するかを判断し、指示書セクション2/5 に反映する。
 

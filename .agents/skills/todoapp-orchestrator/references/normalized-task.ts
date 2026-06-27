@@ -60,13 +60,12 @@ type CodexImplementationResult = {
   integrationTest: IntegrationTestPlan;
 };
 
-// Phase 3 全体の結果。3a の設計指示書と 3b の Codex 実装結果をまとめて Phase 4 へ渡す。
+// Phase 3 全体の結果。3a の設計指示書（designDoc）と 3b の Codex 実装結果（codex）をまとめて Phase 4 へ渡す。
+// 変更ファイル・UT・IT 判定は CodexImplementationResult（codex 配下）を単一の正とし、トップレベルへ二重化しない。
+// 集約ビューを重複定義すると同期漏れで不整合を起こすため、後続 Phase は `codex.*` / `designDoc.*` を直接参照する。
 type FactoryResult = {
   designDoc: DesignDocPlan;
   codex: CodexImplementationResult;
-  changedFiles: string[]; // codex.changedFiles と同義の集約ビュー（後続 Phase の参照用）
-  updatedUnitTests: string[];
-  integrationTest: IntegrationTestPlan;
 };
 
 type DraftPullRequestPlan = {

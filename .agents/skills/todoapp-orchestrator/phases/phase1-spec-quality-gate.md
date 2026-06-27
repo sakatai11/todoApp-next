@@ -94,6 +94,6 @@ context: {
    ```
 
 2. **A（順次実行）**: Task 1 → Phase 2〜8 まで完結 → Task 2 → Phase 2〜8 を繰り返す
-3. **B（設計のみ並列化）**: Phase 3a の探索・指示書生成だけを同一 worktree 上の読み取り専用 Agent で並列起動する。コードやファイルへの書き込みは発生させないため、worktree は作成しない。Phase 3b の Codex 実装、Phase 4〜8 は Task 1 → Task 2 の順に逐次実行する
+3. **B（設計のみ並列化）**: Phase 3a の探索・指示書生成だけを読み取り専用 Agent で並列起動する。プロジェクト要因として `isolation: "worktree"` は使わない（CLAUDE.md 既知不具合: worktree 起点が default branch=`main` 固定で差分が壊れる）。代わりにメインツリーで起動するが、各 Agent は**プロジェクトファイルへ書き込まない読み取り専用に限定**し、指示書の書き出しは Agent ではなく orchestrator（メイン）が行う。並列数が多く Claude Code 内部状態（`.claude/state/` 等）の競合が疑われる場合は A（順次）にフォールバックする。Phase 3b の Codex 実装、Phase 4〜8 は Task 1 → Task 2 の順に逐次実行する
 4. **C（そのまま）**: 分割せず Phase 2 へ進む
 5. 条件に非該当 or C が選ばれた場合はそのまま Phase 2 へ進む

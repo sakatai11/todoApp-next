@@ -84,7 +84,7 @@ IT は Docker + Firebase Emulator が必要で重く、`todoapp-docker-ops` に�
 | `features/` のみ（API呼び出しなし）      | ⬜ スキップ可 |
 | スキルファイル・ドキュメントのみ         | ⬜ スキップ   |
 
-`FactoryResult.integrationTest.required` が `true` の場合は必須、`false` の場合は `reason` を確認した上でスキップできる。実行するか明示承認で skip するかの判断手順はこの Markdown に従う。
+`CodexImplementationResult.integrationTest.required`（Phase 3b が渡す契約）が `true` の場合は必須、`false` の場合は `reason` を確認した上でスキップできる。実行するか明示承認で skip するかの判断手順はこの Markdown に従う。
 
 IT が必要な場合は `todoapp-docker-ops` スキルに委譲する：
 
