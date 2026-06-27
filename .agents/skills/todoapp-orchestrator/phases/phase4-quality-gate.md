@@ -33,25 +33,23 @@ Codex の自己ループを通ったはずなのに最終再実行で赤にな�
 
 ### test:run / build の失敗
 
-1. **Codex へ `--resume` で差し戻す（最大2回まで）**。差し戻し時は **失敗したコマンド名、失敗テスト名（該当時のみ）、代表エラー、ファイル/行番号（分かる場合）**だけを簡潔に渡す（フルログは渡さない＝コンテキスト保護）。
+1. **Codex へ `codex exec resume --last` で差し戻す（最大2回まで）**。差し戻し時は **失敗したコマンド名、失敗テスト名（該当時のみ）、代表エラー、ファイル/行番号（分かる場合）**だけを簡潔に渡す（フルログは渡さない＝コンテキスト保護）。Phase 3b と同じく **Bash ツールを `run_in_background: true`** で実行する。
 
-   ```text
-   Agent ツールで以下を実行:
-     description: "codex fix: <task.title>"
-     subagent_type: "codex:codex-rescue"
-     prompt: """
-     --resume --write
-
-     最終ゲートで以下が失敗しました。原因を修正し、再度 format/lint/test:run/build を緑にしてください。
-     - 失敗コマンド: <npm run test:run など>
-     - 失敗テスト: <テスト名のみ。build 失敗など該当しない場合は省略>
-     - 代表エラー: <1〜3行の要約>
-     - 関連ファイル/行: <分かる場合のみ>
-     完了報告は指示書セクション8のフォーマットで 500 トークン以内。
-     """
+   ```bash
+   codex exec resume --last \
+     --cd "$(pwd)" \
+     --sandbox workspace-write \
+     -o ".codex-tasks/<slug>.result.md" \
+     "最終ゲートで以下が失敗しました。原因を修正し、再度 format/lint/test:run/build を緑にしてください。
+   - 失敗コマンド: <npm run test:run など>
+   - 失敗テスト: <テスト名のみ。build 失敗など該当しない場合は省略>
+   - 代表エラー: <1〜3行の要約>
+   - 関連ファイル/行: <分かる場合のみ>
+   最終メッセージは指示書セクション8のフォーマット（500 トークン以内）だけにしてください。" \
+     > ".codex-tasks/<slug>.log" 2>&1
    ```
-
-   差し戻し後、再び 4-1 の最終再実行を行う。
+   - `resume --last` は直前の `codex exec` セッションを継続するので、実装時の文脈を保ったまま修正できる。
+   - プロセス終了後、`.codex-tasks/<slug>.result.md` を読み、再び 4-1 の最終再実行を行う。
 
 2. **2回差し戻しても緑にならなければ人間に確認**（Core Principle「test/build 失敗は人間に確認」）。この時点で初めてフルログを人間に提示し、判断を仰ぐ：
    - **A**: 人間が手動修正する（パイプライン一時停止）

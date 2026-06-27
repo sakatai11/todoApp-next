@@ -3,7 +3,7 @@
 Phase 3 は **3a（Claude 設計）** と **3b（Codex 実装）** の2段に分かれる。
 
 - **3a（Claude）**: コードベース探索・アーキテクチャ設計を行い、結果を **実装指示書** `.codex-tasks/<branchSlug>.md` に書き出す。設計の冗長出力はサブエージェント内に隔離し、メインには指示書だけを残す。
-- **3b（Codex）**: `codex:codex-rescue` 経由で承認済み指示書を渡し、実装 + UT + 自己修正ループ（format → lint → test:run → build）まで Codex のセッション内で完結させる。
+- **3b（Codex）**: `codex exec` をバックグラウンド起動して承認済み指示書を渡し、実装 + UT + 自己修正ループ（format → lint → test:run → build）まで Codex のセッション内で完結させる。冗長な実装ログはログファイルに隔離し、メインには 500 トークンの完了サマリーだけを残す。
 
 > **役割分担の原則**: Claude は設計・監督・レビュー（脳）に専念し、Codex に実装と決定論ゲートのエラー修正ループ（tsc/test/lint の冗長出力）を閉じ込める。これによりメインコンテキストを「設計の前提」の保持に使える。
 
@@ -152,36 +152,50 @@ Agent ツールで以下を実行:
 
 ---
 
-## Phase 3b: Codex 実装
+## Phase 3b: Codex 実装（`codex exec` バックグラウンド起動）
 
-承認済み指示書を `codex:codex-rescue` サブエージェントに渡す。
+承認済み指示書を、**プラグイン（`codex:codex-rescue`）ではなく `codex exec` CLI を直接バックグラウンド起動**して渡す。
 
-```text
-Agent ツールで以下を実行:
-  description: "codex impl: <task.title>"
-  subagent_type: "codex:codex-rescue"
-  prompt: """
-  --write
+> **なぜプラグインを使わないか**: `codex:codex-rescue` は調査・診断・修正の forwarder であり、長時間の実装タスクには向かない（フォアグラウンド await でメインを占有し、冗長な実装ログがコンテキストに載る）。`codex exec` をバックグラウンド起動すれば、実装ログをログファイルに隔離し、`-o` で完了サマリーだけを回収でき、トークン分離の旨味を最大化できる。
 
-  リポジトリ内の `.codex-tasks/<branchSlug>.md` を読み、その指示書のとおりに実装と UT を行ってください。
-  指示書のセクション7に従い、実装後は format → lint → test:run → build を自分で実行し、
-  エラーがゼロになるまで自己修正してから完了してください。
-  完了報告は指示書セクション8のフォーマットで 500 トークン以内。実装ログは返さないでください。
-  """
+### 起動コマンド
+
+**Bash ツールを `run_in_background: true` で実行**する。`<slug>` は `task.branchSlug`。
+
+```bash
+codex exec \
+  --cd "$(pwd)" \
+  --sandbox workspace-write \
+  --skip-git-repo-check \
+  -o ".codex-tasks/<slug>.result.md" \
+  "リポジトリ内の .codex-tasks/<slug>.md を読み、その指示書のとおりに実装と UT を行ってください。
+指示書のセクション7に従い、実装後は format → lint → test:run → build を自分で実行し、エラーがゼロになるまで自己修正してから完了してください。
+あなたの最終メッセージは、指示書セクション8のフォーマット（500 トークン以内）だけにしてください。途中の実装ログは最終メッセージに含めないこと。" \
+  > ".codex-tasks/<slug>.log" 2>&1
 ```
 
-- **モデル/effort**: 原則指定しない（Codex デフォルト）。lane=full の大規模タスクのみ `--effort high` の付与を**ユーザーに提案**してから付ける（トークンコストが上がるため自動付与しない）。
-- **実行モード**: Agent ツールをフォアグラウンドで実行し、orchestrator は完了サマリーを受け取るまで待つ。`--wait` は `/codex:rescue` コマンド側の実行モード指定であり、`codex:codex-rescue` の prompt には含めない。
-- **Codex が未認証/障害の場合**: codex-rescue が「`/codex:setup` せよ」で止まる。その場合のみ**「Claude 実装にフォールバックするか」をユーザーに確認**する（通常時は Codex 一本化）。
+- **`--sandbox workspace-write`**: 実装と自己修正ループ（format/lint/test:run/build）の書き込みを許可。これらはネットワーク不要なので workspace-write で完結する。
+- **`-o .codex-tasks/<slug>.result.md`**: Codex の最終メッセージ（= セクション8の完了サマリー）をファイルに書き出す。orchestrator はここだけを読む。
+- **`> .codex-tasks/<slug>.log 2>&1`**: 冗長な思考・実装ログはログファイルに隔離し、メインコンテキストに載せない。
+- **モデル/effort**: 原則指定しない（`~/.codex/config.toml` のデフォルト）。lane=full の大規模タスクのみ `-c model_reasoning_effort="high"` の付与を**ユーザーに提案**してから付ける（トークンコストが上がるため自動付与しない）。`-m <model>` も同様にユーザー明示時のみ。
+- **`.codex-tasks/` は `.gitignore` 済み**なので、`.result.md` / `.log` もコミット対象に入らない。
 
-### Codex 完了後の受け取り情報
+### 完了の検知と受け取り
 
-`CodexImplementationResult` 相当として以下を受け取り、Phase 4 へ進む：
+`run_in_background` で起動したプロセスが終了すると、ハーネスが orchestrator を再呼び出しする。再開したら：
 
-- 変更ファイル一覧（自己申告。コミット対象は常に実 diff を正とする）
-- 自己ゲート結果（`selfGateReportedGreen`）
-- `integrationTest.required` と判断理由
-- 作成・更新した UT ファイル一覧
+1. **終了コードを確認**。非ゼロなら「障害時の扱い」へ。
+2. `.codex-tasks/<slug>.result.md` を Read し、`CodexImplementationResult` 相当として以下を受け取り Phase 4 へ進む：
+   - 変更ファイル一覧（自己申告。コミット対象は常に実 diff を正とする）
+   - 自己ゲート結果（`selfGateReportedGreen`）
+   - `integrationTest.required` と判断理由
+   - 作成・更新した UT ファイル一覧
+3. **`.codex-tasks/<slug>.log` は読まない**（必要時のデバッグ用。通常はサマリーだけで Phase 4 に進む）。
+
+### 障害時の扱い
+
+- **未認証/起動失敗**: 終了コードが非ゼロ、または `.result.md` が空。`.codex-tasks/<slug>.log` の末尾だけを確認し、`codex login` 未済が原因なら**ユーザーに `codex login` 実行を依頼**、それ以外の障害なら**「Claude 実装にフォールバックするか」をユーザーに確認**する（通常時は Codex 一本化）。
+- **サンドボックスで自己ゲートが回らない**: 自己修正ループのコマンドが workspace-write サンドボックスで失敗する場合のみ、`--dangerously-bypass-approvals-and-sandbox` への切替を**ユーザーに提案**してから付ける（Claude Code の Bash 自体が許可ゲート下にある前提での限定的フォールバック。自動付与しない）。
 
 ---
 
@@ -190,8 +204,8 @@ Agent ツールで以下を実行:
 Phase 1 で「B. 設計のみ並列化」が選ばれた場合：
 
 - **Phase 3a（Claude 設計）は並列 fan-out 可** — 複数タスクの探索・指示書生成を同一 worktree 上の読み取り専用 Agent で同時実行する。コードやファイルへの書き込みは発生させないため、追加 worktree は作成しない
-- **Phase 3b（Codex 実装）は逐次** — 各タスクの指示書を1つずつ Codex に渡す。Agent をフォアグラウンドで待つ構造上、複数 Codex セッションの同時 await は不可。`--resume-last` のスレッド競合・worktree 起点バグ（CLAUDE.md 既知不具合）の同時発生も避ける
+- **Phase 3b（Codex 実装）は逐次** — `codex exec` のバックグラウンド起動自体は複数同時に走らせられるが、同一 worktree への並行書き込みはコンフリクトを生み、`codex exec resume --last` の差し戻し対象スレッドも特定不能になる。worktree 起点バグ（CLAUDE.md 既知不具合）の同時発生も避けるため、**指示書は1つずつ起動し、完了→ Phase 4〜8 → 次タスク**の順で進める
 
-> **既知の制限**: 真の並列 Codex 実装（`--background` + ポーリング集約）は将来課題。現状は「設計 fan-out 可・Codex 実装逐次」とする。
+> **将来課題**: タスクごとに別 worktree を割り当てた真の並列 Codex 実装（複数 `codex exec` を別ディレクトリで並行 + 各 `.result.md` をポーリング集約）は、worktree 起点バグ解消後の検討事項とする。現状は「設計 fan-out 可・Codex 実装逐次」とする。
 
 各タスクの実装完了後、Phase 4〜8 をタスクごとに**順次実行**する。

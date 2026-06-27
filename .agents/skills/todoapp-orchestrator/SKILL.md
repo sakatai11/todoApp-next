@@ -15,7 +15,7 @@ description: |-
 ## 役割分担（Claude 設計 / Codex 実装）
 
 - **Claude = 脳**: 探索・アーキテクチャ設計・監督・レビューに専念する。Phase 3a で **実装指示書 `.codex-tasks/<branchSlug>.md`** を生成する
-- **Codex = 手**: 承認済み指示書に基づき、実装 + UT + 自己修正ループ（format → lint → test:run → build をゼロエラーまで）を Codex セッション内で完結させる
+- **Codex = 手**: 承認済み指示書に基づき、実装 + UT + 自己修正ループ（format → lint → test:run → build をゼロエラーまで）を Codex セッション内で完結させる。起動は `codex exec` CLI をバックグラウンドで直接実行し、実装ログはログファイルに隔離する（プラグイン `codex:codex-rescue` は使わない）
 - **狙い**: tsc/test/lint の冗長出力を Codex 側に閉じ込め、Claude のメインコンテキストを「設計の前提」の保持に使う。実装者が Codex（別モデル）になることで Phase 5 レビューのクロスモデル性も成立する
 
 ## Core Principles
@@ -23,7 +23,7 @@ description: |-
 - **決定論的ステップは止める**: lint / typecheck / test / build / git は失敗したら必ず止める。ハルシネーションでスキップしない
 - **Codex の自己申告を信頼の根拠にしない**: Codex が「全ゲート green」と報告しても、Phase 4 で最終ゲートを **1回決定論再実行** して裏取りする。コミット対象は常に実 diff
 - **AI判断ステップは前後をゲートで挟む**: Codex 実装の前に Spec Quality Gate と **指示書承認ゲート**、後ろに最終ゲート再実行
-- **既存スキルは再利用**: 実装は `codex:codex-rescue`、レビューは `code-review`、PR は `todoapp-pr-creator` を呼ぶ。factories は設計（指示書生成）に専念する
+- **既存スキルは再利用**: 実装は `codex exec`（バックグラウンド CLI）、レビューは `code-review`、PR は `todoapp-pr-creator` を呼ぶ。factories は設計（指示書生成）に専念する
 - **往復は有限化**: orchestrator ↔ Codex の差し戻しは最大2回。2回で緑にならなければ人間に確認（Codex 内部ループ自体は無制限でよい）
 - **トリガーごとに工場を切り替える**: 機能追加 / バグ修正 / UI 変更で設計フローが違う
 
@@ -64,8 +64,8 @@ description: |-
 └────────────┬────────────────────────────────────────────┘
              ↓
 ┌─────────────────────────────────────────────────────────┐
-│ Phase 3b: Implementation [Codex サブエージェント]         │
-│   codex-rescue --write で指示書を実装+UT                 │
+│ Phase 3b: Implementation [codex exec バックグラウンド]    │
+│   codex exec --sandbox workspace-write で指示書を実装+UT │
 │   format→lint→test:run→build を自己修正ループ           │
 └────────────┬────────────────────────────────────────────┘
              ↓
@@ -150,7 +150,7 @@ type / source / title / description / acceptanceCriteria / context? / branchSlug
 ## 関連スキル / ファイル
 
 - 既存スキル: `code-review`, `todoapp-pr-creator`, `coderabbit-review`（`todoapp-feature-dev` は兄弟スキルで下請けにしない）
-- Codex 実装委譲: `codex:codex-rescue` サブエージェント（`codex-companion.mjs task --write` のラッパー）
+- Codex 実装委譲: `codex exec` CLI をバックグラウンド起動（`--sandbox workspace-write` + `-o` で完了サマリー回収）。プラグイン `codex:codex-rescue` は実装には使わない（調査・修正用の forwarder のため）
 - ルール: `.claude/rules/development.md`, `.claude/rules/code-quality.md`, `.claude/rules/security.md`
 - triggers: `triggers/spec.md`, `triggers/qa.md`, `triggers/github-issue.md`, `triggers/ui-annotator.md`, `triggers/posthog.md`
 - factories（設計＝指示書生成に専念）: `factories/feature.md`, `factories/bugfix.md`, `factories/ui-change.md`

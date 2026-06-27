@@ -64,7 +64,7 @@
     {
       "id": 7,
       "prompt": "Codex が「全ゲート green」と報告した。orchestrator はそのまま Phase 5 に進んでよい？最終ゲートが赤だったらどうする？",
-      "expected_output": "Codex の selfGateReportedGreen を鵜呑みにせず、Phase 4 で format/lint/test:run/build の最終ゲートを 1 回決定論再実行する。赤なら Codex へ --resume で差し戻し（失敗コマンド名、失敗テスト名（該当時のみ）、代表エラー、ファイル/行番号（分かる場合）だけ渡す）、最大 2 回まで。2 回で緑にならなければフルログを提示して人間に確認する。lint/format の軽微な失敗のみ orchestrator 側で直接修正してよい。コミット対象は実 diff を正とする。",
+      "expected_output": "Codex の selfGateReportedGreen を鵜呑みにせず、Phase 4 で format/lint/test:run/build の最終ゲートを 1 回決定論再実行する。赤なら Codex へ `codex exec resume --last` で差し戻し（失敗コマンド名、失敗テスト名（該当時のみ）、代表エラー、ファイル/行番号（分かる場合）だけ渡す）、最大 2 回まで。2 回で緑にならなければフルログを提示して人間に確認する。lint/format の軽微な失敗のみ orchestrator 側で直接修正してよい。コミット対象は実 diff を正とする。",
       "files": [
         ".agents/skills/todoapp-orchestrator/phases/phase4-quality-gate.md",
         ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
@@ -73,10 +73,20 @@
     {
       "id": 8,
       "prompt": "Codex が実装したコードを Phase 5 でレビューする。Codex に自分のコードをレビューさせてよい？",
-      "expected_output": "code-review を起動し、CodeRabbit と Claude 専門エージェント群（別モデル）を第三者レビューの主役にする。Codex レビューは code-review が codex-companion.mjs review として実行する補助レビューで、task/rescue の resume とは別系統として扱う。修正は実装者である Codex へ --resume で差し戻し、Phase 4 の最終ゲート再実行から再開する。",
+      "expected_output": "code-review を起動し、CodeRabbit と Claude 専門エージェント群（別モデル）を第三者レビューの主役にする。Codex レビューは code-review が codex-companion.mjs review として実行する補助レビューで、task/rescue の resume とは別系統として扱う。修正は実装者である Codex へ `codex exec resume --last` で差し戻し、Phase 4 の最終ゲート再実行から再開する。",
       "files": [
         ".agents/skills/todoapp-orchestrator/phases/phase5-cross-model-review.md",
         ".agents/skills/todoapp-orchestrator/SKILL.md"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "指示書承認が済んだ。orchestrator は Phase 3b でどうやって Codex に実装させる？プラグインの codex:codex-rescue を使う？",
+      "expected_output": "プラグイン codex:codex-rescue（調査・修正用の forwarder）は実装には使わない。`codex exec` CLI を Bash ツールの run_in_background: true で直接バックグラウンド起動する。--sandbox workspace-write で .codex-tasks/<slug>.md の指示書どおり実装+UT させ、実装ログは `.codex-tasks/<slug>.log` に隔離、`-o .codex-tasks/<slug>.result.md` で 500 トークンの完了サマリーだけ回収する。プロセス終了後に result ファイルを読み CodexImplementationResult にマップして Phase 4 へ進む。未認証・サンドボックス障害時はログ末尾を確認し、codex login 依頼 / Claude フォールバック / --dangerously-bypass-approvals-and-sandbox 切替をユーザーに確認する（自動付与しない）。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/phases/phase3-factory-execution.md",
+        ".agents/skills/todoapp-orchestrator/SKILL.md",
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
       ]
     }
   ]

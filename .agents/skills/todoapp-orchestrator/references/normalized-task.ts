@@ -47,7 +47,9 @@ type DesignDocPlan = {
 };
 
 // Phase 3b（Codex 実装）が返す完了サマリーの契約。
-// Codex は実装ログを返さず、この構造に対応した 500 トークン以内のサマリーだけを返す（質問3の返却契約）。
+// 実装は `codex exec` をバックグラウンド起動し、その最終メッセージ（= 500 トークン以内のサマリー）を
+// `-o .codex-tasks/<branchSlug>.result.md` に書き出す。orchestrator はこのファイルだけを読んでこの構造にマップする
+// （冗長な実装ログは `.codex-tasks/<branchSlug>.log` に隔離されメインコンテキストには載らない）。
 // changedFiles は自己申告であり、コミット対象は常に実 diff（git status）を正とする。
 type CodexImplementationResult = {
   changedFiles: string[]; // Codex 自己申告。実 diff と食い違う場合は実 diff を採用
