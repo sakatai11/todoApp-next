@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // **Zod でバリデーション**（メール形式・パスワード長を検証）
+  // Zod でバリデーション（メール形式・パスワード長を検証）
   const parsed = CredentialsSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
