@@ -35,6 +35,16 @@ type IntegrationTestPlan =
       reason: 'docs-only' | 'skill-only' | 'frontend-only';
     };
 
+// todoapp-backlog-loop -> loop-creator 経由で orchestrator を起動する場合、
+// 親 loop が creator 委譲前にユーザー承認を取り、その承認済みプロンプトを渡す。
+// 通常の単体 orchestrator 実行では undefined のまま Phase 3a の Y/N/E 承認ゲートを使う。
+type LoopApprovedPrompt = {
+  approvedBy: 'loop-parent';
+  approvedAt: string; // ISO-8601
+  approvalSummary: string;
+  prompt: string;
+};
+
 // Phase 3a（Claude 設計）が出力する実装指示書の置き場所。
 // 実体は `.codex-tasks/<branchSlug>.md`（.gitignore 済み）。Phase 3b の Codex がこれを読んで実装する。
 type DesignDocPlan = {
@@ -44,6 +54,7 @@ type DesignDocPlan = {
   // - 'light': Claude 単発スコープ確定で最小指示書（1セクション）を生成。アーキ選択ゲートは省略
   lane: 'full' | 'light';
   approvedByHuman: boolean; // 指示書承認ゲート（Y/N/E）を通過したか。false のまま Phase 3b に進まない
+  loopApprovedPrompt?: LoopApprovedPrompt; // loop 経由ではこれを承認済み入力として扱い、同じ内容の再承認をしない
 };
 
 // Phase 3b（Codex 実装）が返す完了サマリーの契約。

@@ -150,6 +150,20 @@ Agent ツールで以下を実行:
 
 > **注意**: lane=full の承認はアーキ選択ゲート（factory 内 Step 2）の後に行う。lane=light ではアーキ選択を省くので、この指示書承認が唯一の事前ゲートになる。
 
+### loop 経由の承認済み入力
+
+`todoapp-backlog-loop` → `loop-creator` 経由で起動された場合は、親 loop が creator 委譲前に実装開始承認を取る。
+この場合、入力に `approved_prompt` が含まれていれば、その本文を Phase 3a の承認済みプロンプトとして扱い、同じ内容の Y/N/E 再確認は行わない。
+
+loop 経由では次を満たす場合だけ Phase 3b に進める。
+
+- `approved_prompt.approved_by` が `loop-parent`
+- `approved_prompt.prompt` に、対象 item、route、想定スコープ、実行するゲート、スキップするフェーズ（Cross-Model Review / Draft PR Creation）が含まれている
+- 生成した `.codex-tasks/<branchSlug>.md` が `approved_prompt.prompt` の範囲内に収まっている
+
+上記を満たす場合は `DesignDocPlan.approvedByHuman = true` として扱い、`.codex-tasks/<branchSlug>.md` の末尾に「loop-approved source」として `approved_prompt.approval_summary` を記録する。
+生成した指示書が承認済みプロンプトの範囲を超える場合、または API / Firestore / Auth 変更、テスト skip、危険なコマンド切替が新たに必要になった場合は Phase 3b に進まず、`needs_human` として親 loop に戻す。
+
 ---
 
 ## Phase 3b: Codex 実装（`codex exec` バックグラウンド起動）

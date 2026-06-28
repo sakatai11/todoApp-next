@@ -112,7 +112,7 @@ type / source / title / description / acceptanceCriteria / context? / branchSlug
 
 `references/normalized-task.ts` はフェーズ間で受け渡すデータ契約だけを型で固定し、実行中の判断手順は各 Phase の Markdown に残す。
 
-- TypeScript: `NormalizedTask.type` / `source`、`DesignDocPlan.lane` / `approvedByHuman`、`CodexImplementationResult.integrationTest`、`DraftPullRequestPlan.draft` など、後続 Phase が読み取る構造化データを管理する
+- TypeScript: `NormalizedTask.type` / `source`、`DesignDocPlan.lane` / `approvedByHuman`、`LoopApprovedPrompt`、`CodexImplementationResult.integrationTest`、`DraftPullRequestPlan.draft` など、後続 Phase が読み取る構造化データを管理する
 - Markdown: ユーザー承認、リトライ可否、skip 判断、High 指摘への対応方針、Codex への差し戻し可否など、状況依存の運用手順を管理する
 - boolean だけでは判断理由が失われる実行判定は、`IntegrationTestPlan` のように理由付き union として TypeScript 側に渡す
 - 実行結果の採否や例外処理は TypeScript 型に閉じ込めず、Phase 手順で明示する

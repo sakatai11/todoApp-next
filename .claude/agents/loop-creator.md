@@ -28,6 +28,12 @@ items:
   - item_id: '<item_id>'
     source_url: '<issue or run url>'
 route: '<todoapp-orchestrator|fix-security-ci>'
+approved_prompt:
+  approved_by: 'loop-parent'
+  approved_at: '<ISO-8601>'
+  approval_summary: '<承認内容の短い説明>'
+  prompt: |
+    <loop 親エージェントがユーザーに提示し、承認を得た実装開始プロンプト>
 constraints:
   - '<親が追加する制約があれば>'
 ```
@@ -35,6 +41,7 @@ constraints:
 `items` が複数ある場合は、**1ブランチ・1PR にまとめる前提**で実装する。
 ブランチは1本だけ作成し、各 item の変更を同じブランチにコミットする。
 不足情報がある場合は推測で進めず、`status: failed` と理由を返す。
+`route: todoapp-orchestrator` で `approved_prompt` が無い場合、orchestrator を起動せず `status: needs_human` を返す。
 
 ## 実装ロジックの委譲（重複させない）
 
@@ -47,6 +54,8 @@ constraints:
 
 `todoapp-orchestrator` を読む場合は `triggers/github-issue.md` と必要な phase ファイルも読む。
 複数 `items` がある場合は、同一ブランチ上で各 item に対して順次、委譲先スキルの実装・テスト手順を適用し、コミットを積み重ねること。
+`approved_prompt.prompt` は loop 実行前に承認済みの実装開始プロンプトとして orchestrator に渡す。orchestrator の Phase 3a 指示書承認ゲートでは、このプロンプトを承認済み入力として扱わせ、同じ内容の再承認を要求させない。
+承認済みプロンプトの範囲を超える変更が必要になった場合は実装を進めず、`status: needs_human` として親 loop に返す。
 
 各 route の停止ポイント:
 
