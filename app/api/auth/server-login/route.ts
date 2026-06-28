@@ -1,6 +1,6 @@
 // api/auth/token/route.ts
 import { NextResponse } from 'next/server';
-import { AuthResponseSchema } from '@/data/validatedData';
+import { AuthResponseSchema, CredentialsSchema } from '@/data/validatedData';
 
 // Dynamic imports to avoid client-side loading
 const getFirebaseAdmin = async () => {
@@ -12,15 +12,9 @@ const getFirebaseAdmin = async () => {
 };
 
 export async function POST(req: Request) {
-  let email: string | undefined;
-  let password: string | undefined;
+  let body: unknown;
   try {
-    const body = (await req.json()) as {
-      email?: string;
-      password?: string;
-    };
-    email = body?.email;
-    password = body?.password;
+    body = await req.json();
   } catch {
     return NextResponse.json(
       { error: 'リクエストボディが不正です' },
@@ -28,12 +22,16 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!email || !password) {
+  // **Zod でバリデーション**（メール形式・パスワード長を検証）
+  const parsed = CredentialsSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
       { error: 'メールとパスワードが必要です' },
       { status: 400 },
     );
   }
+
+  const { email, password } = parsed.data;
 
   try {
     // ローカル環境のみモック認証を使用
