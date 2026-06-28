@@ -12,7 +12,21 @@ const getFirebaseAdmin = async () => {
 };
 
 export async function POST(req: Request) {
-  const { email, password } = await req.json();
+  let email: string | undefined;
+  let password: string | undefined;
+  try {
+    const body = (await req.json()) as {
+      email?: string;
+      password?: string;
+    };
+    email = body?.email;
+    password = body?.password;
+  } catch {
+    return NextResponse.json(
+      { error: 'リクエストボディが不正です' },
+      { status: 400 },
+    );
+  }
 
   if (!email || !password) {
     return NextResponse.json(
