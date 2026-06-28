@@ -39,9 +39,9 @@ type IntegrationTestPlan =
 // 親 loop が creator 委譲前にユーザー承認を取り、その承認済みプロンプトを渡す。
 // 通常の単体 orchestrator 実行では undefined のまま Phase 3a の Y/N/E 承認ゲートを使う。
 type LoopApprovedPrompt = {
-  approvedBy: 'loop-parent';
-  approvedAt: string; // ISO-8601
-  approvalSummary: string;
+  approved_by: 'loop-parent';
+  approved_at: string; // ISO-8601
+  approval_summary: string;
   prompt: string;
 };
 

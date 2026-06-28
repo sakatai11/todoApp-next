@@ -158,7 +158,8 @@ Agent ツールで以下を実行:
 loop 経由では次を満たす場合だけ Phase 3b に進める。
 
 - `approved_prompt.approved_by` が `loop-parent`
-- `approved_prompt.prompt` に、対象 item、route、想定スコープ、実行するゲート、スキップするフェーズ（Cross-Model Review / Draft PR Creation）が含まれている
+- `approved_prompt.prompt` に、対象 item、route、想定スコープが含まれている
+- 実行するゲート、スキップするフェーズ（Cross-Model Review / Draft PR Creation）、禁止事項は `constraints` に含まれている
 - 生成した `.codex-tasks/<branchSlug>.md` が `approved_prompt.prompt` の範囲内に収まっている
 
 上記を満たす場合は `DesignDocPlan.approvedByHuman = true` として扱い、`.codex-tasks/<branchSlug>.md` の末尾に「loop-approved source」として `approved_prompt.approval_summary` を記録する。
