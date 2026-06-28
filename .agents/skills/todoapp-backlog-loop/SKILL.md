@@ -238,9 +238,11 @@ creator は実装・テスト・コミットまでを担当し、PR作成、stat
 実行方法（委譲）:
 
 1. `loop-creator` サブエージェント（`.claude/agents/loop-creator.md`）に委譲する。
-2. 入力は `references/subagent-contracts.md` の `Creator` 入力形式（`items` / `route` / `constraints`）に従う。
-3. 複数 issue を1PRにまとめる場合は `items` に複数渡す。issue ごとに委譲を繰り返さない。これにより各 issue の実装差分がメインコンテキストに展開されるのを防ぐ。
-4. 戻り値は `creator_result` 形式で受け取る。
+2. 入力は `references/subagent-contracts.md` の `Creator` 入力形式（`items` / `route` / `constraints` / `approved_prompt`）に従う。
+3. `route: todoapp-orchestrator` の場合、loop 親エージェントが creator 委譲前に実装開始承認を取る。`approved_prompt` には承認された実装開始プロンプト本文だけを入れ、実行するゲートやスキップするフェーズは `constraints` に入れる。
+4. 承認が得られた場合のみ、承認済み内容を `approved_prompt` として `loop-creator` に渡す。承認が得られない場合は creator を起動せず inbox に記録して `LOOP_RESULT: BLOCKED` または `STOP` とする。
+5. 複数 issue を1PRにまとめる場合は `items` に複数渡す。issue ごとに委譲を繰り返さない。これにより各 issue の実装差分がメインコンテキストに展開されるのを防ぐ。
+6. 戻り値は `creator_result` 形式で受け取る。
 
 `loop-creator` は `route` に応じて `todoapp-orchestrator` または `fix-security-ci` を読み、Cross-Model Review と Draft PR Creation を実行せず Commit & Push まで担当する。これらの制約は `loop-creator` の定義に固定済みのため、呼び出し側で都度指定しなくてよい。
 

@@ -82,12 +82,22 @@ items:
   - item_id: '<item_id>'
     source_url: '<issue or run url>'
 route: '<todoapp-orchestrator|fix-security-ci>'
+approved_prompt: # route が todoapp-orchestrator の場合は必須
+  approved_by: 'loop-parent'
+  approved_at: '<ISO-8601>'
+  approval_summary: 'loop 実行前にユーザーが承認した実装開始内容'
+  prompt: |
+    <ユーザーに提示して承認された実装開始プロンプト>
 constraints:
   - 'Cross-Model Review / Draft PR Creation フェーズは実行しない'
   - 'merge / Issue close / branch delete はしない'
   - '複数 items の場合は1ブランチ・1PRにまとめる'
   - '.env / secrets は読まない'
 ```
+
+`route: todoapp-orchestrator` では、親 loop が creator 委譲前に `approved_prompt.prompt` の本文をユーザーへ提示して承認を取る。
+`loop-creator` と `todoapp-orchestrator` はこの承認済みプロンプトを Phase 3a の指示書承認ゲートの入力として扱い、同じ内容の再承認を要求しない。
+ただし、承認済みプロンプトに含まれないスコープ追加、API / Firestore / Auth 変更の新規発見、テスト skip、危険なコマンド切替が必要になった場合は `status=needs_human` で親に戻す。
 
 戻り値:
 

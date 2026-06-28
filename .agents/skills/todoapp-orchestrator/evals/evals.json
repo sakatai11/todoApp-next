@@ -13,8 +13,8 @@
     },
     {
       "id": 2,
-      "prompt": "API 変更を含む bugfix Issue を orchestrator で処理して。Factory の返却では app/api と Firestore の変更がある。",
-      "expected_output": "FactoryResult.integrationTest を IntegrationTestPlan として扱い、required: true と api-route-changed / firestore-changed の理由を Phase 4 に渡す。IT を必須として扱い、skip する場合は Markdown 手順に従って明示承認を取る。",
+      "prompt": "API 変更を含む bugfix Issue を orchestrator で処理して。Codex の完了報告では app/api と Firestore の変更がある。",
+      "expected_output": "Phase 3a の Claude 設計で再現テスト先行を指示書に明記し、Phase 3b の Codex が実装する。Codex が返す CodexImplementationResult.integrationTest を IntegrationTestPlan として扱い、required: true と api-route-changed / firestore-changed の理由を Phase 4 に渡す。IT は Codex 対象外なので orchestrator が todoapp-docker-ops に委譲して必須実行し、skip する場合は Markdown 手順で明示承認を取る。",
       "files": [
         ".agents/skills/todoapp-orchestrator/references/normalized-task.ts",
         ".agents/skills/todoapp-orchestrator/phases/phase3-factory-execution.md",
@@ -24,7 +24,7 @@
     {
       "id": 3,
       "prompt": "スキル文書だけを変更する改善 Issue を orchestrator で処理して。アプリ本体や API は変更しない。",
-      "expected_output": "FactoryResult.integrationTest を required: false / reason: skill-only として扱う。Phase 4 で統合テストをスキップ可能と判断しつつ、format・lint・参照 TypeScript の typecheck など変更種別に合う検証を行う。",
+      "expected_output": "CodexImplementationResult.integrationTest を required: false / reason: skill-only として扱う。Phase 4 で IT をスキップ可能と判断しつつ、Codex の自己ループ後に orchestrator が format・lint・build（参照 TypeScript の型チェック兼ねる）の最終ゲートを 1 回決定論再実行する。",
       "files": [
         ".agents/skills/todoapp-orchestrator/SKILL.md",
         ".agents/skills/todoapp-orchestrator/references/normalized-task.ts",
@@ -46,6 +46,45 @@
       "prompt": "TypeScript で管理しているフラグを見直して、改善案を PR に反映して。",
       "expected_output": "TypeScript は Phase 間データ契約、Markdown は承認・skip・リトライなどの運用手順という役割分担を維持する。boolean だけで理由が落ちる判定は理由付き union に寄せ、運用判断を TypeScript 型へ過剰に閉じ込めない。",
       "files": [
+        ".agents/skills/todoapp-orchestrator/SKILL.md",
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "新機能の spec を orchestrator で実装して PR まで。Codex に実装させる前にやることは？",
+      "expected_output": "Phase 3a で Claude が探索・アーキ設計し、実装指示書を .codex-tasks/<branchSlug>.md に書き出す。Codex 起動前に指示書承認ゲート（Y/N/E）でユーザー承認を取り、approvedByHuman が true になるまで Phase 3b に進まない。Codex は承認済み指示書のみを扱う。実装ログではなく 500 トークン以内の完了サマリーだけ返させる。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/SKILL.md",
+        ".agents/skills/todoapp-orchestrator/phases/phase3-factory-execution.md",
+        ".agents/skills/todoapp-orchestrator/factories/feature.md",
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Codex が「全ゲート green」と報告した。orchestrator はそのまま Phase 5 に進んでよい？最終ゲートが赤だったらどうする？",
+      "expected_output": "Codex の selfGateReportedGreen を鵜呑みにせず、Phase 4 で format/lint/test:run/build の最終ゲートを 1 回決定論再実行する。赤なら Codex へ `codex exec resume --last` で差し戻し（失敗コマンド名、失敗テスト名（該当時のみ）、代表エラー、ファイル/行番号（分かる場合）だけ渡す）、最大 2 回まで。2 回で緑にならなければフルログを提示して人間に確認する。lint/format の軽微な失敗のみ orchestrator 側で直接修正してよい。コミット対象は実 diff を正とする。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/phases/phase4-quality-gate.md",
+        ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Codex が実装したコードを Phase 5 でレビューする。Codex に自分のコードをレビューさせてよい？",
+      "expected_output": "code-review を起動し、CodeRabbit と Claude 専門エージェント群（別モデル）を第三者レビューの主役にする。Codex レビューは code-review が codex-companion.mjs review として実行する補助レビューで、task/rescue の resume とは別系統として扱う。修正は実装者である Codex へ `codex exec resume --last` で差し戻し、Phase 4 の最終ゲート再実行から再開する。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/phases/phase5-cross-model-review.md",
+        ".agents/skills/todoapp-orchestrator/SKILL.md"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "指示書承認が済んだ。orchestrator は Phase 3b でどうやって Codex に実装させる？プラグインの codex:codex-rescue を使う？",
+      "expected_output": "プラグイン codex:codex-rescue（調査・修正用の forwarder）は実装には使わない。`codex exec` CLI を Bash ツールの run_in_background: true で直接バックグラウンド起動する。--sandbox workspace-write で .codex-tasks/<slug>.md の指示書どおり実装+UT させ、実装ログは `.codex-tasks/<slug>.log` に隔離、`-o .codex-tasks/<slug>.result.md` で 500 トークンの完了サマリーだけ回収する。プロセス終了後に result ファイルを読み CodexImplementationResult にマップして Phase 4 へ進む。未認証・サンドボックス障害時はログ末尾を確認し、codex login 依頼 / Claude フォールバック / --dangerously-bypass-approvals-and-sandbox 切替をユーザーに確認する（自動付与しない）。",
+      "files": [
+        ".agents/skills/todoapp-orchestrator/phases/phase3-factory-execution.md",
         ".agents/skills/todoapp-orchestrator/SKILL.md",
         ".agents/skills/todoapp-orchestrator/references/normalized-task.ts"
       ]

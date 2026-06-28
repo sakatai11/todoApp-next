@@ -80,3 +80,6 @@ todoApp-submodule
 .next-docs/*
 .claude/worktrees/
 .claude/state/
+
+# Codex 実装指示書（orchestrator Phase 3a が生成。設計記録として保持するがコミットしない）
+.codex-tasks/

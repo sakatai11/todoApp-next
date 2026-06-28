@@ -89,14 +89,11 @@ context: {
 
    実行方法を選択してください：
    A. 分割して順次実行（デフォルト）
-   B. 分割して Worktree 並列実行（タスク間に依存がなく同一ファイルを変更しない場合のみ）
+   B. 分割して設計のみ並列化（読み取り専用 Agent で各タスクの指示書生成を並列化）
    C. 分割せずそのまま実行
    ```
 
 2. **A（順次実行）**: Task 1 → Phase 2〜8 まで完結 → Task 2 → Phase 2〜8 を繰り返す
-3. **B（並列実行）**: 以下の条件を全て確認してから `isolation: "worktree"` で Agent を並列起動する：
-   - Task 間に依存関係がない（Task 2 が Task 1 の成果物を参照しない）
-   - 同一ファイルを同時編集しない
-   - CLAUDE.md の並列化条件（`.claude/rules/development.md` 参照）を満たす
+3. **B（設計のみ並列化）**: Phase 3a の探索・指示書生成だけを読み取り専用 Agent で並列起動する。プロジェクト要因として `isolation: "worktree"` は使わない（CLAUDE.md 既知不具合: worktree 起点が default branch=`main` 固定で差分が壊れる）。代わりにメインツリーで起動するが、各 Agent は**プロジェクトファイルへ書き込まない読み取り専用に限定**し、指示書の書き出しは Agent ではなく orchestrator（メイン）が行う。並列数が多く Claude Code 内部状態（`.claude/state/` 等）の競合が疑われる場合は A（順次）にフォールバックする。Phase 3b の Codex 実装、Phase 4〜8 は Task 1 → Task 2 の順に逐次実行する
 4. **C（そのまま）**: 分割せず Phase 2 へ進む
 5. 条件に非該当 or C が選ばれた場合はそのまま Phase 2 へ進む

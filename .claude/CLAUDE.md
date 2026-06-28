@@ -106,3 +106,4 @@ npm run msw:init        # Mock Service Workerを初期化
 
 - `/codex:review` は常にバックグラウンドで実行する（`--background` フラグを自動付与）
 - `/codex:rescue` はタスクの複雑さに応じて自動判断する（フラグ省略で自動選択）
+- **orchestrator の実装委譲**: `todoapp-orchestrator` の Phase 3b は実装を Codex に委譲する。プラグイン `codex:codex-rescue`（調査・修正用の forwarder）ではなく、**`codex exec` CLI を Bash ツールの `run_in_background: true` で直接バックグラウンド起動**する。`--sandbox workspace-write` で承認済み実装指示書 `.codex-tasks/<branchSlug>.md` に基づき実装させ、実装ログは `.codex-tasks/<branchSlug>.log` に隔離、`-o .codex-tasks/<branchSlug>.result.md` で 500 トークンの完了サマリーだけを回収する。Phase 4 の差し戻しは `codex exec resume --last`。設計・監督・レビューは Claude が担当する

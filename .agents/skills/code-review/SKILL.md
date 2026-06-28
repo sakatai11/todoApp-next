@@ -78,10 +78,14 @@ git diff main...HEAD
 
 ### Step 3: CodeRabbit 実行（フォアグラウンド）
 
-CodeRabbit は TTY（インタラクティブ端末）を必要とするため、**フォアグラウンドで実行**する。
+CodeRabbit CLI は現行の agent-friendly 出力を使い、**フォアグラウンドで実行**する。
 
 ```bash
-coderabbit --prompt-only 2>&1
+# 未コミット変更のレビュー
+coderabbit review --agent --type uncommitted 2>&1
+
+# ブランチ差分レビューの場合
+coderabbit review --agent --base main 2>&1
 ```
 
 ユーザーに「CodeRabbitの静的解析を実行しています...」と伝える。
@@ -238,13 +242,21 @@ Codex（OpenAI）によるレビュー結果をそのまま展開する。Claude
 
 **CodeRabbit 認証エラーの場合**:
 
-- `coderabbit auth` での再認証を提案
+- まず `coderabbit auth status` で認証状態を確認する
+- 未認証の場合は **API key 認証を推奨**する。OAuth はローカル callback server を立てるため、Codex/サンドボックス環境では `listen EPERM` や `Failed to start server. Is port 0 in use?` で失敗しやすい
+- API key は機密情報なのでチャットに貼らせない。ユーザー自身のターミナルで以下を実行してもらう：
+  ```bash
+  coderabbit auth login --api-key <YOUR_API_KEY>
+  coderabbit auth status
+  ```
+- 一時的に認証済み設定を残したくない場合のみ、ユーザー自身のターミナルで `coderabbit review --agent --type uncommitted --api-key <YOUR_API_KEY>` を使う
 - git diff のみを選択エージェントとCodexに渡してレビューを続行するか確認
 
-**CodeRabbit が TTY エラー（Raw mode not supported）で失敗した場合**:
+**CodeRabbit が OAuth / callback server エラーで失敗した場合**:
 
-- `coderabbit --prompt-only` に切り替えて再実行を試みる
-- それも失敗する場合は git diff のみを選択エージェントとCodexに渡してレビューを続行
+- `coderabbit auth login --agent` の再試行ではなく、API key 認証を案内する
+- この環境で OAuth をどうしても使う必要がある場合のみ、ユーザー承認の上でサンドボックス外実行を試す
+- それも難しい場合は git diff のみを選択エージェントとCodexに渡してレビューを続行
 
 **CodeRabbit がタイムアウト（5分超）した場合**:
 
@@ -265,7 +277,8 @@ Codex（OpenAI）によるレビュー結果をそのまま展開する。Claude
 
 ## 注意事項
 
-- CodeRabbit は `--prompt-only` でフォアグラウンド実行し、完了を待ってから次のステップへ進む（バックグラウンド実行は TTY エラーのため不可）
+- CodeRabbit は `coderabbit review --agent` でフォアグラウンド実行し、完了を待ってから次のステップへ進む
+- CodeRabbit 認証は API key 方式を優先する。API key は会話ログに残さず、ユーザー自身のターミナルで設定する
 - Codex はバックグラウンド実行可能（TTY不要）。選択エージェントと同じターンで同時起動する
 - 選択されたエージェントは必ず同じターンで並列実行する（順次実行しない）
 - Codex は OpenAI 製のため、Claude とは独立した視点でのレビューが期待できる

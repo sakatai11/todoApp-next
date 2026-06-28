@@ -1,30 +1,26 @@
-# Factory: ui-change
+# Factory: ui-change（設計フェーズ）
 
-UI 変更のための工場フロー。**ビジュアル確認**と**a11y担保**を組み込む。
+UI 変更のための **設計工場**。Phase 3a で起動され、対象コンポーネントを特定して **Codex に渡す実装指示書を出力する**。**実装・スクショ取得・テスト作成は行わない**（実装は Phase 3b の Codex）。ただし **ビジュアル確認と a11y 担保** は指示書に明記し、最終的な目視確認は orchestrator が人間に依頼する。
 
 ## 入力
 
-`NormalizedTask`（type=ui-change）
+`NormalizedTask`（type=ui-change）。`context.screenshotPath` または description 内の対象画面情報が必要。
 
-`context.screenshotPath` または description 内の対象画面情報が必要。
+## ゴール
+
+`phases/phase3-factory-execution.md` の「実装指示書テンプレート」に沿った Markdown 本文を返す。
 
 ## 処理フロー
 
 ### Step 1: 対象コンポーネント特定
 
-trigger 段階で大まかに特定済みでも、ここで確定させる。
-
 ```bash
 # ルート → ファイル
-ls app/<該当ルート>/
-# → page.tsx, layout.tsx を読む
-
-# 該当 page.tsx が import している features/**/templates を辿る
+ls app/<該当ルート>/   # page.tsx, layout.tsx を読む
+# page.tsx が import する features/**/templates を辿る
 ```
 
-最終的に修正対象のコンポーネントファイルを1〜数件に絞る。
-
-複数候補がある場合は人間に確認：
+修正対象を1〜数件に絞る。複数候補があれば人間に確認：
 
 ```
 以下のうちどのコンポーネントを修正しますか？
@@ -55,113 +51,52 @@ ls app/<該当ルート>/
 」
 ```
 
-### Step 3: 変更方針の確認
+### Step 3: 変更方針の確認（構造変更時のみ）
 
-軽微な変更（padding/margin/文言）なら即実装。
-構造変更（レイアウト変更/コンポーネント分割）なら人間に方針を確認：
+軽微な変更（padding/margin/文言）なら方針確認は不要。構造変更（レイアウト変更/コンポーネント分割）なら人間に方針を確認：
 
 > 「以下の方針で実装しますか？
->
 > A. 既存コンポーネントを最小限変更
 > B. 新コンポーネントを切り出して再利用性を上げる」
 
-### Step 4: 実装
+### Step 4: 実装指示書の生成
 
-**遵守事項**:
+指示書テンプレートを埋める。ui-change 固有として以下を必ず指示書に含める：
 
-- MUI と Tailwind の使い分け規約に従う
-- ハードコードされた色は Theme 経由に揃える
-- `<button>` と `<a>` の使い分けを正しく（a11y）
-- アイコンには `aria-label` を付与
-- フォーカス可能要素は `focus-visible` スタイルを欠かさない
+- **セクション4（遵守規約・a11y）**:
+  - MUI と Tailwind の使い分け規約に従う／ハードコード色は Theme 経由に揃える
+  - `<button>` と `<a>` の使い分けを正しく／アイコンに `aria-label`／フォーカス可能要素に `focus-visible` スタイル
+  - すべての button/link に判別可能なテキスト or aria-label、フォームコントロールに label
+- **セクション5（テスト要件）**:
+  - 変更コンポーネントに対応する UT（`features/<機能>/components/__tests__/<Component>.test.tsx`）を実装と同時に作成・更新
+  - レンダリング／props・Context 反応／インタラクションを検証
+  - スクショテストがあれば `npm run test:e2e -- --grep "<該当画面>" --update-snapshots` の更新も指示
+- **セクション6（禁止事項）**: スコープ外の画面に手を入れない
 
-### Step 5: ビジュアル確認
+### Step 5: ビジュアル確認の段取り（指示書に記載 + orchestrator が人間依頼）
 
-#### 5-1: 開発サーバー起動
+ビジュアル変更は最終的に人間判断が必要。指示書には「Codex は実装と UT/スクショまで」と書き、**目視確認は orchestrator が Phase 3b 完了後に人間へ依頼**する：
 
-```bash
-# まだ起動していなければ
-npm run dev   # または npm run docker:dev
-```
+> 「http://localhost:3000/<該当ルート> で確認してください。
+> 確認ポイント: 期待通りのレイアウトか / レスポンシブ崩れ（モバイル・デスクトップ）/ ダークモード崩れ」
 
-#### 5-2: Playwright スクショ取得（推奨）
+### Step 6: 返却
 
-このプロジェクトには Playwright が導入されているため、変更前後のスクショで比較する：
+完成した実装指示書本文（Markdown）だけを返す。
 
-```bash
-# 変更前のスクショ（修正前にgit stashして取得しておくのが理想）
-# 変更後の確認テスト
-npm run test:e2e -- --grep "<該当画面>" --update-snapshots
-```
+→ orchestrator が `.codex-tasks/<branchSlug>.md` に書き出し、指示書承認ゲート（Phase 3a）→ Phase 3b（Codex 実装）へ。
+a11y の深掘りは Phase 5（code-review）の `accessibility-reviewer` が担う。
 
-スクショテストがない場合は、新規にスクショアサーションを追加することを検討。
-
-#### 5-3: 手動確認のリクエスト
-
-ビジュアル変更は最終的に人間の判断が必要。**以下を必ず人間に確認**：
-
-> 「以下の URL で変更後の見た目を確認してください: http://localhost:3000/<該当ルート>
->
-> 確認ポイント:
->
-> - 期待通りのレイアウトか
-> - レスポンシブ崩れがないか（モバイル / デスクトップ）
-> - ダークモード対応が崩れていないか（プロジェクトで対応している場合）」
-
-### Step 6: UT 作成
-
-変更したコンポーネントに対応するテストファイルを確認・追加する。
-
-```bash
-# 既存テストの確認
-find features/ -name "*.test.tsx" | xargs grep -l "<対象コンポーネント名>"
-```
-
-- **既存テストがある場合**: 変更内容に合わせてテストケースを更新
-- **既存テストがない場合**: `features/<該当機能>/components/__tests__/<ComponentName>.test.tsx` を新規作成
-
-テスト観点：
-
-- 変更後のレンダリングが正常か（スナップショット or DOM検証）
-- props・Context 変化に対して期待通り反応するか
-- インタラクション（クリック・フォーカス等）が正常に動作するか
-
-```bash
-npm run test:run -- <該当テストファイル>
-```
-
-### Step 7: a11y 簡易チェック
-
-以下を確認：
-
-- すべての button / link に判別可能なテキスト or aria-label
-- フォームコントロールに label が紐づいている
-- カラーコントラストが極端に悪くないか（変更箇所のみ）
-- フォーカスリングが見える
-
-不明点があれば pipeline 側の Phase 5 (code-review) で `accessibility-reviewer` が走るので深掘りはそこに任せる。
-
-### Step 8: 変更ファイルリスト返却
-
-- 修正コンポーネントファイル
-- 追加 / 更新した UT ファイル
-- 追加 / 更新したスクショテスト
-- 人間が手動確認した URL とポイント
-
-→ Phase 4 (Quality Gate) へ
-
-## 想定外パターン
+## 想定外パターン（設計段階で検出したら人間へ）
 
 ### デザインシステム外の変更
 
-新しい色 / サイズ / フォントを使う必要がある場合は、デザイントークン化を検討。
-人間に確認：「新しいデザイントークンを追加しますか？それともワンオフで実装しますか？」
+新しい色 / サイズ / フォントが必要なら、人間に確認：「新しいデザイントークンを追加しますか？ワンオフで実装しますか？」決定を指示書に反映する。
 
 ### 大規模なレイアウト刷新
 
-1コンポーネントに収まらず複数画面に影響する場合、これは ui-change ではなく feature 扱い。
-SKILL.md に戻して `factories/feature.md` への切替を提案する。
+1コンポーネントに収まらず複数画面に影響する場合、ui-change ではなく feature 扱い。SKILL.md に戻して `factories/feature.md` への切替を提案する。
 
 ### モバイル / デスクトップで挙動が異なる
 
-両方の breakpoint で動作確認することを必ず人間に依頼。Playwright のviewport 切替で自動化も可。
+両 breakpoint での確認を人間依頼に必ず含める（Playwright の viewport 切替で自動化も可）。
