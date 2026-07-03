@@ -2,8 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 必ず日本語で回答してください
-
 ## 横断的ルール（自動読み込み）
 
 以下の`.claude/rules/`配下のルールが全て自動的に適用されます：
@@ -28,37 +26,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### 開発コマンド
 
+よく使うもののみ抜粋。**全コマンドの一覧は @.claude/rules/development.md を参照**（ここに重複掲載しない）。
+
 ```bash
-# 開発
-npm run dev              # Turbopackで開発サーバーを起動
-npm run build           # クリーンビルド（.nextディレクトリ削除＋ビルド）
-npm start               # 本番サーバーを起動
-
-# コード品質
-npm run lint            # ESLintを自動修正で実行
-npm run prettier        # Prettierでコードをフォーマット
-npm run format          # prettierとlintの両方を実行
-
-# テスト
-npm run test            # テスト（watch mode）
-npm run test:run        # テスト一回実行
-npm run test:coverage   # カバレッジ付きテスト実行
-npm run test:ui         # Vitest UIモードでテスト実行
-npm run test:e2e        # Playwright E2Eテスト
-npm run test:e2e:ui     # Playwright UIモードでE2Eテスト
-
-# Docker統合テスト
-npm run docker:test     # Firebase Emulator環境起動
-npm run docker:test:run # 統合テスト実行（Firebase Emulator + tsx）
-npm run docker:test:down # Docker環境停止
-npm run docker:e2e:run  # E2Eテスト実行
-
-# Firebase Emulator
-npm run emulator:start  # 開発用Firebase Emulator起動
-npm run emulator:test   # テスト用Firebase Emulator起動
-
-# モック
-npm run msw:init        # Mock Service Workerを初期化
+npm run dev             # Turbopackで開発サーバーを起動
+npm run format          # prettier + lint
+npm run test:run        # ユニットテスト一回実行
+npm run build           # クリーンビルド
 ```
 
 ### 現在の技術スタック
@@ -98,7 +72,7 @@ npm run msw:init        # Mock Service Workerを初期化
 
 ## テストガイドライン
 
-- **UTカバレッジ**: 100%達成済み（493テスト）
+- **UTカバレッジ**: 100%を維持する（現在のテスト数は `npm run test:run` の出力で確認）
 - **統合テスト**: Docker + Firebase Emulator（ポート3002/4000/8080/9099）
 - **詳細ガイド**: [@.claude/rules/testing.md](rules/testing.md)参照
 

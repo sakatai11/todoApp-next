@@ -17,8 +17,8 @@ npm run docker:dev       # 開発用Docker環境起動
 npm run docker:dev:down  # 開発用Docker環境停止
 
 # コード品質管理
-npm run lint            # ESLint 9.20.0を自動修正で実行
-npm run prettier        # Prettier 3.5.0でコードをフォーマット
+npm run lint            # ESLintを自動修正で実行
+npm run prettier        # Prettierでコードをフォーマット
 npm run format          # prettierとlintの両方を実行（推奨）
 ```
 
@@ -56,7 +56,7 @@ npm run emulator:test   # テスト用Firebase Emulator起動
 
 ```bash
 # Mock Service Worker初期化
-npm run msw:init        # MSW 2.8.7を初期化（開発・ユニットテスト用）
+npm run msw:init        # MSWを初期化（開発・ユニットテスト用）
 ```
 
 ## アーキテクチャ原則
@@ -97,7 +97,7 @@ features/
 | 状態タイプ       | 技術          | 用途                             |
 | ---------------- | ------------- | -------------------------------- |
 | **Local State**  | React Context | Todo・リスト操作のメイン状態管理 |
-| **Server State** | SWR 2.3.3     | 初期データフェッチング・認証連携 |
+| **Server State** | SWR           | 初期データフェッチング・認証連携 |
 
 **データフロー**:
 
@@ -186,15 +186,7 @@ const addTodo = async () => {
 
 ### 過剰設計の回避
 
-- **機能追加の抑制**: 要求された機能のみを実装
-- **リファクタリング**: 変更箇所以外の不要なリファクタリングを避ける
-- **シンプル設計**: 最小限の複雑さで実装
-
-**NG例**:
-
-- バグ修正時に周辺コードをクリーンアップ
-- シンプルな機能に余分な設定可能性を追加
-- 仮定の将来要件に対する設計
+@.claude/rules/code-quality.md の「過剰設計の回避」に従う（判断フローチャート・具体例あり。ここに重複掲載しない）。
 
 ### スクリプト実行前の確認事項
 
@@ -310,7 +302,7 @@ npm run build
 
 <body>
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+Co-Authored-By: <使用モデル名> <noreply@anthropic.com>  # Claude Code が自動付与
 ```
 
 **type**:

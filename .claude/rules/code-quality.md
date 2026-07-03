@@ -24,8 +24,7 @@ const name = user.name || 'Unknown';
 ### ESLint/Prettier
 
 - **自動修正**: コミット前に`npm run format`を実行
-- **ESLint**: ESLint 9.20.0準拠
-- **Prettier**: Prettier 3.5.0でコードフォーマット
+- **ESLint / Prettier**: リポジトリの設定ファイルに従う（バージョンは package.json 参照）
 
 ### コンポーネント設計原則
 
@@ -33,21 +32,7 @@ const name = user.name || 'Unknown';
 - **React.memo**: パフォーマンス最適化のためメモ化を活用
 - **Props型定義**: 全てのPropsに厳密な型定義を提供
 - **再利用性**: 共通コンポーネントは`features/shared/`に配置
-
-```typescript
-// ✅ 推奨
-type ButtonProps = {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
-
-export const Button = React.memo<ButtonProps>(({ label, onClick, disabled = false }) => {
-  return <button onClick={onClick} disabled={disabled}>{label}</button>;
-});
-
-Button.displayName = 'Button';
-```
+- **displayName**: `React.memo`使用時は`displayName`を設定する
 
 ### 既存パターンの踏襲
 
