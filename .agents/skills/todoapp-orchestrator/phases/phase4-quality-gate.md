@@ -73,9 +73,20 @@ git status --porcelain
 
 ## 4-4: IT（統合テスト）（Codex 対象外・人間確認）
 
-IT は Docker + Firebase Emulator が必要で重く、`todoapp-docker-ops` に委譲する人間ゲート付きステップ。**Codex の自己修正ループには含めない**。Codex 完了報告の `integrationTest.required` 判定を受けて orchestrator が実行を判断する。
+IT は Docker + Firebase Emulator が必要で重く、`todoapp-docker-ops` に委譲する人間ゲート付きステップ。**Codex の自己修正ループには含めない**。
 
-**実行判断基準**:
+### 4-4-1: 実 diff によるクロスチェック（自己申告を鵜呑みにしない）
+
+Codex 完了報告の `integrationTest.required` をそのまま採用せず、4-3 で取得した実 diff（`git status --porcelain`）で裏取りしてから判断する。
+
+```bash
+git status --porcelain | awk '{print $2}' | grep -E '^app/api/'
+```
+
+- 実 diff に `app/api/` 配下の変更が含まれるのに `integrationTest.required` が `false` の場合、**Core Principle「自己申告を信頼の根拠にしない」を IT 判定にも適用し、実 diff を優先して `required: true` に強制上書きする**。この場合 `reasons` に `api-route-changed` を補って以下の判断基準に進む。
+- Firestore / Auth 操作の変更（`adminDb` / `adminAuth` / `getAuth(` 等の呼び出し）は grep だけでは機械判定しにくいため、この観点は Codex の自己申告（`reasons` に `firebase-auth-changed` / `firestore-changed` を含むか）を採用してよい。ただし `app/api/` 以外のファイルで Firestore/Auth 操作の追加が疑われる場合は、スキップ前に人間へ一声確認する。
+
+### 4-4-2: 実行判断基準
 
 | 変更内容                                 | IT 実行       |
 | ---------------------------------------- | ------------- |
@@ -84,7 +95,7 @@ IT は Docker + Firebase Emulator が必要で重く、`todoapp-docker-ops` に�
 | `features/` のみ（API呼び出しなし）      | ⬜ スキップ可 |
 | スキルファイル・ドキュメントのみ         | ⬜ スキップ   |
 
-`CodexImplementationResult.integrationTest.required`（Phase 3b が渡す契約）が `true` の場合は必須、`false` の場合は `reason` を確認した上でスキップできる。実行するか明示承認で skip するかの判断手順はこの Markdown に従う。
+4-4-1 でクロスチェック済みの `integrationTest.required`（Phase 3b が渡す契約）が `true` の場合は必須、`false` の場合は `reason` を確認した上でスキップできる。実行するか明示承認で skip するかの判断手順はこの Markdown に従う。
 
 IT が必要な場合は `todoapp-docker-ops` スキルに委譲する：
 
