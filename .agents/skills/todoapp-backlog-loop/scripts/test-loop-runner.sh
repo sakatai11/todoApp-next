@@ -169,6 +169,82 @@ run_case "CONTINUE then STOP exits 0" "continue_then_stop" 0
 run_case "CONTINUE hits max cycles exits 0" "continue_forever" 0
 run_case "dirty tree fails preflight" "stop" 1 true
 
+# --- 多重起動防止ロックのテスト -------------------------------------------------
+
+run_lock_case_active() {
+  local name="active lock blocks second runner exits 1"
+  setup_case "$name" "stop"
+  local repo="$CASE_REPO"
+
+  # 生きている PID（このテストシェル自身）でロックを保持している状況を作る
+  mkdir -p "$repo/.claude/state/loop-runner.lock"
+  printf '%s\n' "$$" > "$repo/.claude/state/loop-runner.lock/pid"
+
+  set +e
+  local output_file="$TMP_ROOT/lock_active.out"
+  (
+    cd "$repo"
+    LOOP_BRANCH=develop-v2 \
+      LOOP_MAX_CYCLES=1 \
+      LOOP_INTERVAL=0 \
+      LOOP_CYCLE_TIMEOUT=30 \
+      LOOP_LOG=.claude/state/test-loop-runner.log \
+      .agents/skills/todoapp-backlog-loop/scripts/loop-runner.sh >"$output_file" 2>&1
+  )
+  local rc=$?
+  set -e
+
+  assert_eq "$name" 1 "$rc"
+  if [[ "$rc" -ne 1 ]]; then
+    sed -n '1,160p' "$output_file" >&2
+  fi
+  local lock_state="absent"
+  [[ -d "$repo/.claude/state/loop-runner.lock" ]] && lock_state="present"
+  assert_eq "active lock is not removed by loser" "present" "$lock_state"
+  cleanup
+  TMP_ROOT=""
+}
+
+run_lock_case_stale() {
+  local name="stale lock is taken over exits 0"
+  setup_case "$name" "stop"
+  local repo="$CASE_REPO"
+
+  # 既に終了した PID で stale lock を作る
+  sleep 0 &
+  local dead_pid=$!
+  wait "$dead_pid" 2>/dev/null || true
+  mkdir -p "$repo/.claude/state/loop-runner.lock"
+  printf '%s\n' "$dead_pid" > "$repo/.claude/state/loop-runner.lock/pid"
+
+  set +e
+  local output_file="$TMP_ROOT/lock_stale.out"
+  (
+    cd "$repo"
+    LOOP_BRANCH=develop-v2 \
+      LOOP_MAX_CYCLES=1 \
+      LOOP_INTERVAL=0 \
+      LOOP_CYCLE_TIMEOUT=30 \
+      LOOP_LOG=.claude/state/test-loop-runner.log \
+      .agents/skills/todoapp-backlog-loop/scripts/loop-runner.sh >"$output_file" 2>&1
+  )
+  local rc=$?
+  set -e
+
+  assert_eq "$name" 0 "$rc"
+  if [[ "$rc" -ne 0 ]]; then
+    sed -n '1,160p' "$output_file" >&2
+  fi
+  local lock_state="absent"
+  [[ -d "$repo/.claude/state/loop-runner.lock" ]] && lock_state="present"
+  assert_eq "lock released after run" "absent" "$lock_state"
+  cleanup
+  TMP_ROOT=""
+}
+
+run_lock_case_active
+run_lock_case_stale
+
 echo "passed: $PASS_COUNT, failed: $FAIL_COUNT"
 if [[ "$FAIL_COUNT" -ne 0 ]]; then
   exit 1

@@ -27,16 +27,17 @@
 
 ## セーフガード（暴走防止）
 
-| ガード                 | 環境変数               | 既定値        | 役割                                  |
-| ---------------------- | ---------------------- | ------------- | ------------------------------------- |
-| 最大サイクル数         | `LOOP_MAX_CYCLES`      | `5`           | ループ全体のハードキャップ            |
-| サイクル間インターバル | `LOOP_INTERVAL`        | `60`（秒）    | レート制限 / orchestration tax の抑制 |
-| 1 サイクル実時間上限   | `LOOP_CYCLE_TIMEOUT`   | `1800`（秒）  | ハング検知（watchdog で強制終了）     |
-| 1 サイクルコスト上限   | `LOOP_MAX_BUDGET_USD`  | `5`（USD）    | claude `--max-budget-usd` に渡す      |
-| 着手件数               | `LOOP_MAX_ITEMS`       | `1`           | スキル `--max-items` に渡す（最大 2） |
-| 動作ブランチ           | `LOOP_BRANCH`          | `develop-v2`  | サイクル毎に検証。違えば停止          |
-| クリーン検証           | （常時）               | -             | サイクル毎に dirty なら停止           |
-| 権限モード             | `LOOP_PERMISSION_MODE` | `acceptEdits` | claude `--permission-mode` に渡す     |
+| ガード                 | 環境変数               | 既定値                           | 役割                                                                    |
+| ---------------------- | ---------------------- | -------------------------------- | ----------------------------------------------------------------------- |
+| 最大サイクル数         | `LOOP_MAX_CYCLES`      | `5`                              | ループ全体のハードキャップ                                              |
+| サイクル間インターバル | `LOOP_INTERVAL`        | `60`（秒）                       | レート制限 / orchestration tax の抑制                                   |
+| 1 サイクル実時間上限   | `LOOP_CYCLE_TIMEOUT`   | `1800`（秒）                     | ハング検知（watchdog で強制終了）                                       |
+| 1 サイクルコスト上限   | `LOOP_MAX_BUDGET_USD`  | `5`（USD）                       | claude `--max-budget-usd` に渡す                                        |
+| 着手件数               | `LOOP_MAX_ITEMS`       | `1`                              | スキル `--max-items` に渡す（最大 2）                                   |
+| 動作ブランチ           | `LOOP_BRANCH`          | `develop-v2`                     | サイクル毎に検証。違えば停止                                            |
+| クリーン検証           | （常時）               | -                                | サイクル毎に dirty なら停止                                             |
+| 多重起動防止ロック     | `LOOP_LOCK_DIR`        | `.claude/state/loop-runner.lock` | 同時実行を 1 つに制限。別 runner 実行中は exit 1、stale lock は自動奪取 |
+| 権限モード             | `LOOP_PERMISSION_MODE` | `acceptEdits`                    | claude `--permission-mode` に渡す                                       |
 
 加えて runner は次を行う。
 
@@ -44,6 +45,13 @@
   残していたら停止する（多層防御）。
 - `SIGINT` / `SIGTERM` を受けたら、現在のサイクル完了後に安全に停止する。
 - 全サイクルの結果・コストを `.claude/state/loop-runner.log` に追記する。
+
+## 無人モードと実装開始承認（バッチ承認）
+
+runner はスキルを `--unattended` 付きで起動する。`todoapp-orchestrator` ルートの項目は
+`.claude/state/pending-approvals.md` に人間が事前承認（`[x]`）したプロンプトがある場合のみ実装され、
+未承認の項目は同ファイルに承認待ちとして登録されてスキップされる（`BLOCKED` にはならない）。
+`fix-security-ci` ルートは事前承認なしで自動処理される。承認手順は `references/runbook.md` を参照。
 
 ## 権限モードについて（重要）
 
@@ -78,11 +86,27 @@ LOOP_MAX_CYCLES=3 LOOP_INTERVAL=120 .agents/skills/todoapp-backlog-loop/scripts/
 | `2`    | `BLOCKED`、タイムアウト、claude エラー終了  |
 | `3`    | `LOOP_RESULT` を解釈不能（契約違反）        |
 
-## cron 運用（任意）
+## 定期運用
 
-無人で定期起動する場合も、runner 自体が 1 起動で完結するため cron と二重には回らない。
+### ローカル cron
+
+runner 自体が 1 起動で完結する。前回起動がまだ実行中の場合でも、`.claude/state/loop-runner.lock` の
+多重起動防止ロックにより後発は exit 1 で即終了するため、二重には回らない。
 
 ```cron
 # 平日 9-18 時に 1 時間おきに 1 起動（各起動は最大 5 サイクルで自己完結）
 0 9-18 * * 1-5 cd /path/to/todoApp-next && LOOP_MAX_CYCLES=5 .agents/skills/todoapp-backlog-loop/scripts/loop-runner.sh >> .claude/state/loop-cron.log 2>&1
 ```
+
+ローカル cron はマシンが起動している間しか回らない点に注意する。
+
+### クラウドスケジューリング（Routines / Claude Code on the web）
+
+Claude Code のスケジュール実行（Routines 等）は Anthropic のクラウド上で動くため、
+ローカルマシンの稼働に依存しない。ただし本スキルの `.claude/state/` は gitignore された
+ローカル状態であり、エフェメラルなクラウドセッションでは実行間で保持されない。
+
+- **現状のスキルはローカル runner を前提とする。** クラウドで定期実行する場合は、state を
+  リモートに永続化する再設計（state 専用ブランチへのコミット、GitHub Issue / ラベルを
+  state として使う等）が先に必要。
+- それまでの運用方針: ローカルでは本 runner + cron、クラウドでの定期実行は非対応と扱う。

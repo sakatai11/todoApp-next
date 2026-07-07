@@ -9,6 +9,7 @@ description: |-
   引数:
     --dry-run: Phase 2 の選択結果を表示して終了。状態ファイル更新、実装、PR作成は行わない。
     --max-items=N: このサイクルで着手する最大件数。未指定時は 1、最大 2。
+    --unattended: 無人実行モード。実装開始承認を対話で求めず、承認が必要な項目は .claude/state/pending-approvals.md に登録してスキップする。loop-runner.sh からの起動時は常に付与される。
 
   使わない状況: 特定タスクの実装依頼、レビューのみ、PR作成のみ、課題発掘のみ。
 ---
@@ -22,7 +23,9 @@ description: |-
 
 「タスクが尽きるまで回し続ける」自律性は、スキル内部のループではなく外部 runner で実現する。
 `scripts/loop-runner.sh` が `LOOP_RESULT` を読み、最大サイクル数・サイクル間インターバル・
-コスト上限・ブランチ/クリーン検証・`BLOCKED` 即停止というサーキットブレーカー付きで次サイクルを起動する。
+コスト上限・ブランチ/クリーン検証・多重起動防止ロック・`BLOCKED` 即停止というサーキットブレーカー付きで
+次サイクルを起動する。runner はスキルを `--unattended` 付きで起動するため、実装開始承認は
+`.claude/state/pending-approvals.md` のバッチ承認（Phase 3 参照）に置き換わる。
 
 ```bash
 # 既定（最大5サイクル / 60s間隔）で自律実行
@@ -45,17 +48,19 @@ runner の制御だけを確認する場合は `scripts/test-loop-runner.sh` を
 - **creator と verifier を分離する**: 実装側の自己評価をPR条件にしない。`code-review` を独立ゲートとして使う。
 - **PR は Draft のみ**: Ready 化、merge、Issue close、ブランチ削除はしない。
 - **人間判断待ちは消化済み扱いにする**: inbox 登録済みの項目は、未処理 issue として再選択しない。
+- **無人モードでは承認を対話で求めない**: `--unattended` では orchestrator ルートの実装開始承認を `pending-approvals.md` への登録に置き換え、承認済み項目だけに着手する。
 - **上限を守る**: デフォルト着手 1 件、明示指定でも最大 2 件。verifier reject の修正依頼は 1 回だけ。
 
 ## State Files
 
 `.claude/state/` は gitignore 対象のローカル運用状態とする。存在しなければ `--dry-run` 以外で初期化する。
 
-| ファイル                            | 役割                                                    |
-| ----------------------------------- | ------------------------------------------------------- |
-| `.claude/state/loop-state.md`       | 前回実行、進行中、繰越キュー、処理済みID                |
-| `.claude/state/triage-inbox.md`     | 人間判断待ち。ここにある項目は自動選択から除外する      |
-| `.claude/state/verification-log.md` | verifier の判定ログ。pass / conditional / reject を記録 |
+| ファイル                             | 役割                                                                      |
+| ------------------------------------ | ------------------------------------------------------------------------- |
+| `.claude/state/loop-state.md`        | 前回実行、進行中、繰越キュー、処理済みID                                  |
+| `.claude/state/triage-inbox.md`      | 人間判断待ち。ここにある項目は自動選択から除外する                        |
+| `.claude/state/verification-log.md`  | verifier の判定ログ。pass / conditional / reject を記録                   |
+| `.claude/state/pending-approvals.md` | 実装開始承認のバッチ承認キュー。無人モードの承認待ち / 承認済みプロンプト |
 
 状態に記録する `item_id` は安定した値にする。
 
@@ -83,7 +88,7 @@ Phase 6  State update and result signal
 
 1. `git status --short --untracked-files=all` を確認する。
 2. `git branch --show-current` が `develop-v2` であることを確認する。
-3. `.claude/state/` の 3 ファイルを読む。存在しない場合:
+3. `.claude/state/` の 4 ファイルを読む。存在しない場合:
    - `--dry-run` では作成せず「初回実行時に作成予定」と表示する。
    - 通常実行では末尾の初期フォーマットで作成する。
 4. `loop-state.md` の「進行中」を確認し、既存作業があれば新規候補より優先する。
@@ -151,6 +156,7 @@ gh run list --workflow "<workflowName>" \
 
 - `loop-state.md` の処理済み `item_id`
 - `triage-inbox.md` に未処理 `[ ]` として存在する `item_id`
+- `pending-approvals.md` に承認待ち `[ ]` として存在する `item_id`（承認済み `[x]` は優先選択の対象）
 - すでに open Draft PR が存在する同一 `item_id`
 - 最新 run で解消済みの CI failure
 
@@ -170,6 +176,9 @@ gh run list --workflow "<workflowName>" \
 - 既定: 1 件（PR）
 - `--max-items=N`: `N` 件（PR）を選択。ただし `N > 2` の場合は 2 にクランプする。
 - 進行中項目がある場合: 進行中を 1 件としてカウントし、新規選択枠は `max-items - 進行中件数` で決定する（例: 進行中1件 + `--max-items=2` → 新規選択は1件）
+
+選択の優先順位は ①進行中 ②`pending-approvals.md` の承認済み `[x]` 項目 ③新規 triage 候補 とする。
+承認済み項目は登録時のスコアとルートをそのまま使い、再スコアリングしない。
 
 選択結果を必ず表示する。
 
@@ -239,10 +248,25 @@ creator は実装・テスト・コミットまでを担当し、PR作成、stat
 
 1. `loop-creator` サブエージェント（`.claude/agents/loop-creator.md`）に委譲する。
 2. 入力は `references/subagent-contracts.md` の `Creator` 入力形式（`items` / `route` / `constraints` / `approved_prompt`）に従う。
-3. `route: todoapp-orchestrator` の場合、loop 親エージェントが creator 委譲前に実装開始承認を取る。`approved_prompt` には承認された実装開始プロンプト本文だけを入れ、実行するゲートやスキップするフェーズは `constraints` に入れる。
-4. 承認が得られた場合のみ、承認済み内容を `approved_prompt` として `loop-creator` に渡す。承認が得られない場合は creator を起動せず inbox に記録して `LOOP_RESULT: BLOCKED` または `STOP` とする。
+3. `route: todoapp-orchestrator` の場合、creator 委譲前に実装開始承認が必要。取得方法はモードで異なる（下記「実装開始承認の取得」）。`approved_prompt` には承認された実装開始プロンプト本文だけを入れ、実行するゲートやスキップするフェーズは `constraints` に入れる。
+4. 承認が得られた場合のみ、承認済み内容を `approved_prompt` として `loop-creator` に渡す。
 5. 複数 issue を1PRにまとめる場合は `items` に複数渡す。issue ごとに委譲を繰り返さない。これにより各 issue の実装差分がメインコンテキストに展開されるのを防ぐ。
 6. 戻り値は `creator_result` 形式で受け取る。
+
+#### 実装開始承認の取得（route: todoapp-orchestrator）
+
+**対話モード（既定）**: 親エージェントが実装開始プロンプトをユーザーに提示して承認を取る。
+承認が得られない場合は creator を起動せず、inbox に記録して `LOOP_RESULT: BLOCKED` または `STOP` とする。
+
+**無人モード（`--unattended`）**: 対話承認は行わず、`pending-approvals.md` のバッチ承認に置き換える。
+
+1. 対象項目の承認済み `[x]` エントリが `pending-approvals.md` にあれば、そのプロンプト本文を
+   `approved_prompt.prompt` に入れて委譲する。`approval_summary` にはバッチ承認である旨と承認登録日を書く。
+2. エントリがない、または未承認 `[ ]` の場合は実装しない。実装開始プロンプトを生成して
+   `pending-approvals.md` に承認待ちとして登録し、その項目をスキップして次の候補または Phase 6 へ進む。
+   承認待ち登録はそれ自体異常ではないため、これだけを理由に `BLOCKED` としない。
+3. 人間は `pending-approvals.md` の `- [ ] approved` を `- [x] approved` に変えて、次サイクル以降の
+   着手を承認する。プロンプト本文を修正してから承認してもよい。却下する場合は項目ブロックごと削除する。
 
 `loop-creator` は `route` に応じて `todoapp-orchestrator` または `fix-security-ci` を読み、Cross-Model Review と Draft PR Creation を実行せず Commit & Push まで担当する。これらの制約は `loop-creator` の定義に固定済みのため、呼び出し側で都度指定しなくてよい。
 
@@ -328,6 +352,9 @@ git pull --ff-only origin develop-v2
   - verifier reject / blocked
 - `verification-log.md`
   - pass / conditional / reject / blocked の全判定
+- `pending-approvals.md`
+  - 無人モードで新規登録した承認待ち項目
+  - 着手した承認済みエントリの削除
 
 最後に必ず次のいずれかを出力して終了する。
 
@@ -349,7 +376,7 @@ reason: 人間判断、環境異常、verifier実行不能、ブランチ復帰�
 
 `CONTINUE` を出せる条件:
 
-- 繰越キューに自動処理可能な候補がある
+- 繰越キューに自動処理可能な候補がある、または `pending-approvals.md` に承認済みで未着手の項目がある
 - inbox 未処理数が上限未満
 - 現在ブランチが `develop-v2`
 - worktree が clean
@@ -359,6 +386,7 @@ reason: 人間判断、環境異常、verifier実行不能、ブランチ復帰�
 
 - 候補がない
 - 候補はあるがすべて inbox 登録済み
+- 候補はあるがすべて承認待ちとして `pending-approvals.md` に登録済み
 - discovery のみ実行した
 - `--dry-run`
 
@@ -420,4 +448,25 @@ reason: 人間判断、環境異常、verifier実行不能、ブランチ復帰�
 
 | 日時 | item_id | ブランチ | creator | verdict | Critical/High | Medium/Low | PR  | 備考 |
 | ---- | ------- | -------- | ------- | ------- | ------------- | ---------- | --- | ---- |
+```
+
+**pending-approvals.md**
+
+```markdown
+# Pending Approvals
+
+無人サイクルが実装開始承認を求めている項目。`- [ ] approved` を `- [x] approved` にすると
+次サイクル以降に優先着手する。却下する場合は項目ブロックごと削除する。
+
+## <item_id>
+
+- [ ] approved
+- 登録日: YYYY-MM-DD
+- route: todoapp-orchestrator
+- score: <score>
+- source: <url>
+
+実装開始プロンプト:
+
+> <実装開始プロンプト本文（複数行可）>
 ```

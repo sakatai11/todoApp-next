@@ -4,13 +4,14 @@
 
 ## まず見るもの
 
-| 状況                    | 確認先                              |
-| ----------------------- | ----------------------------------- |
-| runner が止まった       | `.claude/state/loop-runner.log`     |
-| 人間判断が必要          | `.claude/state/triage-inbox.md`     |
-| verifier の判定詳細     | `.claude/state/verification-log.md` |
-| 現在のキュー / 処理済み | `.claude/state/loop-state.md`       |
-| PR内容                  | GitHub Draft PR                     |
+| 状況                    | 確認先                               |
+| ----------------------- | ------------------------------------ |
+| runner が止まった       | `.claude/state/loop-runner.log`      |
+| 人間判断が必要          | `.claude/state/triage-inbox.md`      |
+| verifier の判定詳細     | `.claude/state/verification-log.md`  |
+| 実装開始承認の承認待ち  | `.claude/state/pending-approvals.md` |
+| 現在のキュー / 処理済み | `.claude/state/loop-state.md`        |
+| PR内容                  | GitHub Draft PR                      |
 
 ## `LOOP_RESULT` 別の対応
 
@@ -94,6 +95,17 @@ Critical / High 指摘が残っているためPRを作らない。
 2. 残ったブランチで修正するか、Issueとして切り直す。
 3. 必要なら `triage-inbox.md` の項目を更新する。
 
+### 多重起動ロック
+
+`loop-runner.sh` は `.claude/state/loop-runner.lock` で多重起動を防ぐ。
+別の runner が実行中の場合、後発は preflight で exit 1 する（cron の毎時起動が前回と重なっても安全）。
+
+対応:
+
+1. `cat .claude/state/loop-runner.lock/pid` で実行中 runner の PID を確認する。
+2. `ps -p <pid>` でプロセスが生きていれば、完了を待つ（多重起動させない）。
+3. プロセスが存在しない stale lock は次回起動時に runner が自動で奪取するため、手動削除は不要。
+
 ### claude 権限待ち / 非対話実行失敗
 
 既定の `LOOP_PERMISSION_MODE=acceptEdits` は安全側の設定。
@@ -104,6 +116,19 @@ Bashや外部コマンドで承認待ちが出る場合がある。
 - まず手動で1サイクル実行して、必要な承認範囲を確認する。
 - 無人運用する場合だけ `LOOP_EXTRA_ARGS` で許可ツールを絞って指定する。
 - 全権限バイパスを常用しない。
+
+## 実装開始承認バッチ（pending-approvals）
+
+無人運用（`--unattended`、runner 起動時は常時）では、`todoapp-orchestrator` ルートの項目は
+人間の事前承認がないと実装されない。承認待ちは `.claude/state/pending-approvals.md` に溜まる。
+
+1. `.claude/state/pending-approvals.md` を開く。
+2. 各項目の実装開始プロンプトを確認する。必要なら本文を修正する。
+3. 着手してよい項目の `- [ ] approved` を `- [x] approved` に変える。
+4. 却下する項目はブロックごと削除する（理由を残す場合は `triage-inbox.md` に記録する）。
+5. 次の runner 起動時、承認済み項目が新規候補より優先して着手される。
+
+`fix-security-ci` ルートは事前承認なしで自動処理される。
 
 ## Draft PRが作られた後
 
@@ -132,5 +157,6 @@ runner の制御だけ確認する。
 - `test-loop-runner.sh` が通る
 - `--dry-run` が通る
 - `triage-inbox.md` の未処理が溜まりすぎていない
+- `pending-approvals.md` の承認待ちが溜まりすぎていない
 - Draft PR を処理できる人間のレビュー枠がある
 - `LOOP_MAX_CYCLES` と `LOOP_MAX_BUDGET_USD` が過剰でない

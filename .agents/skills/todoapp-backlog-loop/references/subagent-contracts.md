@@ -85,7 +85,7 @@ route: '<todoapp-orchestrator|fix-security-ci>'
 approved_prompt: # route が todoapp-orchestrator の場合は必須
   approved_by: 'loop-parent'
   approved_at: '<ISO-8601>'
-  approval_summary: 'loop 実行前にユーザーが承認した実装開始内容'
+  approval_summary: '対話承認または pending-approvals.md のバッチ承認で承認された実装開始内容'
   prompt: |
     <ユーザーに提示して承認された実装開始プロンプト>
 constraints:
@@ -95,7 +95,10 @@ constraints:
   - '.env / secrets は読まない'
 ```
 
-`route: todoapp-orchestrator` では、親 loop が creator 委譲前に `approved_prompt.prompt` の本文をユーザーへ提示して承認を取る。
+`route: todoapp-orchestrator` では、親 loop が creator 委譲前に実装開始承認を取る。対話モードでは
+`approved_prompt.prompt` の本文をユーザーへ提示して承認を取り、無人モード（`--unattended`）では
+`.claude/state/pending-approvals.md` で人間が事前承認（`[x]`）したプロンプト本文を使う（バッチ承認）。
+未承認の項目は委譲せず、親が承認待ちとして `pending-approvals.md` に登録する。
 `loop-creator` と `todoapp-orchestrator` はこの承認済みプロンプトを Phase 3a の指示書承認ゲートの入力として扱い、同じ内容の再承認を要求しない。
 ただし、承認済みプロンプトに含まれないスコープ追加、API / Firestore / Auth 変更の新規発見、テスト skip、危険なコマンド切替が必要になった場合は `status=needs_human` で親に戻す。
 
