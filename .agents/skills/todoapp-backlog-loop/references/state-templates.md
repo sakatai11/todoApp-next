@@ -52,8 +52,30 @@
 | ---- | ------- | -------- | ------- | ------- | ------------- | ---------- | --- | ---- |
 ```
 
+## `.claude/state/pending-approvals.md`
+
+```markdown
+# Pending Approvals
+
+無人サイクルが実装開始承認を求めている項目。`- [ ] approved` を `- [x] approved` にすると
+次サイクル以降に優先着手する。却下する場合は項目ブロックごと削除する。
+
+## <item_id>
+
+- [ ] approved
+- 登録日: YYYY-MM-DD
+- route: todoapp-orchestrator
+- score: <score>
+- source: <url>
+
+実装開始プロンプト:
+
+> <実装開始プロンプト本文（複数行可）>
+```
+
 ## 運用メモ
 
 - `item_id` は `issue:156`、`ci:security-review:123456` のように安定した値にする。
 - `triage-inbox.md` に未処理 `[ ]` としてある item は、自動選択から除外する。
+- `pending-approvals.md` の承認待ち `[ ]` item は自動選択から除外し、承認済み `[x]` item は新規候補より優先して着手する。
 - Obsidian の会話履歴は詳細ログとして扱い、この state は次サイクル用の短い運用台帳として扱う。

@@ -10,7 +10,7 @@ set -euo pipefail
 #
 # これにより PR #156 が持っていた「タスクが尽きるまで自律的に回り続ける」性質を、
 # 暴走防止のサーキットブレーカー（最大サイクル数・サイクル間インターバル・コスト上限・
-# ブランチ/クリーン検証・BLOCKED 即停止）付きで取り戻す。
+# ブランチ/クリーン検証・多重起動防止ロック・BLOCKED 即停止）付きで取り戻す。
 #
 # 使い方:
 #   .agents/skills/todoapp-backlog-loop/scripts/loop-runner.sh
@@ -30,6 +30,7 @@ LOOP_MAX_BUDGET_USD="${LOOP_MAX_BUDGET_USD:-5}"  # 1 サイクルあたりの cl
 LOOP_PERMISSION_MODE="${LOOP_PERMISSION_MODE:-acceptEdits}" # claude の権限モード
 LOOP_MODEL="${LOOP_MODEL:-}"                      # 空ならセッション既定モデル
 LOOP_LOG="${LOOP_LOG:-.claude/state/loop-runner.log}"
+LOOP_LOCK_DIR="${LOOP_LOCK_DIR:-.claude/state/loop-runner.lock}" # 多重起動防止ロック（ディレクトリ）
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 LOOP_EXTRA_ARGS="${LOOP_EXTRA_ARGS:-}"           # claude へ追加で渡す引数（例: 権限の allowlist）
 
@@ -65,6 +66,45 @@ on_interrupt() {
   warn "中断シグナルを受信。現在のサイクル完了後に停止します。"
 }
 trap on_interrupt INT TERM
+
+# --- 多重起動防止ロック ---------------------------------------------------------
+# cron の毎時起動などで前回の runner がまだ実行中の場合に二重に回さないためのロック。
+# mkdir はアトミックで macOS でも動く。プロセスが消えた stale lock は自動で奪取する。
+
+LOCK_ACQUIRED=false
+
+acquire_lock() {
+  mkdir -p "$(dirname "$LOOP_LOCK_DIR")"
+  if mkdir "$LOOP_LOCK_DIR" 2>/dev/null; then
+    printf '%s\n' "$$" > "$LOOP_LOCK_DIR/pid"
+    LOCK_ACQUIRED=true
+    return 0
+  fi
+  local other_pid
+  other_pid="$(cat "$LOOP_LOCK_DIR/pid" 2>/dev/null || true)"
+  if [[ -n "$other_pid" ]] && kill -0 "$other_pid" 2>/dev/null; then
+    err "別の runner が実行中です（pid=${other_pid}, lock=${LOOP_LOCK_DIR}）。多重起動を防ぐため停止します。"
+    exit 1
+  fi
+  warn "stale lock を検出しました（pid=${other_pid:-不明}）。ロックを取得し直します。"
+  local stale_dir="${LOOP_LOCK_DIR}.stale.$$"
+  if mv "$LOOP_LOCK_DIR" "$stale_dir" 2>/dev/null; then
+    rm -rf "$stale_dir"
+  fi
+  if ! mkdir "$LOOP_LOCK_DIR" 2>/dev/null; then
+    err "ロックを取得できませんでした: ${LOOP_LOCK_DIR}"
+    exit 1
+  fi
+  printf '%s\n' "$$" > "$LOOP_LOCK_DIR/pid"
+  LOCK_ACQUIRED=true
+}
+
+release_lock() {
+  if $LOCK_ACQUIRED; then
+    rm -rf "$LOOP_LOCK_DIR"
+  fi
+}
+trap release_lock EXIT
 
 # --- ユーティリティ -----------------------------------------------------------
 
@@ -112,6 +152,7 @@ verify_repo_state() {
 # --- preflight ----------------------------------------------------------------
 
 mkdir -p "$(dirname "$LOOP_LOG")"
+acquire_lock
 
 if ! [[ "$LOOP_MAX_ITEMS" =~ ^[0-9]+$ ]]; then
   err "LOOP_MAX_ITEMS は数値で指定してください（現在: ${LOOP_MAX_ITEMS}）。"
@@ -147,7 +188,7 @@ ok "preflight 通過。"
 # --- メインループ -------------------------------------------------------------
 
 cycle=0
-prompt="/todoapp-backlog-loop --max-items=${LOOP_MAX_ITEMS}"
+prompt="/todoapp-backlog-loop --max-items=${LOOP_MAX_ITEMS} --unattended"
 $DRY_RUN && prompt="/todoapp-backlog-loop --dry-run"
 
 while true; do
