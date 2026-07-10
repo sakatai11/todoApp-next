@@ -95,7 +95,7 @@ runner 自体が 1 起動で完結する。前回起動がまだ実行中の場�
 
 ```cron
 # 平日 9-18 時に 1 時間おきに 1 起動（各起動は最大 5 サイクルで自己完結）
-0 9-18 * * 1-5 cd /path/to/todoApp-next && LOOP_MAX_CYCLES=5 .agents/skills/todoapp-backlog-loop/scripts/loop-runner.sh >> .claude/state/loop-cron.log 2>&1
+0 9-18 * * 1-5 cd /path/to/todoApp-next && mkdir -p .claude/state && LOOP_MAX_CYCLES=5 .agents/skills/todoapp-backlog-loop/scripts/loop-runner.sh >> .claude/state/loop-cron.log 2>&1
 ```
 
 ローカル cron はマシンが起動している間しか回らない点に注意する。

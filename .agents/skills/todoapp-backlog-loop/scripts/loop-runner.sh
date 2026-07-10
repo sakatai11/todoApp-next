@@ -87,7 +87,10 @@ acquire_lock() {
     exit 1
   fi
   warn "stale lock を検出しました（pid=${other_pid:-不明}）。ロックを取得し直します。"
-  rm -rf "$LOOP_LOCK_DIR"
+  local stale_dir="${LOOP_LOCK_DIR}.stale.$$"
+  if mv "$LOOP_LOCK_DIR" "$stale_dir" 2>/dev/null; then
+    rm -rf "$stale_dir"
+  fi
   if ! mkdir "$LOOP_LOCK_DIR" 2>/dev/null; then
     err "ロックを取得できませんでした: ${LOOP_LOCK_DIR}"
     exit 1
