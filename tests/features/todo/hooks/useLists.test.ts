@@ -316,7 +316,7 @@ describe('useLists', () => {
       expect(mockApiRequest).not.toHaveBeenCalled();
     });
 
-    it('API呼び出しが失敗してもクライアント側の更新は実行される', async () => {
+    it('API呼び出しが失敗した場合、listsがロールバックされエラーが通知される', async () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -325,13 +325,23 @@ describe('useLists', () => {
 
       const { result } = renderHook(() => useLists(mockInitialLists));
 
+      // 操作前のlistsを保持（ロールバック先の検証用）
+      const listsBefore = result.current.lists;
+
       const dragEvent = createMockDragEvent('list-1', 'list-3');
 
       await act(async () => {
         await result.current.handleDragEnd(dragEvent);
       });
 
+      // 楽観的更新は試みられる
       expect(mockArrayMove).toHaveBeenCalled();
+      // 失敗時は操作前の状態にロールバックされる
+      expect(result.current.lists).toEqual(listsBefore);
+      // エラーが通知される
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.LIST.SORT_FAILED,
+      );
 
       consoleSpy.mockRestore();
     });
@@ -431,7 +441,7 @@ describe('useLists', () => {
       expect(mockApiRequest).not.toHaveBeenCalled();
     });
 
-    it('API呼び出しが失敗してもクライアント側の更新は実行される', async () => {
+    it('API呼び出しが失敗した場合、listsがロールバックされエラーが通知される', async () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -440,11 +450,21 @@ describe('useLists', () => {
 
       const { result } = renderHook(() => useLists(mockInitialLists));
 
+      // 操作前のlistsを保持（ロールバック先の検証用）
+      const listsBefore = result.current.lists;
+
       await act(async () => {
         await result.current.handleButtonMove('list-1', 'right');
       });
 
+      // 楽観的更新は試みられる
       expect(mockArrayMove).toHaveBeenCalled();
+      // 失敗時は操作前の状態にロールバックされる
+      expect(result.current.lists).toEqual(listsBefore);
+      // エラーが通知される
+      expect(mockShowError).toHaveBeenCalledWith(
+        ERROR_MESSAGES.LIST.MOVE_FAILED,
+      );
 
       consoleSpy.mockRestore();
     });
